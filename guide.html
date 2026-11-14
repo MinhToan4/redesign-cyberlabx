@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hướng dẫn · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <script src="assets/theme.js"></script>
+  <style>
+    b, strong {
+      font-weight: 500;
+    }
+
+    /* Riêng trang Hướng dẫn */
+    .step-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+    }
+    .step-item + .step-item {
+      border-top: 1px solid var(--line);
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-control);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      flex: none;
+    }
+    .step-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .step-title {
+      font-weight: 500;
+      font-size: 14.5px;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .step-desc {
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+    .step-code {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    /* Khối lưu ý */
+    .guide-note {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: var(--r-card);
+      background: var(--warn-soft);
+      border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+      color: var(--text);
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+    .guide-note svg {
+      color: var(--warn);
+      margin-top: 2px;
+    }
+
+    /* Danh sách nội quy */
+    .rule-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 0;
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+    .rule-item + .rule-item {
+      border-top: 1px solid var(--line);
+    }
+    .rule-ic {
+      color: var(--err);
+      margin-top: 2px;
+      flex: none;
+    }
+    .rule-ic svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+    }
+    @media (max-width: 540px) {
+      html, body, .app, .main, .topbar {
+        max-width: 390px;
+      }
+    }
+  </style>
+</head>
+<body data-page="guide" data-title="Hướng dẫn">
+  <main class="content" id="content">
+    <div class="cols">
+      <!-- Cột chính: Các bước làm bài & nộp bài -->
+      <div class="stack">
+        <section>
+          <div class="section-head">
+            <h2>Quy trình nộp bài thực hành</h2>
+            <span class="meta">4 bước hoàn thành và nộp lab</span>
+          </div>
+
+          <div class="card card-pad">
+            <div id="steps-container"></div>
+
+            <div class="guide-note">
+              <i data-lucide="circle-alert"></i>
+              <div>
+                <b>Lưu ý quan trọng về tệp kết quả:</b> Tệp <span class="step-code">.lab</span> được sinh tự động sau khi kết thúc bài lab. Tuyệt đối không chỉnh sửa hoặc đổi tên tệp; nếu tên không khớp hệ thống sẽ chấm kết quả <b>WFN</b> (Wrong File Name).
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Cột phụ: Nội quy phòng thi và thông số lab -->
+      <aside class="stack">
+        <section>
+          <div class="section-head">
+            <h2>Nội quy phòng thi</h2>
+            <span class="meta">Quy định bắt buộc</span>
+          </div>
+          <div class="card card-pad">
+            <div id="rules-container"></div>
+            <div style="margin-top:12px;font-size:12px;color:var(--text-3);line-height:1.4">
+              Mọi vi phạm nội quy trong ca thi đều dẫn đến điểm 0 và biên bản kỷ luật theo quy chế của Học viện.
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>Môi trường Labtainer</h2>
+            <span class="meta">Lệnh thường dùng</span>
+          </div>
+          <div class="card card-pad">
+            <dl class="kv">
+              <dt>Nền tảng</dt>
+              <dd>Linux VM (Ubuntu)</dd>
+              <dt>Bắt đầu lab</dt>
+              <dd><span class="step-code">labtainer &lt;lab-name&gt;</span></dd>
+              <dt>Kết thúc lab</dt>
+              <dd><span class="step-code">stoplab</span></dd>
+              <dt>Thư mục tệp</dt>
+              <dd><span class="step-code faint">~/labtainer_xfer</span></dd>
+            </dl>
+            <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-3)">
+              Gặp sự cố môi trường? Bạn có thể hỏi nhanh tại <a class="link" href="chatbot.html">ChatBot</a> hoặc liên hệ trợ giảng trực lab.
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var guideSteps = D.guide || [];
+      var examRules = D.examRules || [
+        'Không gian lận, trao đổi bài dưới mọi hình thức trong suốt ca thi.',
+        'Không sử dụng công cụ AI (ChatGPT, Copilot...) để làm bài.',
+        'Không chuyển tab, mở ứng dụng ngoài hay tìm kiếm trên Internet.',
+        'Chỉ nộp file .lab được sinh tự động, không tự chỉnh sửa tên file.',
+        'Mọi thao tác đều được ghi log; vi phạm sẽ bị hủy kết quả ca thi.'
+      ];
+
+      // Render steps
+      var stepsContainer = document.getElementById('steps-container');
+      stepsContainer.innerHTML = guideSteps.map(function (step, idx) {
+        var num = String(idx + 1).padStart(2, '0');
+        return '<div class="step-item">' +
+          '<div class="step-num mono">' + num + '</div>' +
+          '<div class="step-body">' +
+            '<div class="step-title">' + step.h + '</div>' +
+            '<div class="step-desc">' + step.p + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      // Render exam rules
+      var rulesContainer = document.getElementById('rules-container');
+      rulesContainer.innerHTML = examRules.map(function (rule) {
+        return '<div class="rule-item">' +
+          '<span class="rule-ic"><i data-lucide="circle-alert"></i></span>' +
+          '<span>' + rule + '</span>' +
+        '</div>';
+      }).join('');
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

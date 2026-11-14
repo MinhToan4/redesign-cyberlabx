@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tổng quan · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <script src="assets/theme.js"></script>
+  <style>
+    /* Riêng trang Tổng quan */
+    .pick { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); transition: background var(--dur) var(--ease); }
+    .pick:last-child { border-bottom: 0; }
+    .pick:hover { background: var(--mute-soft); }
+    .pick .t { font-weight: 500; }
+    .pick .m { font-size: 12.5px; color: var(--text-3); }
+    .due { font-size: 12.5px; color: var(--text-2); text-align: right; white-space: nowrap; }
+    .due.soon { color: var(--warn); }
+    .rank-bar { margin-top: 12px; }
+    .badge-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+    .badge-row + .badge-row { border-top: 1px solid var(--line); }
+    .badge-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-2); }
+    .badge-ic svg { width: 16px; height: 16px; }
+    .badge-row.locked { opacity: 0.55; }
+    .legend { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-3); justify-content: flex-end; margin-top: 12px; }
+    .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    @media (max-width: 640px) {
+      .pick { grid-template-columns: minmax(0, 1fr) auto; }
+      .pick .code, .pick .due { display: none; }
+      .stat-strip > div { padding: 16px; }
+      .stat .value { font-size: 22px; }
+      .badge-row .trunc { white-space: normal; }
+    }
+  </style>
+</head>
+<body data-page="dashboard" data-title="Tổng quan">
+  <main class="content" id="content">
+    <div class="cols">
+      <div class="stack">
+        <section class="card stat-strip" aria-label="Số liệu của bạn" id="stats"></section>
+
+        <section>
+          <div class="section-head">
+            <h2>Tiếp tục làm bài</h2>
+            <span class="meta" id="pending-meta"></span>
+          </div>
+          <div class="card" id="in-progress"></div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>Hoạt động nộp bài</h2>
+            <span class="meta tnum"><span id="act-total"></span> lượt nộp trong 12 tháng gần nhất</span>
+          </div>
+          <div class="card card-pad">
+            <div id="heat"></div>
+            <div class="legend"><span>Ít</span><i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i><span>Nhiều</span></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="stack">
+        <section class="card card-pad">
+          <div class="row-between"><h2>Kỹ năng</h2><a class="link" style="font-size:13px" href="account.html?tab=skills">Chi tiết</a></div>
+          <div id="radar" style="margin-top:4px"></div>
+        </section>
+
+        <section class="card card-pad">
+          <div class="row-between"><h2>Cấp bậc</h2><span class="chip chip-accent tnum" id="rank-level"></span></div>
+          <div style="margin-top:12px"><div style="font-size:18px;font-weight:500" id="rank-title"></div><div class="faint tnum" style="font-size:13px" id="rank-xp"></div></div>
+          <div class="progress rank-bar"><i id="rank-bar"></i></div>
+          <div class="faint" style="font-size:12px;margin-top:8px" id="rank-next"></div>
+        </section>
+
+        <section class="card card-pad">
+          <div class="row-between"><h2>Danh hiệu</h2><span class="faint tnum" style="font-size:13px" id="badge-count"></span></div>
+          <div id="badges" style="margin-top:4px"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/charts.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX, S = D.student;
+      var nf = function (n) { return n.toLocaleString('en-US'); };
+
+      var tier = D.streakTiers.filter(function (t) { return S.streak >= t.min; }).pop();
+      var next = D.streakTiers.filter(function (t) { return S.streak < t.min; })[0];
+      document.getElementById('stats').innerHTML =
+        '<div class="stat"><div class="label">Lab hoàn thành</div><div class="value">' + S.labsDone + '</div></div>' +
+        '<div class="stat"><div class="label">Tổng điểm XP</div><div class="value">' + nf(S.xp) + '</div></div>' +
+        '<div class="stat"><div class="label">Chuỗi ngày</div><div class="value">' + S.streak + '</div><div class="hint">' + tier.label + (next ? ' · còn ' + (next.min - S.streak) + ' ngày lên ' + next.label : '') + '</div></div>';
+
+      var soon = D.inProgress.filter(function (p) { return p.dueSoon; }).length;
+      document.getElementById('pending-meta').textContent = soon + ' bài hạn trong tuần này';
+      document.getElementById('in-progress').innerHTML = D.inProgress.map(function (p) {
+        return '<a class="pick" href="assignments.html?class=' + p.course + '&code=' + p.code + '">' +
+          '<span class="chip chip-mono code">' + p.course + '</span>' +
+          '<div style="min-width:0"><div class="t trunc" title="' + p.title + '">' + p.title + '</div><div class="m">' + p.topic + ' · ' + p.xp + ' XP · lần nộp ' + p.attempts + ' <span class="verdict v-' + p.status + '" style="margin-left:4px">' + p.status + '</span></div></div>' +
+          '<span class="due tnum' + (p.dueSoon ? ' soon' : '') + '">Hạn ' + p.deadline + '</span>' +
+          '<span class="btn btn-sm">Tiếp tục<i data-lucide="arrow-right"></i></span></a>';
+      }).join('');
+
+      document.getElementById('act-total').textContent = D.activityTotal;
+      CLXCharts.heatmap(document.getElementById('heat'), D.heat);
+      CLXCharts.radar(document.getElementById('radar'), D.skills);
+
+      document.getElementById('rank-level').textContent = 'Lv.' + D.rank.level;
+      document.getElementById('rank-title').textContent = D.rank.title;
+      document.getElementById('rank-xp').textContent = nf(D.rank.xp) + ' XP';
+      document.getElementById('rank-bar').style.width = D.rank.pct + '%';
+      document.getElementById('rank-next').textContent = 'Còn ' + nf(D.rank.toNext) + ' XP tới Lv.' + D.rank.nextLevel;
+
+      var got = D.badges.filter(function (b) { return b.unlocked; }).length;
+      document.getElementById('badge-count').textContent = got + '/' + D.badges.length + ' đã đạt';
+      document.getElementById('badges').innerHTML = D.badges.map(function (b) {
+        return '<div class="badge-row' + (b.unlocked ? '' : ' locked') + '"><span class="badge-ic"><i data-lucide="' + b.icon + '"></i></span>' +
+          '<div style="min-width:0"><div style="font-weight:500;font-size:13.5px">' + b.name + '</div><div class="faint trunc" style="font-size:12px" title="' + b.desc + '">' + b.desc + '</div></div>' +
+          '<span class="faint tnum" style="margin-left:auto;font-size:12px;white-space:nowrap">' + (b.unlocked ? b.date.slice(0, 5) : b.progress) + '</span></div>';
+      }).join('');
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bảng xếp hạng · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <script src="assets/theme.js"></script>
+  <style>
+    /* Riêng trang Bảng xếp hạng */
+    .board-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .board-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Podium top 3 gọn */
+    .podium-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .podium-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 18px 16px;
+      position: relative;
+    }
+    .podium-card.first {
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+      background: color-mix(in srgb, var(--accent-soft) 25%, var(--surface));
+    }
+    .podium-rank {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+    }
+    .podium-avatar {
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    .podium-name {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .podium-meta {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-bottom: 10px;
+    }
+    .podium-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .podium-stats b {
+      font-weight: 500;
+    }
+
+    /* Bảng */
+    .board-tbl-class {
+      --cols: 56px 64px 34px minmax(110px, 1fr) minmax(140px, 1.2fr) minmax(120px, 1fr) 70px 70px;
+    }
+    .board-tbl-xp {
+      --cols: 56px 64px 34px minmax(140px, 1.5fr) 100px 90px;
+    }
+    .trend-up { color: var(--ok); font-size: 12px; }
+    .trend-down { color: var(--err); font-size: 12px; }
+    .trend-same { color: var(--text-3); font-size: 12px; }
+
+    /* Thanh ghim thứ hạng của mình */
+    .my-pinned-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .my-pinned-bar .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .board-tbl-class {
+        --cols: 48px 56px 34px minmax(120px, 1fr) 60px 60px;
+      }
+      .col-acc, .col-course {
+        display: none;
+      }
+    }
+    @media (max-width: 540px) {
+      html, body, .app, .main, .topbar {
+        max-width: 390px;
+      }
+    }
+    @media (max-width: 640px) {
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+      .board-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .board-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .board-controls .segmented {
+        width: 100%;
+        display: flex;
+      }
+      .board-controls .segmented button {
+        flex: 1;
+        padding: 0 6px;
+        font-size: 12.5px;
+      }
+      .board-controls .select {
+        width: 100% !important;
+        font-size: 13px;
+      }
+      .podium-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .podium-card {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        text-align: left;
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .podium-card.first {
+        order: -1;
+      }
+      .podium-rank {
+        position: static;
+        flex: none;
+      }
+      .podium-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+      }
+      .podium-avatar {
+        margin: 0;
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+      }
+      .podium-name {
+        font-size: 13px;
+        margin-bottom: 0;
+      }
+      .podium-meta {
+        font-size: 11.5px;
+        margin-bottom: 0;
+      }
+      .podium-stats {
+        flex: none;
+        font-size: 12.5px;
+        text-align: right;
+      }
+      .podium-stats .faint {
+        display: none;
+      }
+      .my-pinned-bar {
+        padding: 10px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .my-pinned-bar .left {
+        gap: 6px;
+      }
+      #my-pin-acc {
+        display: none;
+      }
+      .board-tbl-class, .board-tbl-xp {
+        font-size: 13px;
+        overflow-x: hidden;
+      }
+      .board-tbl-class .tbl-row, .board-tbl-xp .tbl-row {
+        padding: 0 12px;
+        min-height: 42px;
+      }
+      .board-tbl-class {
+        --cols: 32px 28px minmax(0, 1fr) 46px;
+        gap: 8px;
+      }
+      .board-tbl-xp {
+        --cols: 32px 28px minmax(0, 1fr) 68px;
+        gap: 8px;
+      }
+      .col-trend, .col-acc, .col-course, .col-tried, .col-level {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body data-page="leaderboard" data-title="Bảng xếp hạng">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- Bộ điều khiển phạm vi và lớp -->
+      <div class="board-header">
+        <div class="board-controls">
+          <div class="segmented" role="group" aria-label="Phạm vi bảng xếp hạng">
+            <button id="tab-class" aria-pressed="true">Theo lớp học phần</button>
+            <button id="tab-xp" aria-pressed="false">Toàn khóa (XP)</button>
+          </div>
+          <select class="select" id="select-class" aria-label="Chọn lớp học phần" style="width:auto">
+            <option value="INT1449.01">An toàn & Bảo mật HTTT (INT1449.01)</option>
+            <option value="WEB3021.01">Kiểm thử xâm nhập (WEB3021.01)</option>
+            <option value="CRY2010.01">Mật mã học ứng dụng (CRY2010.01)</option>
+          </select>
+        </div>
+        <div class="faint tnum" id="board-meta" style="font-size:13px">Xếp theo số bài làm đúng</div>
+      </div>
+
+      <!-- Top 3 gọn gàng -->
+      <section id="podium-section">
+        <div class="section-head">
+          <h2>Dẫn đầu</h2>
+          <span class="meta" id="top-meta">Top 3 sinh viên xuất sắc</span>
+        </div>
+        <div class="podium-grid" id="podium-container"></div>
+      </section>
+
+      <!-- Bảng xếp hạng chi tiết -->
+      <section>
+        <div class="section-head">
+          <h2>Danh sách xếp hạng</h2>
+          <span class="meta tnum" id="table-meta"></span>
+        </div>
+
+        <div class="card">
+          <!-- Thanh ghim vị trí của bạn -->
+          <div class="my-pinned-bar" id="my-pinned-bar">
+            <div class="left">
+              <span class="chip chip-accent tnum" id="my-pin-rank">Hạng #2</span>
+              <span style="font-weight:500" id="my-pin-name">Vũ Trung Đức</span>
+              <span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px">Bạn</span>
+              <span class="mono faint tnum" id="my-pin-acc">B23DCAT002</span>
+            </div>
+            <div class="row-gap faint tnum">
+              <span id="my-pin-stats">30 đúng · 36 đã thử</span>
+              <span>·</span>
+              <button class="link" id="btn-jump-me" style="border:0;background:none;padding:6px 8px;margin:-6px -8px;font-size:13px;min-height:32px;display:inline-flex;align-items:center;cursor:pointer">Đến dòng của tôi</button>
+            </div>
+          </div>
+
+          <!-- Bảng CSS Grid -->
+          <div class="tbl board-tbl-class" id="board-table" role="table" aria-label="Bảng xếp hạng sinh viên">
+            <div role="rowgroup">
+              <div class="tbl-row tbl-head" id="table-head" role="row"></div>
+            </div>
+            <div id="table-rows" role="rowgroup"></div>
+          </div>
+
+          <!-- Phân trang -->
+          <div class="pager" id="board-pager">
+            <span class="tnum" id="board-pager-info"></span>
+            <div class="pages" id="board-pager-pages"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var curMode = 'class'; // 'class' or 'xp'
+      var curClass = 'INT1449.01';
+      var PAGE_SIZE = 10;
+      var curPage = 1;
+
+      var tabClass = document.getElementById('tab-class');
+      var tabXp = document.getElementById('tab-xp');
+      var selectClass = document.getElementById('select-class');
+      var boardMeta = document.getElementById('board-meta');
+
+      var classNames = {
+        'INT1449.01': 'An toàn & Bảo mật HTTT',
+        'WEB3021.01': 'Kiểm thử xâm nhập',
+        'CRY2010.01': 'Mật mã học ứng dụng'
+      };
+
+      function getStudentList() {
+        var list = (D.leaderboard || []).slice();
+        if (curMode === 'xp') {
+          // Sort by XP descending
+          list.sort(function (a, b) { return b.xp - a.xp; });
+          list = list.map(function (item, idx) {
+            var copy = Object.assign({}, item);
+            copy.rank = idx + 1;
+            copy.level = Math.floor(copy.xp / 200);
+            return copy;
+          });
+        } else {
+          // Lọc bản ghi theo classCode gốc, không tạo số liệu giả
+          list = list.filter(function (item) {
+            return item.classCode === curClass;
+          });
+          list.sort(function (a, b) {
+            if (b.correct !== a.correct) return b.correct - a.correct;
+            return a.tried - b.tried;
+          });
+          list = list.map(function (item, idx) {
+            var copy = Object.assign({}, item);
+            copy.rank = idx + 1;
+            return copy;
+          });
+        }
+        return list;
+      }
+
+      function formatTrend(trend) {
+        if (trend > 0) {
+          return '<span class="trend-up tnum" title="Tăng ' + trend + ' bậc">↑ ' + trend + '</span>';
+        } else if (trend < 0) {
+          return '<span class="trend-down tnum" title="Giảm ' + Math.abs(trend) + ' bậc">↓ ' + Math.abs(trend) + '</span>';
+        }
+        return '<span class="trend-same" title="Không đổi bậc">—</span>';
+      }
+
+      function renderPodium(top3) {
+        var container = document.getElementById('podium-container');
+        // Arrange classic order: #2, #1, #3 on desktop if 3 exist
+        var ordered = [];
+        if (top3.length >= 3) {
+          ordered = [top3[1], top3[0], top3[2]];
+        } else {
+          ordered = top3;
+        }
+
+        container.innerHTML = ordered.map(function (p) {
+          if (!p) return '';
+          var isFirst = p.rank === 1;
+          var statHtml = curMode === 'xp'
+            ? '<b class="tnum">' + p.xp.toLocaleString('en-US') + ' XP</b><span class="faint">· Lv.' + (p.level || 42) + '</span>'
+            : '<b class="tnum">' + p.correct + ' đúng</b><span class="faint">· ' + p.tried + ' đã thử</span>';
+
+          var rankChip = isFirst
+            ? '<span class="chip chip-accent tnum">#1</span>'
+            : '<span class="chip chip-mono tnum">#' + p.rank + '</span>';
+
+          var meChip = p.me ? '<span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px;margin-left:4px">Bạn</span>' : '';
+
+          return '<div class="card podium-card' + (isFirst ? ' first' : '') + '">' +
+            '<div class="podium-rank">' + rankChip + '</div>' +
+            '<div class="podium-info">' +
+              '<span class="avatar podium-avatar">' + p.initials + '</span>' +
+              '<div>' +
+                '<div class="podium-name trunc">' + p.name + meChip + '</div>' +
+                '<div class="podium-meta trunc">' + (curMode === 'xp' ? 'Toàn khóa' : p.account) + ' · ' + formatTrend(p.trend) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="podium-stats tnum">' + statHtml + '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      function render() {
+        var list = getStudentList();
+        var total = list.length;
+        var totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+        if (curPage > totalPages) curPage = 1;
+
+        var podiumSection = document.getElementById('podium-section');
+        var pinnedBar = document.getElementById('my-pinned-bar');
+        var tbl = document.getElementById('board-table');
+        var thead = document.getElementById('table-head');
+        var tbody = document.getElementById('table-rows');
+        var pagerEl = document.getElementById('board-pager');
+
+        if (total === 0) {
+          if (podiumSection) podiumSection.style.display = 'none';
+          if (pinnedBar) pinnedBar.style.display = 'none';
+          thead.style.display = 'none';
+          tbody.innerHTML = '<div class="empty" style="padding:36px 16px;text-align:center"><div>Chưa có dữ liệu xếp hạng cho lớp học phần này.</div><div class="faint" style="font-size:13px;margin-top:4px">Vui lòng chọn lớp học phần khác từ danh sách phía trên để xem bảng xếp hạng.</div></div>';
+          document.getElementById('table-meta').textContent = '0 sinh viên';
+          if (pagerEl) pagerEl.style.display = 'none';
+          window.clxIcons();
+          return;
+        }
+
+        if (podiumSection) podiumSection.style.display = 'block';
+        thead.style.display = 'grid';
+        if (pagerEl) pagerEl.style.display = 'flex';
+
+        // Top 3
+        var top3 = list.slice(0, 3);
+        renderPodium(top3);
+
+        // Find current student 'me'
+        var myItem = list.filter(function (it) { return it.me; })[0];
+        if (myItem) {
+          pinnedBar.style.display = 'flex';
+          document.getElementById('my-pin-rank').textContent = 'Hạng #' + myItem.rank;
+          document.getElementById('my-pin-name').textContent = myItem.name;
+          document.getElementById('my-pin-acc').textContent = curMode === 'xp' ? '' : myItem.account;
+          document.getElementById('my-pin-stats').textContent = curMode === 'xp'
+            ? myItem.xp.toLocaleString('en-US') + ' XP · Lv.' + (myItem.level || 42)
+            : myItem.correct + ' đúng · ' + myItem.tried + ' đã thử';
+        } else {
+          pinnedBar.style.display = 'none';
+        }
+
+        // Table headers and classes
+        if (curMode === 'xp') {
+          tbl.className = 'tbl board-tbl-xp';
+          thead.innerHTML =
+            '<span role="columnheader">Hạng</span>' +
+            '<span role="columnheader" class="col-trend">Xu hướng</span>' +
+            '<span role="columnheader"></span>' +
+            '<span role="columnheader">Họ tên</span>' +
+            '<span role="columnheader" class="num">XP</span>' +
+            '<span role="columnheader" class="num col-level">Cấp</span>';
+        } else {
+          tbl.className = 'tbl board-tbl-class';
+          thead.innerHTML =
+            '<span role="columnheader">Hạng</span>' +
+            '<span role="columnheader" class="col-trend">Xu hướng</span>' +
+            '<span role="columnheader"></span>' +
+            '<span role="columnheader" class="col-acc">Tài khoản</span>' +
+            '<span role="columnheader">Họ tên</span>' +
+            '<span role="columnheader" class="col-course">Lớp học phần</span>' +
+            '<span role="columnheader" class="num">Đúng</span>' +
+            '<span role="columnheader" class="num col-tried">Đã thử</span>';
+        }
+
+        // Table Rows
+        var start = (curPage - 1) * PAGE_SIZE;
+        var end = Math.min(start + PAGE_SIZE, total);
+        var pageRows = list.slice(start, end);
+
+        tbody.innerHTML = pageRows.map(function (row) {
+          var meClass = row.me ? ' is-me' : '';
+          var meBadge = row.me ? '<span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px;margin-left:6px">Bạn</span>' : '';
+
+          if (curMode === 'xp') {
+            return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
+              '<span class="mono tnum faint" role="cell">#' + row.rank + '</span>' +
+              '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
+              '<span class="avatar avatar-sm" role="cell">' + row.initials + '</span>' +
+              '<div class="trunc" role="cell" style="font-weight:500">' + row.name + meBadge + '</div>' +
+              '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.xp.toLocaleString('en-US') + '</span>' +
+              '<span class="mono num tnum faint col-level" role="cell">Cấp ' + (row.level || 42) + '</span>' +
+            '</div>';
+          }
+
+          return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
+            '<span class="mono tnum faint" role="cell">#' + row.rank + '</span>' +
+            '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
+            '<span class="avatar avatar-sm" role="cell">' + row.initials + '</span>' +
+            '<span class="mono faint tnum col-acc trunc" role="cell">' + row.account + '</span>' +
+            '<div class="trunc" role="cell" style="font-weight:500">' + row.name + meBadge + '</div>' +
+            '<span class="dim col-course trunc" role="cell">' + (classNames[row.classCode] || row.classCode) + '</span>' +
+            '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.correct + '</span>' +
+            '<span class="mono num tnum faint col-tried" role="cell">' + row.tried + '</span>' +
+          '</div>';
+        }).join('');
+
+        // Table meta
+        document.getElementById('table-meta').textContent = 'Hiển thị ' + (start + 1) + '–' + end + ' / ' + total + ' sinh viên';
+
+        // Pager
+        var pagerInfo = document.getElementById('board-pager-info');
+        pagerInfo.textContent = (start + 1) + '–' + end + ' / ' + total;
+
+        var pagerPages = document.getElementById('board-pager-pages');
+        var btns = [];
+        btns.push('<button ' + (curPage <= 1 ? 'disabled' : '') + ' id="btn-board-prev" aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>');
+        for (var p = 1; p <= totalPages; p++) {
+          btns.push('<button data-page="' + p + '"' + (p === curPage ? ' aria-current="page"' : '') + '>' + p + '</button>');
+        }
+        btns.push('<button ' + (curPage >= totalPages ? 'disabled' : '') + ' id="btn-board-next" aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>');
+        pagerPages.innerHTML = btns.join('');
+
+        // Pager events
+        var prevBtn = document.getElementById('btn-board-prev');
+        if (prevBtn) {
+          prevBtn.addEventListener('click', function () {
+            if (curPage > 1) { curPage--; render(); }
+          });
+        }
+        var nextBtn = document.getElementById('btn-board-next');
+        if (nextBtn) {
+          nextBtn.addEventListener('click', function () {
+            if (curPage < totalPages) { curPage++; render(); }
+          });
+        }
+        pagerPages.querySelectorAll('button[data-page]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var p = parseInt(this.getAttribute('data-page'), 10);
+            if (p && p !== curPage) {
+              curPage = p;
+              render();
+            }
+          });
+        });
+
+        window.clxIcons();
+      }
+
+      // Mode switch
+      tabClass.addEventListener('click', function () {
+        if (curMode === 'class') return;
+        curMode = 'class';
+        tabClass.setAttribute('aria-pressed', 'true');
+        tabXp.setAttribute('aria-pressed', 'false');
+        selectClass.style.display = 'inline-block';
+        boardMeta.textContent = 'Xếp theo số bài làm đúng';
+        curPage = 1;
+        render();
+      });
+
+      tabXp.addEventListener('click', function () {
+        if (curMode === 'xp') return;
+        curMode = 'xp';
+        tabXp.setAttribute('aria-pressed', 'true');
+        tabClass.setAttribute('aria-pressed', 'false');
+        selectClass.style.display = 'none';
+        boardMeta.textContent = 'Xếp theo tổng điểm kinh nghiệm (XP) toàn khóa';
+        curPage = 1;
+        render();
+      });
+
+      selectClass.addEventListener('change', function (e) {
+        curClass = e.target.value;
+        curPage = 1;
+        render();
+      });
+
+      // Jump to my row
+      document.getElementById('btn-jump-me').addEventListener('click', function () {
+        var list = getStudentList();
+        var myIdx = -1;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].me) { myIdx = i; break; }
+        }
+        if (myIdx >= 0) {
+          var targetPage = Math.floor(myIdx / PAGE_SIZE) + 1;
+          curPage = targetPage;
+          render();
+          var rowMe = document.getElementById('row-me');
+          if (rowMe) {
+            rowMe.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

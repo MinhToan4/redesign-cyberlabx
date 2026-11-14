@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <script src="assets/theme.js"></script>
+  <style>
+    /* Kiểu riêng trang Đăng nhập (đứng riêng, không dùng shell.js) */
+    .login-viewport {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background: var(--bg);
+    }
+    .login-card {
+      width: 100%;
+      max-width: 860px;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--r-panel);
+      background: var(--surface);
+    }
+    .login-brand-panel {
+      padding: 36px 32px;
+      background: var(--surface-2);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 32px;
+    }
+    .brand-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--text);
+      color: var(--bg);
+      flex: none;
+    }
+    .brand-logo-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+    .brand-logo-text {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .feature-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .feature-item svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      margin-top: 2px;
+      flex: none;
+    }
+    .login-form-panel {
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .theme-toggle-corner {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    .form-container {
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+    }
+    .notice-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--r-control);
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .notice-ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+      border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent);
+    }
+    .notice-err {
+      background: var(--err-soft);
+      color: var(--err);
+      border: 1px solid color-mix(in srgb, var(--err) 30%, transparent);
+    }
+    .pwd-wrapper {
+      position: relative;
+    }
+    .pwd-wrapper .input {
+      padding-right: 40px;
+    }
+    .pwd-toggle-btn {
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: transparent;
+      color: var(--text-3);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pwd-toggle-btn:hover {
+      color: var(--text);
+    }
+    .pwd-toggle-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    @media (max-width: 768px) {
+      .login-card {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+      }
+      .login-brand-panel {
+        padding: 24px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        gap: 16px;
+      }
+      .login-brand-panel .feature-list {
+        display: none;
+      }
+      .login-form-panel {
+        padding: 28px 20px;
+      }
+      .theme-toggle-corner {
+        top: 14px;
+        right: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-viewport">
+    <div class="login-card">
+      <!-- Cột giới thiệu thương hiệu và thông tin hệ thống -->
+      <aside class="login-brand-panel" aria-label="Thông tin CyberLabX">
+        <div>
+          <div class="brand-logo-row">
+            <span class="brand-logo-icon">
+              <i data-lucide="terminal"></i>
+            </span>
+            <span class="brand-logo-text">CyberLabX</span>
+          </div>
+          <div style="margin-top:16px">
+            <div style="font-weight:600;font-size:15px;line-height:1.4">Nền tảng thực hành An toàn thông tin</div>
+            <div class="faint" style="font-size:12.5px;margin-top:4px">Học viện Công nghệ Bưu chính Viễn thông</div>
+          </div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <i data-lucide="flask-conical"></i>
+              <span>Môi trường máy ảo Labtainer tự động hóa cho từng sinh viên.</span>
+            </div>
+            <div class="feature-item">
+              <i data-lucide="check"></i>
+              <span>Chấm điểm trực tuyến theo chuẩn trạng thái bài nộp AC / WA / WF.</span>
+            </div>
+            <div class="feature-item">
+              <i data-lucide="radar"></i>
+              <span>Bản đồ kỹ năng thực hành và lộ trình nâng cao năng lực ATTT.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="chip chip-ok" style="font-size:11.5px">
+              <span class="dot"></span>Hệ thống hoạt động bình thường
+            </span>
+          </div>
+          <div class="faint tnum mono" style="font-size:12px">
+            v2.4.0 · PTIT Khoa CNTT1
+          </div>
+        </div>
+      </aside>
+
+      <!-- Cột biểu mẫu Đăng nhập / Quên mật khẩu -->
+      <main class="login-form-panel">
+        <!-- Nút đổi sáng/tối ở góc phải -->
+        <div class="theme-toggle-corner">
+          <button type="button" class="icon-btn" id="theme-btn" aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện sáng/tối">
+            <i data-lucide="sun-moon"></i>
+          </button>
+        </div>
+
+        <div class="form-container">
+          <!-- Biểu mẫu Đăng nhập -->
+          <div id="login-view">
+            <div style="margin-bottom:20px">
+              <h1 style="font-size:20px;font-weight:600">Đăng nhập</h1>
+            </div>
+
+            <div id="login-notice" class="notice-box notice-err" style="display:none" role="alert">
+              <i data-lucide="circle-alert" style="width:16px;height:16px;flex:none;margin-top:2px"></i>
+              <span id="login-notice-text">Tên đăng nhập hoặc mật khẩu không chính xác.</span>
+            </div>
+
+            <form id="login-form" class="stack-sm">
+              <div class="field">
+                <label for="username">Mã sinh viên (MSSV)</label>
+                <input
+                  id="username"
+                  class="input mono"
+                  type="text"
+                  placeholder="B23DCCNxxx"
+                  value="B23DCCN135"
+                  autocomplete="username"
+                  required
+                >
+              </div>
+
+              <div class="field">
+                <label for="password">Mật khẩu</label>
+                <div class="pwd-wrapper">
+                  <input
+                    id="password"
+                    class="input"
+                    type="password"
+                    value="••••••••"
+                    autocomplete="current-password"
+                    required
+                  >
+                  <button type="button" class="pwd-toggle-btn" id="btn-toggle-pwd" aria-label="Hiện mật khẩu">
+                    <i data-lucide="eye" id="pwd-icon"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;margin-top:2px;margin-bottom:4px">
+                <button type="button" class="link" id="btn-to-forgot" style="font-size:13px;background:none;border:none;padding:6px 0;min-height:32px;display:inline-flex;align-items:center;cursor:pointer">
+                  Quên mật khẩu?
+                </button>
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="btn-submit-login" style="width:100%;height:38px;margin-top:6px">
+                <i data-lucide="log-in"></i>
+                <span>Đăng nhập</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Biểu mẫu Quên mật khẩu -->
+          <div id="forgot-view" style="display:none">
+            <div style="margin-bottom:20px">
+              <h1 style="font-size:20px;font-weight:600">Quên mật khẩu</h1>
+              <p class="faint" style="font-size:13px;margin-top:4px">Nhập mã sinh viên hoặc email trường để nhận hướng dẫn đặt lại mật khẩu.</p>
+            </div>
+
+            <div id="forgot-notice" class="notice-box notice-ok" style="display:none" role="status">
+              <i data-lucide="check" style="width:16px;height:16px;flex:none;margin-top:2px"></i>
+              <span>Nếu thông tin khớp với tài khoản sinh viên đang hoạt động, hệ thống đã gửi đường dẫn đặt lại mật khẩu về email trường của bạn. Đường dẫn có hiệu lực trong 30 phút.</span>
+            </div>
+
+            <form id="forgot-form" class="stack-sm">
+              <div class="field">
+                <label for="forgot-id">Mã sinh viên hoặc email trường</label>
+                <input
+                  id="forgot-id"
+                  class="input"
+                  type="text"
+                  placeholder="B23DCCNxxx hoặc ten@stu.ptit.edu.vn"
+                  value="B23DCCN135"
+                  autocomplete="username"
+                  required
+                >
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="btn-submit-forgot" style="width:100%;height:38px;margin-top:6px">
+                <i data-lucide="send"></i>
+                <span>Gửi yêu cầu</span>
+              </button>
+
+              <div style="text-align:center;margin-top:14px">
+                <button type="button" class="link" id="btn-back-to-login" style="font-size:13px;background:none;border:none;padding:6px 12px;min-height:32px;display:inline-flex;align-items:center;cursor:pointer">
+                  Quay lại đăng nhập
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script>
+    (function () {
+      // 1. Quản lý icon Lucide
+      window.clxIcons = function () {
+        if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+      };
+
+      // 2. Nút chuyển đổi giao diện sáng/tối
+      var themeBtn = document.getElementById('theme-btn');
+      themeBtn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme') || 'dark';
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('clx-theme', next); } catch (e) {}
+      });
+
+      // 3. Ẩn/hiện mật khẩu
+      var pwdInput = document.getElementById('password');
+      var toggleBtn = document.getElementById('btn-toggle-pwd');
+      var pwdIcon = document.getElementById('pwd-icon');
+      var isPwdVisible = false;
+
+      toggleBtn.addEventListener('click', function () {
+        isPwdVisible = !isPwdVisible;
+        pwdInput.type = isPwdVisible ? 'text' : 'password';
+        toggleBtn.setAttribute('aria-label', isPwdVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        pwdIcon.setAttribute('data-lucide', isPwdVisible ? 'eye-off' : 'eye');
+        window.clxIcons();
+      });
+
+      // 4. Chuyển đổi giữa Đăng nhập và Quên mật khẩu
+      var loginView = document.getElementById('login-view');
+      var forgotView = document.getElementById('forgot-view');
+      var btnToForgot = document.getElementById('btn-to-forgot');
+      var btnBackToLogin = document.getElementById('btn-back-to-login');
+      var forgotNotice = document.getElementById('forgot-notice');
+
+      btnToForgot.addEventListener('click', function () {
+        loginView.style.display = 'none';
+        forgotView.style.display = 'block';
+        forgotNotice.style.display = 'none';
+        window.clxIcons();
+      });
+
+      btnBackToLogin.addEventListener('click', function () {
+        forgotView.style.display = 'none';
+        loginView.style.display = 'block';
+        window.clxIcons();
+      });
+
+      // 5. Xử lý gửi biểu mẫu Quên mật khẩu
+      var forgotForm = document.getElementById('forgot-form');
+      forgotForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        forgotNotice.style.display = 'flex';
+        window.clxIcons();
+      });
+
+      // 6. Xử lý Đăng nhập: Chuyển về dashboard.html
+      var loginForm = document.getElementById('login-form');
+      var loginNotice = document.getElementById('login-notice');
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var u = document.getElementById('username').value.trim();
+        var p = document.getElementById('password').value.trim();
+
+        if (!u || !p) {
+          loginNotice.style.display = 'flex';
+          window.clxIcons();
+          return;
+        }
+
+        // Chuyển hướng về dashboard.html theo yêu cầu
+        window.location.href = 'dashboard.html';
+      });
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>
