@@ -44,10 +44,10 @@
 
 [data-theme='light'] {
   color-scheme: light;
-  --bg: #f7f7f5;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f0f1ee;
-  --surface-3: #e4e5e1;
+  --surface-2: #f4f4f5;
+  --surface-3: #e7e7e9;
   --line: rgba(31, 35, 40, 0.12);
   --line-strong: rgba(31, 35, 40, 0.26);
 
