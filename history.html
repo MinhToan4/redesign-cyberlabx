@@ -6,7 +6,7 @@
   <title>Lịch sử nộp bài · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
@@ -22,69 +22,64 @@
     }
     .history-toolbar .search {
       flex: 1;
-      min-width: 260px;
+      min-width: 240px;
     }
     .history-toolbar .filters {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
+
+    /* Bảng sổ cái: cột ID căn lề trái trước vạch kẻ sổ cái */
     .history-tbl {
-      --cols: 84px 160px minmax(0, 1.4fr) minmax(0, 1fr) 76px 84px;
+      --cols: 64px 148px minmax(0, 1.4fr) minmax(0, 1fr) 60px 76px;
     }
-    .legend-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      divide-x: 1px solid var(--line);
+    .history-tbl.ledger .tbl-row::before {
+      left: 92px;
     }
-    .legend-item {
+    .history-tbl .no {
+      font-size: 12px;
+      padding-right: 0;
+      text-align: center;
+    }
+    .history-tbl .col-time {
+      font-size: 12.5px;
+    }
+
+    /* Chú giải mã kết quả gọn: một hàng chữ nhỏ */
+    .verdict-legend-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      gap: 16px;
+      margin-top: 12px;
+      padding: 0 4px;
+      font-size: 12px;
+      color: var(--text-3);
     }
-    .legend-item + .legend-item {
-      border-left: 1px solid var(--line);
-    }
-    .legend-name {
+    .verdict-legend-row .legend-title {
       font-weight: 500;
-      font-size: 13px;
+      color: var(--text-2);
     }
-    @media (max-width: 990px) {
-      .legend-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .legend-item:nth-child(2n+1) {
-        border-left: 0;
-      }
-      .legend-item:nth-child(n+3) {
-        border-top: 1px solid var(--line);
-      }
+    .verdict-legend-row .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    @media (max-width: 768px) {
+
+    .col-mobile-sub {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
       .history-tbl {
-        --cols: 80px 140px minmax(0, 1fr) 80px;
+        --cols: 64px 130px minmax(0, 1fr) 56px 72px;
       }
       .col-course {
         display: none;
       }
-      .col-score {
-        display: none;
-      }
     }
     @media (max-width: 640px) {
-      .section-head {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
-      }
-    }
-    @media (max-width: 540px) {
-      html, body, .app, .main, .topbar {
-        max-width: 390px;
-      }
-    }
-    @media (max-width: 560px) {
       .history-toolbar {
         flex-direction: column;
         align-items: stretch;
@@ -98,40 +93,38 @@
       .history-toolbar .filters .select {
         flex: 1;
       }
+    }
+    @media (max-width: 560px) {
       .history-tbl {
-        --cols: minmax(0, 1fr) 80px;
+        --cols: 48px minmax(0, 1fr) 64px;
+        font-size: 13px;
+      }
+      .history-tbl .tbl-row {
+        padding: 10px 14px;
+        min-height: 48px;
+        gap: 12px;
+      }
+      .history-tbl.ledger .tbl-row::before {
+        left: 68px;
       }
       .history-tbl .tbl-head {
         display: none;
       }
-      .history-tbl .tbl-row {
-        padding: 12px 16px;
-        min-height: unset;
-        gap: 12px;
-      }
-      .col-id, .col-time {
+      .col-time, .col-course, .col-score {
         display: none;
-      }
-      .col-mobile-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        min-width: 0;
       }
       .col-mobile-sub {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 6px;
-        font-size: 12px;
+        gap: 4px;
+        font-size: 11.5px;
         color: var(--text-3);
+        margin-top: 2px;
       }
-      .legend-grid {
-        grid-template-columns: 1fr;
-      }
-      .legend-item + .legend-item {
-        border-left: 0;
-        border-top: 1px solid var(--line);
+      .verdict-legend-row {
+        gap: 10px;
+        font-size: 11.5px;
       }
     }
   </style>
@@ -166,10 +159,10 @@
         </div>
 
         <div class="card" id="table-card">
-          <div class="tbl history-tbl" role="table" aria-label="Danh sách bài đã nộp">
+          <div class="tbl ledger history-tbl" role="table" aria-label="Nhật ký bài nộp">
             <div role="rowgroup">
               <div class="tbl-row tbl-head" role="row">
-                <span role="columnheader" class="col-id">ID</span>
+                <span role="columnheader" class="no col-id">ID</span>
                 <span role="columnheader" class="col-time">Thời gian</span>
                 <span role="columnheader">Bài tập</span>
                 <span role="columnheader" class="col-course">Môn học</span>
@@ -179,20 +172,17 @@
             </div>
             <div id="table-body" role="rowgroup"></div>
           </div>
-          <div class="pager" id="pager">
-            <span class="tnum" id="pager-info"></span>
-            <div class="pages" id="pager-pages"></div>
-          </div>
+          <div class="pager-host" id="pager"></div>
         </div>
-      </section>
 
-      <section>
-        <div class="section-head">
-          <h2>Chú giải mã kết quả</h2>
-          <span class="meta">Quy ước phân loại bài nộp tự động</span>
-        </div>
-        <div class="card">
-          <div class="legend-grid" id="legend-list"></div>
+        <!-- Chú giải mã kết quả gọn: một hàng chữ nhỏ, không cả khối -->
+        <div class="verdict-legend-row" aria-label="Chú giải mã kết quả">
+          <span class="legend-title">Chú giải:</span>
+          <span class="legend-item"><span class="verdict v-AC">AC</span> Kết quả đúng</span>
+          <span class="legend-item"><span class="verdict v-WA">WA</span> Kết quả sai</span>
+          <span class="legend-item"><span class="verdict v-WF">WF</span> Sai định dạng</span>
+          <span class="legend-item"><span class="verdict v-WFN">WFN</span> Sai tên tệp</span>
+          <span class="legend-item"><span class="verdict v-CPY">CPY</span> Sao chép</span>
         </div>
       </section>
     </div>
@@ -204,15 +194,14 @@
   <script>
     (function () {
       var D = window.CLX;
+      var U = window.CLXUI;
+      var esc = U.esc;
       var rawHistory = D.history || [];
-      var verdicts = D.verdicts || [];
-      var PAGE_SIZE = 20;
-      var curPage = 1;
       var searchQ = '';
       var curCourse = '';
       var curVerdict = '';
 
-      // Populate courses
+      // Khởi tạo danh sách môn học cho bộ lọc
       var courseSelect = document.getElementById('filter-course');
       var courses = [];
       rawHistory.forEach(function (h) {
@@ -227,19 +216,20 @@
         courseSelect.appendChild(opt);
       });
 
-      // Render legend
-      var legendContainer = document.getElementById('legend-list');
-      legendContainer.innerHTML = verdicts.map(function (v) {
-        return '<div class="legend-item">' +
-          '<span class="verdict v-' + v.code + '">' + v.code + '</span>' +
-          '<div style="min-width:0">' +
-            '<div class="legend-name trunc">' + v.label + '</div>' +
-            '<div class="faint trunc" style="font-size:12px">' + v.desc + '</div>' +
-          '</div>' +
-        '</div>';
-      }).join('');
+      var state = { rows: rawHistory, page: 1, size: 20 };
+      var pg = CLXUI.pager(document.getElementById('pager'), {
+        total: state.rows.length,
+        page: 1,
+        size: 20,
+        sizes: [10, 20, 40],
+        onChange: function (page, size) {
+          state.page = page;
+          state.size = size;
+          draw();
+        }
+      });
 
-      function getFiltered() {
+      function applyFilters() {
         return rawHistory.filter(function (item) {
           if (curCourse && item.course !== curCourse) return false;
           if (curVerdict && item.status !== curVerdict) return false;
@@ -254,39 +244,39 @@
         });
       }
 
-      function render() {
-        var filtered = getFiltered();
-        var total = filtered.length;
-        var totalPages = Math.ceil(total / PAGE_SIZE) || 1;
-        if (curPage > totalPages) curPage = 1;
+      function onFilterChange() {
+        state.rows = applyFilters();
+        state.page = 1;
+        pg.set({ total: state.rows.length, page: 1 });
+        draw();
+      }
 
-        var start = (curPage - 1) * PAGE_SIZE;
-        var end = Math.min(start + PAGE_SIZE, total);
-        var pageRows = filtered.slice(start, end);
+      function draw() {
+        var total = state.rows.length;
 
-        // Update count
+        // Cập nhật số lượng
         var countEl = document.getElementById('history-count');
-        if (filtered.length === rawHistory.length) {
+        if (total === rawHistory.length) {
           countEl.textContent = total + ' lượt nộp';
         } else {
           countEl.textContent = 'Khớp ' + total + ' / ' + rawHistory.length + ' lượt nộp';
         }
 
         var tableBody = document.getElementById('table-body');
-        var pagerEl = document.getElementById('pager');
 
+        // Trạng thái rỗng khi lọc ra 0 kết quả
         if (total === 0) {
-          tableBody.innerHTML = '<div class="empty" style="padding:32px 16px;text-align:center">' +
+          tableBody.innerHTML = '<div class="empty">' +
             '<div>Không tìm thấy lượt nộp nào phù hợp với bộ lọc.</div>' +
             '<div class="faint" style="font-size:13px;margin-top:4px">Thử đổi từ khóa hoặc xóa bộ lọc để xem lại danh sách.</div>' +
-            '<div style="margin-top:12px">' +
+            '<div style="margin-top:14px">' +
               '<button type="button" class="btn btn-sm" id="btn-clear-filters">' +
                 '<i data-lucide="rotate-ccw"></i>' +
                 '<span>Xóa bộ lọc</span>' +
               '</button>' +
             '</div>' +
           '</div>';
-          pagerEl.style.display = 'none';
+
           var clearBtn = document.getElementById('btn-clear-filters');
           if (clearBtn) {
             clearBtn.addEventListener('click', function () {
@@ -296,115 +286,54 @@
               document.getElementById('search-input').value = '';
               document.getElementById('filter-course').value = '';
               document.getElementById('filter-verdict').value = '';
-              curPage = 1;
-              render();
+              onFilterChange();
             });
           }
           window.clxIcons();
           return;
         }
 
-        pagerEl.style.display = 'flex';
-        tableBody.innerHTML = pageRows.map(function (row) {
+        var slice = CLXUI.paginate(state.rows, state.page, state.size);
+        tableBody.innerHTML = slice.map(function (row) {
           return '<div class="tbl-row" role="row">' +
-            '<span class="mono tnum col-id faint" role="cell">' + row.id + '</span>' +
-            '<span class="mono faint tnum col-time" role="cell" style="font-size:12.5px">' + row.time + '</span>' +
-            '<div class="col-mobile-meta" role="cell">' +
-              '<a class="link trunc" style="font-weight:500;color:var(--text)" href="assignments.html">' + row.title + '</a>' +
-              '<div class="col-mobile-sub" style="display:none">' +
-                '<span class="mono">' + row.id + '</span>' +
+            '<span class="no col-id tnum" role="cell">' + esc(row.id) + '</span>' +
+            '<span class="mono faint tnum col-time" role="cell">' + esc(row.time) + '</span>' +
+            '<div class="col-main trunc" role="cell">' +
+              '<a class="link trunc" style="color:var(--text);font-weight:500;display:block" href="assignments.html">' + esc(row.title) + '</a>' +
+              '<div class="col-mobile-sub">' +
+                '<span class="trunc">' + esc(row.course) + '</span>' +
                 '<span>·</span>' +
-                '<span class="trunc">' + row.course + '</span>' +
+                '<span class="mono tnum">' + esc(row.time.slice(5)) + '</span>' +
                 '<span>·</span>' +
-                '<span class="mono tnum">' + row.score + '</span>' +
+                '<span class="mono tnum">' + esc(row.score || '—') + '</span>' +
               '</div>' +
             '</div>' +
-            '<span class="dim trunc col-course" role="cell">' + row.course + '</span>' +
-            '<span class="mono faint tnum col-score num" role="cell">' + (row.score || '—') + '</span>' +
-            '<span class="num" role="cell"><span class="verdict v-' + row.status + '">' + row.status + '</span></span>' +
+            '<span class="dim trunc col-course" role="cell">' + esc(row.course) + '</span>' +
+            '<span class="mono faint tnum col-score num" role="cell">' + esc(row.score || '—') + '</span>' +
+            '<span class="num" role="cell">' + U.verdict(row.status) + '</span>' +
           '</div>';
         }).join('');
-
-        // Mobile sub check
-        var mediaMobile = window.matchMedia('(max-width: 560px)').matches;
-        if (mediaMobile) {
-          tableBody.querySelectorAll('.col-mobile-sub').forEach(function (el) {
-            el.style.display = 'flex';
-          });
-        }
-
-        // Render Pager
-        var pagerInfo = document.getElementById('pager-info');
-        pagerInfo.textContent = (start + 1) + '–' + end + ' / ' + total;
-
-        var pagerPages = document.getElementById('pager-pages');
-        var btns = [];
-
-        // Prev btn
-        btns.push('<button ' + (curPage <= 1 ? 'disabled' : '') + ' id="btn-prev" aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>');
-
-        for (var p = 1; p <= totalPages; p++) {
-          btns.push('<button data-page="' + p + '"' + (p === curPage ? ' aria-current="page"' : '') + '>' + p + '</button>');
-        }
-
-        // Next btn
-        btns.push('<button ' + (curPage >= totalPages ? 'disabled' : '') + ' id="btn-next" aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>');
-
-        pagerPages.innerHTML = btns.join('');
-
-        // Attach pagination events
-        var prevBtn = document.getElementById('btn-prev');
-        if (prevBtn) {
-          prevBtn.addEventListener('click', function () {
-            if (curPage > 1) { curPage--; render(); }
-          });
-        }
-        var nextBtn = document.getElementById('btn-next');
-        if (nextBtn) {
-          nextBtn.addEventListener('click', function () {
-            if (curPage < totalPages) { curPage++; render(); }
-          });
-        }
-        pagerPages.querySelectorAll('button[data-page]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var p = parseInt(this.getAttribute('data-page'), 10);
-            if (p && p !== curPage) {
-              curPage = p;
-              render();
-            }
-          });
-        });
 
         window.clxIcons();
       }
 
-      // Event listeners
+      // Lắng nghe sự kiện tìm kiếm & lọc
       document.getElementById('search-input').addEventListener('input', function (e) {
         searchQ = e.target.value.trim();
-        curPage = 1;
-        render();
+        onFilterChange();
       });
 
       document.getElementById('filter-course').addEventListener('change', function (e) {
         curCourse = e.target.value;
-        curPage = 1;
-        render();
+        onFilterChange();
       });
 
       document.getElementById('filter-verdict').addEventListener('change', function (e) {
         curVerdict = e.target.value;
-        curPage = 1;
-        render();
+        onFilterChange();
       });
 
-      window.addEventListener('resize', function () {
-        var mediaMobile = window.matchMedia('(max-width: 560px)').matches;
-        document.querySelectorAll('.col-mobile-sub').forEach(function (el) {
-          el.style.display = mediaMobile ? 'flex' : 'none';
-        });
-      });
-
-      render();
+      draw();
     })();
   </script>
 </body>

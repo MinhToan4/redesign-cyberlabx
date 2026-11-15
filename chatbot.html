@@ -6,7 +6,7 @@
   <title>ChatBot · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
@@ -16,9 +16,10 @@
     .chat-container {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - var(--topbar-h) - 56px);
+      height: calc(100vh - var(--topbar-h) - 48px);
       min-height: 520px;
       max-height: 860px;
+      overflow: hidden;
     }
     .chat-body {
       flex: 1;
@@ -41,7 +42,7 @@
     .msg-avatar {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
+      border-radius: var(--r-control);
       display: grid;
       place-items: center;
       background: var(--surface-2);
@@ -60,6 +61,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
     .chat-msg.user .msg-content {
       align-items: flex-end;
@@ -68,7 +70,8 @@
       padding: 12px 16px;
       font-size: 14px;
       line-height: 1.55;
-      white-space: pre-line;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
     .chat-msg.bot .msg-bubble {
       background: var(--surface-2);
@@ -101,26 +104,12 @@
       display: none;
     }
     .suggestion-btn {
-      display: inline-flex;
-      align-items: center;
+      height: 32px;
       min-height: 32px;
-      padding: 0 14px;
-      border: 1px solid var(--line-strong);
-      border-radius: 16px;
-      background: var(--surface);
-      color: var(--text-2);
+      padding: 0 12px;
       font-size: 13px;
-      font-weight: 500;
+      border-radius: var(--r-control);
       white-space: nowrap;
-      transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-    }
-    .suggestion-btn:hover {
-      background: var(--mute-soft);
-      color: var(--text);
-      border-color: var(--accent);
-    }
-    dialog::backdrop {
-      background: var(--scrim);
     }
     .chat-footer {
       padding: 16px 24px;
@@ -134,7 +123,7 @@
     }
     @media (max-width: 640px) {
       .chat-container {
-        height: calc(100vh - var(--topbar-h) - 32px);
+        height: calc(100vh - var(--topbar-h) - 24px);
       }
       .chat-body {
         padding: 16px;
@@ -156,51 +145,37 @@
     <div class="card chat-container" aria-label="Khung trò chuyện ChatBot">
       <!-- Đầu khung Chat -->
       <div class="card-head">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span class="msg-avatar" style="width:36px;height:36px">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <span class="msg-avatar" style="width:34px;height:34px">
             <i data-lucide="message-square"></i>
           </span>
-          <div>
-            <h2 style="font-size:15px;font-weight:600">ChatBot CyberLabX</h2>
+          <div style="min-width:0">
+            <h2 style="font-size:14px;font-weight:600">ChatBot CyberLabX</h2>
             <div class="faint" style="font-size:12px;display:flex;align-items:center;gap:6px;margin-top:2px">
-              <span class="dot" style="background:var(--ok)"></span>
-              <span>Đang hoạt động · Trợ lý giải đáp phòng lab 24/7</span>
+              <span class="dot" style="background:var(--ok);flex:none"></span>
+              <span class="trunc">Trực tuyến · Trợ lý phòng lab</span>
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-chat" title="Đặt lại cuộc trò chuyện">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-chat" title="Đặt lại cuộc trò chuyện" style="flex:none">
           <i data-lucide="rotate-ccw"></i>
-          <span class="trunc">Bắt đầu lại</span>
+          <span>Bắt đầu lại</span>
         </button>
       </div>
 
-      <!-- Hộp thoại xác nhận bắt đầu lại -->
-      <dialog id="confirm-reset-dialog" class="card" style="border:1px solid var(--line-strong);border-radius:var(--r-card);max-width:420px;padding:24px;background:var(--surface);color:var(--text);margin:auto">
-        <h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Bắt đầu lại cuộc trò chuyện?</h3>
-        <div class="faint" style="font-size:13px;line-height:1.5;margin-bottom:20px">
-          Toàn bộ lịch sử trao đổi hiện tại sẽ được làm mới. Bạn có chắc chắn muốn bắt đầu lại?
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:8px">
-          <button type="button" class="btn btn-sm" id="btn-cancel-reset">Hủy</button>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-reset">Đặt lại</button>
-        </div>
-      </dialog>
+      <!-- Danh sách tin nhắn (an toàn qua textContent, không câu chào đóng khung sẵn) -->
+      <div class="chat-body" id="chat-messages" role="log" aria-live="polite"></div>
 
-      <!-- Danh sách tin nhắn -->
-      <div class="chat-body" id="chat-messages" role="log" aria-live="polite">
-        <!-- Tin nhắn được chèn bằng JS -->
-      </div>
-
-      <!-- Dải câu hỏi gợi ý -->
+      <!-- Dải câu hỏi gợi ý là các nút 32px -->
       <div class="suggestions-strip" aria-label="Gợi ý câu hỏi thường gặp">
         <span class="faint" style="font-size:12px;white-space:nowrap">Gợi ý:</span>
-        <button type="button" class="suggestion-btn" data-query="Lỗi WFN là gì và xử lý thế nào?">Lỗi WFN là gì?</button>
-        <button type="button" class="suggestion-btn" data-query="Quy trình xuất và nộp tệp .lab như thế nào?">Cách nộp bài .lab?</button>
-        <button type="button" class="suggestion-btn" data-query="Không kết nối được máy ảo Labtainer thì làm sao?">Lỗi kết nối Labtainer</button>
-        <button type="button" class="suggestion-btn" data-query="Các bài tập có hạn nộp trong tuần này?">Hạn nộp tuần này</button>
+        <button type="button" class="btn btn-sm suggestion-btn" data-query="Lỗi WFN là gì và xử lý thế nào?">Lỗi WFN là gì?</button>
+        <button type="button" class="btn btn-sm suggestion-btn" data-query="Quy trình xuất và nộp tệp .lab như thế nào?">Cách nộp bài .lab?</button>
+        <button type="button" class="btn btn-sm suggestion-btn" data-query="Không kết nối được máy ảo Labtainer thì làm sao?">Lỗi kết nối máy ảo?</button>
+        <button type="button" class="btn btn-sm suggestion-btn" data-query="Các bài tập có hạn nộp trong tuần này?">Hạn nộp tuần này</button>
       </div>
 
-      <!-- Khung soạn tin nhắn -->
+      <!-- Khung soạn tin nhắn: nút Gửi là nút chính duy nhất -->
       <div class="chat-footer">
         <form id="chat-form" class="chat-input-row">
           <input
@@ -217,12 +192,23 @@
             <span>Gửi</span>
           </button>
         </form>
-        <div class="faint" style="font-size:11.5px;margin-top:6px;text-align:center">
-          Trợ lý tự động hỗ trợ quy trình làm lab và quy chế thực hành an toàn thông tin.
-        </div>
       </div>
     </div>
   </main>
+
+  <!-- Hộp thoại xác nhận bắt đầu lại cuộc trò chuyện (CLXUI.modal) -->
+  <div class="dlg-scrim" id="confirm-reset-dialog" hidden>
+    <div class="card card-pad" role="dialog" aria-modal="true" aria-labelledby="reset-dialog-title" style="width:min(440px,calc(100vw - 32px))">
+      <h2 id="reset-dialog-title" style="font-size:15px;font-weight:600">Bắt đầu lại cuộc trò chuyện?</h2>
+      <div class="faint" style="font-size:13px;line-height:1.5;margin:8px 0 20px">
+        Toàn bộ nội dung trao đổi trong phiên này sẽ được khôi phục về trạng thái ban đầu. Bạn có chắc chắn muốn bắt đầu lại?
+      </div>
+      <div class="row-gap" style="justify-content:flex-end">
+        <button type="button" class="btn btn-sm" data-close id="btn-cancel-reset">Hủy</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-reset">Xác nhận đặt lại</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <script src="assets/data.js"></script>
@@ -239,12 +225,14 @@
       var cancelResetBtn = document.getElementById('btn-cancel-reset');
       var confirmResetBtn = document.getElementById('btn-confirm-reset');
 
-      // Khởi tạo danh sách tin nhắn từ CLX.chat: ánh xạ from=me thành user, bỏ câu chào và chỉ hiện thời gian nếu có nguồn dữ liệu
+      // Khởi tạo modal chuẩn của CyberLabX
+      var resetModal = CLXUI.modal(resetDialog, { initialFocus: '#btn-cancel-reset' });
+      var botReplyTimer = null;
+      var sessionGen = 0;
+
+      // Khởi tạo danh sách tin nhắn từ CLX.chat
       function initChatLog() {
-        return (D.chat || []).filter(function (m) {
-          // Bỏ câu chào theo quy tắc mục 10
-          return !/^Chào\b/i.test(m.text.trim());
-        }).map(function (m) {
+        return (D.chat || []).map(function (m) {
           return {
             from: m.from === 'me' ? 'user' : m.from,
             text: m.text,
@@ -255,6 +243,7 @@
 
       var chatLog = initChatLog();
 
+      // Hiển thị tin nhắn: TUYỆT ĐỐI dùng textContent để chống chèn HTML / XSS
       function renderMessages() {
         msgContainer.innerHTML = '';
         chatLog.forEach(function (msg) {
@@ -275,6 +264,7 @@
 
           var bubble = document.createElement('div');
           bubble.className = 'msg-bubble';
+          // Sử dụng textContent theo đúng quy tắc an toàn bảo mật
           bubble.textContent = msg.text;
           content.appendChild(bubble);
 
@@ -297,19 +287,29 @@
       function getBotAnswer(query) {
         var q = query.toLowerCase();
         if (q.indexOf('wfn') !== -1 || q.indexOf('tên tệp') !== -1 || q.indexOf('tên file') !== -1) {
-          return 'Lỗi WFN (Wrong File Name) xảy ra khi tên tệp nộp không đúng định dạng quy định. Lưu ý: Không đổi tên tệp .lab sau khi xuất từ máy ảo. Hãy nộp tệp nguyên bản do lệnh kết thúc lab sinh ra.';
+          return 'Lỗi WFN (Wrong File Name) xảy ra khi tên tệp nộp không đúng quy định. Không đổi tên tệp .lab sinh ra sau khi chạy lệnh kết thúc lab (stoplab). Nộp lại đúng tệp gốc do máy ảo sinh ra.';
         }
         if (q.indexOf('nộp') !== -1 || q.indexOf('cách nộp') !== -1 || q.indexOf('.lab') !== -1) {
-          return 'Quy trình nộp bài gồm 4 bước:\n1. Mở bài lab trong máy ảo Labtainer.\n2. Hoàn thành toàn bộ yêu cầu đề bài.\n3. Chạy lệnh stoplab để đóng lab và sinh tệp .lab.\n4. Vào mục Bài tập trên CyberLabX, chọn bài tương ứng và tải tệp .lab lên để chấm tự động.';
+          return 'Quy trình nộp bài gồm 4 bước:\n1. Mở bài lab trong máy ảo Labtainer.\n2. Hoàn thành tuần tự các bước trong đề bài.\n3. Chạy lệnh stoplab để đóng bài và sinh tệp .lab.\n4. Vào mục Bài tập, mở bài tương ứng và nộp tệp .lab để chấm tự động.';
         }
-        if (q.indexOf('kết nối') !== -1 || q.indexOf('máy ảo') !== -1 || q.indexOf('labtainer') !== -1) {
-          return 'Nếu gặp lỗi kết nối máy ảo: Kiểm tra lại mạng nội bộ ảo giữa máy chủ và Labtainer, khởi động lại dịch vụ Docker trên máy cá nhân, hoặc tham khảo mục Hướng dẫn cài đặt phòng lab.';
+        if (q.indexOf('kết nối') !== -1 || q.indexOf('máy ảo') !== -1 || q.indexOf('labtainer') !== -1 || q.indexOf('docker') !== -1) {
+          return 'Khi gặp lỗi kết nối máy ảo: Kiểm tra dịch vụ Docker trên máy, đảm bảo mạng ảo giữa máy chủ và container đang thông suốt. Nếu vẫn không được, tham khảo mục Hướng dẫn phòng lab.';
         }
         if (q.indexOf('hạn') !== -1 || q.indexOf('tuần') !== -1 || q.indexOf('deadline') !== -1) {
-          var due = (D.inProgress || []).map(function (p) { return '• ' + p.title + ' (Hạn ' + p.deadline + ')'; }).join('\n');
-          return 'Các bài tập sắp đến hạn của bạn:\n' + due;
+          var pending = [];
+          (D.classes || []).forEach(function (c) {
+            (c.assignments || []).forEach(function (a) {
+              if (a.status !== 'AC') {
+                pending.push('• ' + a.title + ' (' + c.course + ') — Hạn ' + a.deadline);
+              }
+            });
+          });
+          if (pending.length) {
+            return 'Các bài tập chưa đạt AC sắp đến hạn của bạn:\n' + pending.slice(0, 4).join('\n');
+          }
+          return 'Hiện tại bạn không có bài tập nào sắp đến hạn cần xử lý.';
         }
-        return 'Hệ thống đã ghi nhận nội dung câu hỏi. Bạn có thể tham khảo mục Hướng dẫn hoặc liên hệ trợ giảng/giảng viên phụ trách để được hỗ trợ.';
+        return 'Hệ thống đã ghi nhận nội dung câu hỏi. Bạn có thể tham khảo mục Hướng dẫn hoặc liên hệ trợ giảng / giảng viên phụ trách học phần.';
       }
 
       function sendUserMessage(text) {
@@ -322,15 +322,22 @@
         });
         renderMessages();
 
-        // Bot phản hồi tự động sau một thoáng
-        setTimeout(function () {
+        // Codex-final mục 19: Hủy timeout cũ và ghi nhận phiên hội thoại
+        if (botReplyTimer) {
+          clearTimeout(botReplyTimer);
+          botReplyTimer = null;
+        }
+        var currentGen = sessionGen;
+        botReplyTimer = setTimeout(function () {
+          botReplyTimer = null;
+          if (currentGen !== sessionGen) return;
           var answer = getBotAnswer(clean);
           chatLog.push({
             from: 'bot',
             text: answer
           });
           renderMessages();
-        }, 350);
+        }, 300);
       }
 
       chatForm.addEventListener('submit', function (e) {
@@ -341,15 +348,7 @@
         sendUserMessage(val);
       });
 
-      // Nhấn Enter trong ô nhập
-      chatInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          chatForm.requestSubmit();
-        }
-      });
-
-      // Bấm vào gợi ý câu hỏi
+      // Bấm nút gợi ý câu hỏi (các nút 32px)
       document.querySelectorAll('.suggestion-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var q = btn.dataset.query;
@@ -357,28 +356,25 @@
         });
       });
 
-      // Đặt lại cuộc trò chuyện có xác nhận
+      // Bắt đầu lại có hộp xác nhận (dùng CLXUI.modal chuẩn)
       resetBtn.addEventListener('click', function () {
-        if (typeof resetDialog.showModal === 'function') {
-          resetDialog.showModal();
-        } else {
-          if (confirm('Bạn có chắc chắn muốn bắt đầu lại cuộc trò chuyện?')) {
-            chatLog = initChatLog();
-            renderMessages();
-          }
-        }
+        resetModal.open();
       });
 
       cancelResetBtn.addEventListener('click', function () {
-        resetDialog.close();
-        resetBtn.focus();
+        resetModal.close();
       });
 
       confirmResetBtn.addEventListener('click', function () {
+        // Hủy timer bot phản hồi đang chờ và tăng số phiên
+        if (botReplyTimer) {
+          clearTimeout(botReplyTimer);
+          botReplyTimer = null;
+        }
+        sessionGen++;
         chatLog = initChatLog();
         renderMessages();
-        resetDialog.close();
-        resetBtn.focus();
+        resetModal.close();
       });
 
       renderMessages();

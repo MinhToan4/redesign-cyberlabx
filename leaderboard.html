@@ -6,7 +6,7 @@
   <title>Bảng xếp hạng · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
@@ -28,63 +28,55 @@
       gap: 10px;
     }
 
-    /* Podium top 3 gọn */
-    .podium-grid {
+    /* Top 3 một hàng gọn: thẻ phẳng 3 cột ngang, không bục vinh danh to */
+    .top3-card {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+      overflow: hidden;
     }
-    .podium-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 18px 16px;
-      position: relative;
-    }
-    .podium-card.first {
-      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-      background: color-mix(in srgb, var(--accent-soft) 25%, var(--surface));
-    }
-    .podium-rank {
-      position: absolute;
-      top: 12px;
-      left: 14px;
-    }
-    .podium-avatar {
-      margin-top: 4px;
-      margin-bottom: 10px;
-    }
-    .podium-name {
-      font-weight: 500;
-      font-size: 14px;
-      margin-bottom: 2px;
-    }
-    .podium-meta {
-      font-size: 12px;
-      color: var(--text-3);
-      margin-bottom: 10px;
-    }
-    .podium-stats {
+    .top3-col {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      padding: 14px 18px;
+    }
+    .top3-col + .top3-col {
+      border-left: 1px solid var(--line);
+    }
+    .top3-col.is-first {
+      background: var(--surface-2);
+    }
+    .top3-stat {
+      text-align: right;
+      flex: none;
       font-size: 13px;
     }
-    .podium-stats b {
+    .top3-stat b {
+      display: block;
       font-weight: 500;
+      color: var(--text);
     }
 
-    /* Bảng */
+    /* Bảng sổ cái: cột thứ hạng .no */
     .board-tbl-class {
-      --cols: 56px 64px 34px minmax(110px, 1fr) minmax(140px, 1.2fr) minmax(120px, 1fr) 70px 70px;
+      --cols: 32px 60px 32px 96px minmax(130px, 1.2fr) minmax(120px, 1fr) 56px 56px;
     }
     .board-tbl-xp {
-      --cols: 56px 64px 34px minmax(140px, 1.5fr) 100px 90px;
+      --cols: 32px 60px 32px minmax(160px, 1.5fr) 96px 64px;
     }
-    .trend-up { color: var(--ok); font-size: 12px; }
-    .trend-down { color: var(--err); font-size: 12px; }
+    .board-tbl.ledger .tbl-row::before {
+      left: 60px;
+    }
+    .board-tbl .no {
+      padding-right: 0;
+      text-align: center;
+    }
+
+    .col-trend {
+      white-space: nowrap;
+    }
+    .trend-up { color: var(--ok); font-size: 12px; font-weight: 500; }
+    .trend-down { color: var(--err); font-size: 12px; font-weight: 500; }
     .trend-same { color: var(--text-3); font-size: 12px; }
 
     /* Thanh ghim thứ hạng của mình */
@@ -106,24 +98,22 @@
     }
 
     @media (max-width: 860px) {
+      .top3-card {
+        grid-template-columns: 1fr;
+      }
+      .top3-col + .top3-col {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
       .board-tbl-class {
-        --cols: 48px 56px 34px minmax(120px, 1fr) 60px 60px;
+        --cols: 32px 60px 32px minmax(120px, 1fr) 56px 56px;
       }
       .col-acc, .col-course {
         display: none;
       }
     }
-    @media (max-width: 540px) {
-      html, body, .app, .main, .topbar {
-        max-width: 390px;
-      }
-    }
+
     @media (max-width: 640px) {
-      .section-head {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
-      }
       .board-header {
         flex-direction: column;
         align-items: stretch;
@@ -145,58 +135,9 @@
       }
       .board-controls .select {
         width: 100% !important;
-        font-size: 13px;
-      }
-      .podium-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-      .podium-card {
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        text-align: left;
-        padding: 10px 12px;
-        gap: 10px;
-      }
-      .podium-card.first {
-        order: -1;
-      }
-      .podium-rank {
-        position: static;
-        flex: none;
-      }
-      .podium-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-        flex: 1;
-      }
-      .podium-avatar {
-        margin: 0;
-        width: 28px;
-        height: 28px;
-        font-size: 11px;
-      }
-      .podium-name {
-        font-size: 13px;
-        margin-bottom: 0;
-      }
-      .podium-meta {
-        font-size: 11.5px;
-        margin-bottom: 0;
-      }
-      .podium-stats {
-        flex: none;
-        font-size: 12.5px;
-        text-align: right;
-      }
-      .podium-stats .faint {
-        display: none;
       }
       .my-pinned-bar {
-        padding: 10px 12px;
+        padding: 10px 14px;
         flex-direction: column;
         align-items: stretch;
         gap: 6px;
@@ -207,23 +148,29 @@
       #my-pin-acc {
         display: none;
       }
-      .board-tbl-class, .board-tbl-xp {
-        font-size: 13px;
-        overflow-x: hidden;
-      }
-      .board-tbl-class .tbl-row, .board-tbl-xp .tbl-row {
-        padding: 0 12px;
-        min-height: 42px;
+    }
+
+    @media (max-width: 560px) {
+      .board-tbl .tbl-head {
+        display: none;
       }
       .board-tbl-class {
-        --cols: 32px 28px minmax(0, 1fr) 46px;
-        gap: 8px;
+        --cols: 28px 28px 28px minmax(0, 1fr) 52px;
+        font-size: 13px;
       }
       .board-tbl-xp {
-        --cols: 32px 28px minmax(0, 1fr) 68px;
+        --cols: 28px 28px 28px minmax(0, 1fr) 68px;
+        font-size: 13px;
+      }
+      .board-tbl-class .tbl-row, .board-tbl-xp .tbl-row {
+        padding: 0 14px;
+        min-height: 44px;
         gap: 8px;
       }
-      .col-trend, .col-acc, .col-course, .col-tried, .col-level {
+      .board-tbl.ledger .tbl-row::before {
+        left: 46px;
+      }
+      .col-tried, .col-level {
         display: none !important;
       }
     }
@@ -245,16 +192,14 @@
             <option value="CRY2010.01">Mật mã học ứng dụng (CRY2010.01)</option>
           </select>
         </div>
-        <div class="faint tnum" id="board-meta" style="font-size:13px">Xếp theo số bài làm đúng</div>
       </div>
 
-      <!-- Top 3 gọn gàng -->
-      <section id="podium-section">
+      <!-- Top 3: một hàng gọn, không bục vinh danh to -->
+      <section id="top3-section">
         <div class="section-head">
           <h2>Dẫn đầu</h2>
-          <span class="meta" id="top-meta">Top 3 sinh viên xuất sắc</span>
         </div>
-        <div class="podium-grid" id="podium-container"></div>
+        <div class="card top3-card" id="top3-container"></div>
       </section>
 
       <!-- Bảng xếp hạng chi tiết -->
@@ -264,7 +209,7 @@
           <span class="meta tnum" id="table-meta"></span>
         </div>
 
-        <div class="card">
+        <div class="card" id="table-card">
           <!-- Thanh ghim vị trí của bạn -->
           <div class="my-pinned-bar" id="my-pinned-bar">
             <div class="left">
@@ -276,23 +221,19 @@
             <div class="row-gap faint tnum">
               <span id="my-pin-stats">30 đúng · 36 đã thử</span>
               <span>·</span>
-              <button class="link" id="btn-jump-me" style="border:0;background:none;padding:6px 8px;margin:-6px -8px;font-size:13px;min-height:32px;display:inline-flex;align-items:center;cursor:pointer">Đến dòng của tôi</button>
+              <button class="link" id="btn-jump-me" style="border:0;background:none;padding:4px 6px;font-size:13px;min-height:32px;display:inline-flex;align-items:center;cursor:pointer">Đến dòng của tôi</button>
             </div>
           </div>
 
-          <!-- Bảng CSS Grid -->
-          <div class="tbl board-tbl-class" id="board-table" role="table" aria-label="Bảng xếp hạng sinh viên">
+          <!-- Bảng sổ cái CSS Grid -->
+          <div class="tbl ledger board-tbl board-tbl-class" id="board-table" role="table" aria-label="Bảng xếp hạng sinh viên">
             <div role="rowgroup">
               <div class="tbl-row tbl-head" id="table-head" role="row"></div>
             </div>
             <div id="table-rows" role="rowgroup"></div>
           </div>
 
-          <!-- Phân trang -->
-          <div class="pager" id="board-pager">
-            <span class="tnum" id="board-pager-info"></span>
-            <div class="pages" id="board-pager-pages"></div>
-          </div>
+          <div class="pager-host" id="board-pager"></div>
         </div>
       </section>
     </div>
@@ -304,15 +245,14 @@
   <script>
     (function () {
       var D = window.CLX;
-      var curMode = 'class'; // 'class' or 'xp'
+      var U = window.CLXUI;
+      var esc = U.esc;
+      var curMode = 'class'; // 'class' hoặc 'xp'
       var curClass = 'INT1449.01';
-      var PAGE_SIZE = 10;
-      var curPage = 1;
 
       var tabClass = document.getElementById('tab-class');
       var tabXp = document.getElementById('tab-xp');
       var selectClass = document.getElementById('select-class');
-      var boardMeta = document.getElementById('board-meta');
 
       var classNames = {
         'INT1449.01': 'An toàn & Bảo mật HTTT',
@@ -320,10 +260,23 @@
         'CRY2010.01': 'Mật mã học ứng dụng'
       };
 
+      var state = { rows: [], page: 1, size: 20 };
+      var pg = CLXUI.pager(document.getElementById('board-pager'), {
+        total: 0,
+        page: 1,
+        size: 20,
+        sizes: [10, 20, 30],
+        onChange: function (page, size) {
+          state.page = page;
+          state.size = size;
+          drawTableOnly();
+        }
+      });
+
       function getStudentList() {
         var list = (D.leaderboard || []).slice();
         if (curMode === 'xp') {
-          // Sort by XP descending
+          // Xếp theo XP giảm dần
           list.sort(function (a, b) { return b.xp - a.xp; });
           list = list.map(function (item, idx) {
             var copy = Object.assign({}, item);
@@ -332,7 +285,7 @@
             return copy;
           });
         } else {
-          // Lọc bản ghi theo classCode gốc, không tạo số liệu giả
+          // Lọc bản ghi theo classCode thật, không tự bịa số
           list = list.filter(function (item) {
             return item.classCode === curClass;
           });
@@ -358,22 +311,14 @@
         return '<span class="trend-same" title="Không đổi bậc">—</span>';
       }
 
-      function renderPodium(top3) {
-        var container = document.getElementById('podium-container');
-        // Arrange classic order: #2, #1, #3 on desktop if 3 exist
-        var ordered = [];
-        if (top3.length >= 3) {
-          ordered = [top3[1], top3[0], top3[2]];
-        } else {
-          ordered = top3;
-        }
-
-        container.innerHTML = ordered.map(function (p) {
+      function renderTop3(top3) {
+        var container = document.getElementById('top3-container');
+        container.innerHTML = top3.map(function (p) {
           if (!p) return '';
           var isFirst = p.rank === 1;
           var statHtml = curMode === 'xp'
-            ? '<b class="tnum">' + p.xp.toLocaleString('en-US') + ' XP</b><span class="faint">· Lv.' + (p.level || 42) + '</span>'
-            : '<b class="tnum">' + p.correct + ' đúng</b><span class="faint">· ' + p.tried + ' đã thử</span>';
+            ? '<b>' + p.xp.toLocaleString('en-US') + ' XP</b><span class="faint">Lv.' + (p.level || 42) + '</span>'
+            : '<b>' + p.correct + ' đúng</b><span class="faint">/' + p.tried + ' thử</span>';
 
           var rankChip = isFirst
             ? '<span class="chip chip-accent tnum">#1</span>'
@@ -381,54 +326,91 @@
 
           var meChip = p.me ? '<span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px;margin-left:4px">Bạn</span>' : '';
 
-          return '<div class="card podium-card' + (isFirst ? ' first' : '') + '">' +
-            '<div class="podium-rank">' + rankChip + '</div>' +
-            '<div class="podium-info">' +
-              '<span class="avatar podium-avatar">' + p.initials + '</span>' +
-              '<div>' +
-                '<div class="podium-name trunc">' + p.name + meChip + '</div>' +
-                '<div class="podium-meta trunc">' + (curMode === 'xp' ? 'Toàn khóa' : p.account) + ' · ' + formatTrend(p.trend) + '</div>' +
+          return '<div class="top3-col' + (isFirst ? ' is-first' : '') + '">' +
+            '<div>' + rankChip + '</div>' +
+            '<span class="avatar avatar-sm">' + esc(p.initials) + '</span>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div class="trunc" style="font-weight:500;font-size:13.5px">' + esc(p.name) + meChip + '</div>' +
+              '<div class="faint trunc tnum" style="font-size:12px">' +
+                esc(curMode === 'xp' ? 'Toàn khóa' : p.account) + ' · ' + formatTrend(p.trend) +
               '</div>' +
             '</div>' +
-            '<div class="podium-stats tnum">' + statHtml + '</div>' +
+            '<div class="top3-stat tnum">' + statHtml + '</div>' +
           '</div>';
         }).join('');
       }
 
+      var top3Section = document.getElementById('top3-section');
+      var pinnedBar = document.getElementById('my-pinned-bar');
+      var tbl = document.getElementById('board-table');
+      var thead = document.getElementById('table-head');
+      var tbody = document.getElementById('table-rows');
+
+      function drawTableOnly() {
+        var total = state.rows.length;
+        var start = (state.page - 1) * state.size;
+        var end = Math.min(start + state.size, total);
+        var pageRows = CLXUI.paginate(state.rows, state.page, state.size);
+
+        tbody.innerHTML = pageRows.map(function (row) {
+          var meClass = row.me ? ' is-me' : '';
+          var meBadge = row.me ? '<span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px;margin-left:6px">Bạn</span>' : '';
+
+          if (curMode === 'xp') {
+            return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
+              '<span class="no tnum" role="cell">' + row.rank + '</span>' +
+              '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
+              '<span class="avatar avatar-sm" role="cell">' + esc(row.initials) + '</span>' +
+              '<div class="trunc" role="cell" style="font-weight:500">' + esc(row.name) + meBadge + '</div>' +
+              '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.xp.toLocaleString('en-US') + '</span>' +
+              '<span class="mono num tnum faint col-level" role="cell">Cấp ' + (row.level || 42) + '</span>' +
+            '</div>';
+          }
+
+          return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
+            '<span class="no tnum" role="cell">' + row.rank + '</span>' +
+            '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
+            '<span class="avatar avatar-sm" role="cell">' + esc(row.initials) + '</span>' +
+            '<span class="mono faint tnum col-acc trunc" role="cell">' + esc(row.account) + '</span>' +
+            '<div class="trunc" role="cell" style="font-weight:500">' + esc(row.name) + meBadge + '</div>' +
+            '<span class="dim col-course trunc" role="cell">' + esc(classNames[row.classCode] || row.classCode) + '</span>' +
+            '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.correct + '</span>' +
+            '<span class="mono num tnum faint col-tried" role="cell">' + row.tried + '</span>' +
+          '</div>';
+        }).join('');
+
+        document.getElementById('table-meta').textContent = (start + 1) + '–' + end + ' / ' + total + ' sinh viên';
+        window.clxIcons();
+      }
+
       function render() {
-        var list = getStudentList();
-        var total = list.length;
-        var totalPages = Math.ceil(total / PAGE_SIZE) || 1;
-        if (curPage > totalPages) curPage = 1;
+        var total = state.rows.length;
 
-        var podiumSection = document.getElementById('podium-section');
-        var pinnedBar = document.getElementById('my-pinned-bar');
-        var tbl = document.getElementById('board-table');
-        var thead = document.getElementById('table-head');
-        var tbody = document.getElementById('table-rows');
-        var pagerEl = document.getElementById('board-pager');
-
+        // Trạng thái rỗng khi lớp học phần chưa có dữ liệu thật (không tự bịa số)
         if (total === 0) {
-          if (podiumSection) podiumSection.style.display = 'none';
+          if (top3Section) top3Section.style.display = 'none';
           if (pinnedBar) pinnedBar.style.display = 'none';
           thead.style.display = 'none';
-          tbody.innerHTML = '<div class="empty" style="padding:36px 16px;text-align:center"><div>Chưa có dữ liệu xếp hạng cho lớp học phần này.</div><div class="faint" style="font-size:13px;margin-top:4px">Vui lòng chọn lớp học phần khác từ danh sách phía trên để xem bảng xếp hạng.</div></div>';
+          tbody.innerHTML = '<div class="empty">' +
+            '<div>Chưa có dữ liệu xếp hạng cho lớp học phần này.</div>' +
+            '<div class="faint" style="font-size:13px;margin-top:4px">' +
+              'Dữ liệu mẫu hiện chỉ có lớp INT1449.01 (An toàn &amp; Bảo mật HTTT). Vui lòng chọn lại lớp này để xem bảng xếp hạng.' +
+            '</div>' +
+          '</div>';
           document.getElementById('table-meta').textContent = '0 sinh viên';
-          if (pagerEl) pagerEl.style.display = 'none';
           window.clxIcons();
           return;
         }
 
-        if (podiumSection) podiumSection.style.display = 'block';
+        if (top3Section) top3Section.style.display = 'block';
         thead.style.display = 'grid';
-        if (pagerEl) pagerEl.style.display = 'flex';
 
-        // Top 3
-        var top3 = list.slice(0, 3);
-        renderPodium(top3);
+        // Render Top 3
+        var top3 = state.rows.slice(0, 3);
+        renderTop3(top3);
 
-        // Find current student 'me'
-        var myItem = list.filter(function (it) { return it.me; })[0];
+        // Sinh viên hiện tại (is-me)
+        var myItem = state.rows.filter(function (it) { return it.me; })[0];
         if (myItem) {
           pinnedBar.style.display = 'flex';
           document.getElementById('my-pin-rank').textContent = 'Hạng #' + myItem.rank;
@@ -441,21 +423,21 @@
           pinnedBar.style.display = 'none';
         }
 
-        // Table headers and classes
+        // Tiêu đề cột theo chế độ
         if (curMode === 'xp') {
-          tbl.className = 'tbl board-tbl-xp';
+          tbl.className = 'tbl ledger board-tbl board-tbl-xp';
           thead.innerHTML =
-            '<span role="columnheader">Hạng</span>' +
-            '<span role="columnheader" class="col-trend">Xu hướng</span>' +
+            '<span role="columnheader" class="no">#</span>' +
+            '<span role="columnheader" class="col-trend">Thay đổi</span>' +
             '<span role="columnheader"></span>' +
             '<span role="columnheader">Họ tên</span>' +
             '<span role="columnheader" class="num">XP</span>' +
             '<span role="columnheader" class="num col-level">Cấp</span>';
         } else {
-          tbl.className = 'tbl board-tbl-class';
+          tbl.className = 'tbl ledger board-tbl board-tbl-class';
           thead.innerHTML =
-            '<span role="columnheader">Hạng</span>' +
-            '<span role="columnheader" class="col-trend">Xu hướng</span>' +
+            '<span role="columnheader" class="no">#</span>' +
+            '<span role="columnheader" class="col-trend">Thay đổi</span>' +
             '<span role="columnheader"></span>' +
             '<span role="columnheader" class="col-acc">Tài khoản</span>' +
             '<span role="columnheader">Họ tên</span>' +
@@ -464,90 +446,24 @@
             '<span role="columnheader" class="num col-tried">Đã thử</span>';
         }
 
-        // Table Rows
-        var start = (curPage - 1) * PAGE_SIZE;
-        var end = Math.min(start + PAGE_SIZE, total);
-        var pageRows = list.slice(start, end);
-
-        tbody.innerHTML = pageRows.map(function (row) {
-          var meClass = row.me ? ' is-me' : '';
-          var meBadge = row.me ? '<span class="chip chip-accent" style="height:18px;font-size:11px;padding:0 6px;margin-left:6px">Bạn</span>' : '';
-
-          if (curMode === 'xp') {
-            return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
-              '<span class="mono tnum faint" role="cell">#' + row.rank + '</span>' +
-              '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
-              '<span class="avatar avatar-sm" role="cell">' + row.initials + '</span>' +
-              '<div class="trunc" role="cell" style="font-weight:500">' + row.name + meBadge + '</div>' +
-              '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.xp.toLocaleString('en-US') + '</span>' +
-              '<span class="mono num tnum faint col-level" role="cell">Cấp ' + (row.level || 42) + '</span>' +
-            '</div>';
-          }
-
-          return '<div class="tbl-row' + meClass + '" role="row" id="' + (row.me ? 'row-me' : '') + '">' +
-            '<span class="mono tnum faint" role="cell">#' + row.rank + '</span>' +
-            '<span class="col-trend" role="cell">' + formatTrend(row.trend) + '</span>' +
-            '<span class="avatar avatar-sm" role="cell">' + row.initials + '</span>' +
-            '<span class="mono faint tnum col-acc trunc" role="cell">' + row.account + '</span>' +
-            '<div class="trunc" role="cell" style="font-weight:500">' + row.name + meBadge + '</div>' +
-            '<span class="dim col-course trunc" role="cell">' + (classNames[row.classCode] || row.classCode) + '</span>' +
-            '<span class="mono num tnum" role="cell" style="font-weight:500">' + row.correct + '</span>' +
-            '<span class="mono num tnum faint col-tried" role="cell">' + row.tried + '</span>' +
-          '</div>';
-        }).join('');
-
-        // Table meta
-        document.getElementById('table-meta').textContent = 'Hiển thị ' + (start + 1) + '–' + end + ' / ' + total + ' sinh viên';
-
-        // Pager
-        var pagerInfo = document.getElementById('board-pager-info');
-        pagerInfo.textContent = (start + 1) + '–' + end + ' / ' + total;
-
-        var pagerPages = document.getElementById('board-pager-pages');
-        var btns = [];
-        btns.push('<button ' + (curPage <= 1 ? 'disabled' : '') + ' id="btn-board-prev" aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>');
-        for (var p = 1; p <= totalPages; p++) {
-          btns.push('<button data-page="' + p + '"' + (p === curPage ? ' aria-current="page"' : '') + '>' + p + '</button>');
-        }
-        btns.push('<button ' + (curPage >= totalPages ? 'disabled' : '') + ' id="btn-board-next" aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>');
-        pagerPages.innerHTML = btns.join('');
-
-        // Pager events
-        var prevBtn = document.getElementById('btn-board-prev');
-        if (prevBtn) {
-          prevBtn.addEventListener('click', function () {
-            if (curPage > 1) { curPage--; render(); }
-          });
-        }
-        var nextBtn = document.getElementById('btn-board-next');
-        if (nextBtn) {
-          nextBtn.addEventListener('click', function () {
-            if (curPage < totalPages) { curPage++; render(); }
-          });
-        }
-        pagerPages.querySelectorAll('button[data-page]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var p = parseInt(this.getAttribute('data-page'), 10);
-            if (p && p !== curPage) {
-              curPage = p;
-              render();
-            }
-          });
-        });
-
-        window.clxIcons();
+        drawTableOnly();
       }
 
-      // Mode switch
+      function updateData() {
+        state.rows = getStudentList();
+        state.page = 1;
+        pg.set({ total: state.rows.length, page: 1 });
+        render();
+      }
+
+      // Đổi chế độ xếp hạng
       tabClass.addEventListener('click', function () {
         if (curMode === 'class') return;
         curMode = 'class';
         tabClass.setAttribute('aria-pressed', 'true');
         tabXp.setAttribute('aria-pressed', 'false');
         selectClass.style.display = 'inline-block';
-        boardMeta.textContent = 'Xếp theo số bài làm đúng';
-        curPage = 1;
-        render();
+        updateData();
       });
 
       tabXp.addEventListener('click', function () {
@@ -556,28 +472,26 @@
         tabXp.setAttribute('aria-pressed', 'true');
         tabClass.setAttribute('aria-pressed', 'false');
         selectClass.style.display = 'none';
-        boardMeta.textContent = 'Xếp theo tổng điểm kinh nghiệm (XP) toàn khóa';
-        curPage = 1;
-        render();
+        updateData();
       });
 
+      // Đổi lớp học phần
       selectClass.addEventListener('change', function (e) {
         curClass = e.target.value;
-        curPage = 1;
-        render();
+        updateData();
       });
 
-      // Jump to my row
+      // Nhảy tới dòng của tôi
       document.getElementById('btn-jump-me').addEventListener('click', function () {
-        var list = getStudentList();
         var myIdx = -1;
-        for (var i = 0; i < list.length; i++) {
-          if (list[i].me) { myIdx = i; break; }
+        for (var i = 0; i < state.rows.length; i++) {
+          if (state.rows[i].me) { myIdx = i; break; }
         }
         if (myIdx >= 0) {
-          var targetPage = Math.floor(myIdx / PAGE_SIZE) + 1;
-          curPage = targetPage;
-          render();
+          var targetPage = Math.floor(myIdx / state.size) + 1;
+          state.page = targetPage;
+          pg.set({ page: targetPage });
+          drawTableOnly();
           var rowMe = document.getElementById('row-me');
           if (rowMe) {
             rowMe.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -585,7 +499,7 @@
         }
       });
 
-      render();
+      updateData();
     })();
   </script>
 </body>

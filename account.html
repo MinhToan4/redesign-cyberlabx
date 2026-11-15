@@ -6,37 +6,125 @@
   <title>Tài khoản của tôi · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
   <script src="assets/theme.js"></script>
   <style>
     /* Kiểu riêng trang Tài khoản */
-    .account-header { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .tabs { overflow-x: auto; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tabs button { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; }
-    .badge-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
-    .badge-row + .badge-row { border-top: 1px solid var(--line); }
-    .badge-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-2); }
-    .badge-ic svg { width: 16px; height: 16px; }
-    .badge-row.locked { opacity: 0.55; }
-    .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-    .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .notice-box { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--r-control); font-size: 13.5px; margin-bottom: 16px; }
-    .notice-ok { background: var(--ok-soft); color: var(--ok); border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
-    .notice-err { background: var(--err-soft); color: var(--err); border: 1px solid color-mix(in srgb, var(--err) 30%, transparent); }
-    dialog::backdrop {
-      background: var(--scrim);
+    .account-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .tabs {
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .tabs button {
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-panel {
+      display: none;
+      animation: none !important;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .skill-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .skill-card .ticks {
+      max-width: none;
+    }
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+    }
+    .badge-row + .badge-row {
+      border-top: 1px solid var(--line);
+    }
+    .badge-ic {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-control);
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      color: var(--text-2);
+      flex: none;
+    }
+    .badge-ic svg {
+      width: 16px;
+      height: 16px;
+    }
+    .badge-row.locked {
+      opacity: 0.55;
+    }
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .notice-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--r-control);
+      font-size: 13.5px;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .notice-ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+      border: 1px solid var(--ok);
+    }
+    .notice-err {
+      background: var(--err-soft);
+      color: var(--err);
+      border: 1px solid var(--err);
+    }
+    #pwd-strength-ticks .ticks {
+      max-width: none;
+      width: 100%;
+      display: flex;
+      gap: 4px;
+    }
+    #pwd-strength-ticks .ticks i {
+      height: 6px;
+      border-radius: 2px;
     }
     @media (max-width: 640px) {
-      .account-header { flex-direction: column; align-items: flex-start; gap: 14px; }
-      .course-grid { grid-template-columns: 1fr; }
-      .skill-grid { grid-template-columns: 1fr; }
-      .badge-row .trunc { white-space: normal; }
+      .account-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      .course-grid {
+        grid-template-columns: 1fr;
+      }
+      .skill-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -52,15 +140,13 @@
               <h1 id="stu-name" style="font-size:18px;font-weight:600">Vũ Trung Đức</h1>
               <span class="chip chip-mono tnum" id="stu-code">B23DCCN135</span>
               <span class="chip chip-mono" id="stu-class">D23CQAT01-B</span>
-              <span class="chip chip-accent">Sinh viên</span>
-              <span class="chip chip-ok" id="stu-public-chip"><span class="dot"></span>Hồ sơ công khai</span>
             </div>
             <div class="faint" style="font-size:13px;margin-top:6px" id="stu-org">PTIT · Khoa CNTT1 · Chuyên ngành An toàn thông tin</div>
           </div>
         </div>
       </section>
 
-      <!-- Thanh điều hướng Tab -->
+      <!-- 4 Tab điều hướng -->
       <div>
         <div class="tabs" role="tablist" aria-label="Các mục tài khoản">
           <button role="tab" id="tab-btn-info" data-tab="info" aria-selected="true" aria-controls="panel-info">
@@ -131,7 +217,7 @@
             </div>
 
             <div id="profile-notice" class="notice-box notice-ok" style="display:none;margin-top:20px" role="status">
-              <i data-lucide="check"></i>
+              <i data-lucide="check" style="flex:none;margin-top:2px"></i>
               <span id="profile-notice-text">Đã lưu thông tin tài khoản thành công.</span>
             </div>
 
@@ -142,17 +228,6 @@
               <button type="button" class="btn" id="btn-reset-profile">Hủy</button>
             </div>
           </form>
-
-          <dialog id="confirm-reset-dialog" class="card" style="border:1px solid var(--line-strong);border-radius:var(--r-card);max-width:420px;padding:24px;background:var(--surface);color:var(--text);margin:auto">
-            <h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Hủy các thay đổi?</h3>
-            <div class="faint" style="font-size:13px;line-height:1.5;margin-bottom:20px">
-              Các thông tin cá nhân bạn đã chỉnh sửa sẽ không được lưu. Bạn có chắc chắn muốn hủy?
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button type="button" class="btn btn-sm" id="btn-cancel-dialog">Tiếp tục sửa</button>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-reset">Xác nhận hủy</button>
-            </div>
-          </dialog>
         </div>
       </section>
 
@@ -172,11 +247,11 @@
           </div>
 
           <div class="cols">
-            <!-- 9 thẻ kỹ năng -->
+            <!-- 9 thẻ kỹ năng bằng CLXUI.ticks(20, ...) thay cho thanh liên tục -->
             <div class="stack">
               <div class="section-head">
                 <h2>Hồ sơ năng lực thực hành</h2>
-                <span class="meta">9 lĩnh vực chuyên môn</span>
+                <span class="meta tnum">9 lĩnh vực chuyên môn</span>
               </div>
               <div class="skill-grid" id="skill-cards-container"></div>
             </div>
@@ -185,15 +260,15 @@
             <aside class="stack">
               <div class="card card-pad">
                 <div class="section-head">
-                  <h2>Biểu đồ mạng nhện</h2>
-                  <span class="meta">Tổng quan</span>
+                  <h2>Biểu đồ năng lực</h2>
+                  <span class="meta">Tổng quan 6 nhóm</span>
                 </div>
                 <div id="account-radar" style="margin-top:4px"></div>
               </div>
 
               <div class="card card-pad">
                 <div class="row-between">
-                  <h2>Danh hiệu</h2>
+                  <h2>Danh hiệu đã đạt</h2>
                   <span class="faint tnum" style="font-size:13px" id="badge-count"></span>
                 </div>
                 <div id="account-badges" style="margin-top:4px"></div>
@@ -211,14 +286,17 @@
             <span class="meta" id="course-meta"></span>
           </div>
           <div class="course-grid" id="course-cards-container"></div>
+          <div id="course-more-wrap" style="display:none;text-align:center;margin-top:8px">
+            <button type="button" class="btn btn-sm" id="btn-course-more">Xem thêm môn học</button>
+          </div>
         </div>
       </section>
 
-      <!-- Tab 4: Đổi mật khẩu -->
+      <!-- Tab 4: Đổi mật khẩu với kiểm tra độ mạnh bằng chữ + thanh vạch 4 bước -->
       <section id="panel-password" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-password">
         <div class="card card-pad" style="max-width:480px;margin:0 auto">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-            <span class="badge-ic" style="width:40px;height:40px"><i data-lucide="lock"></i></span>
+            <span class="badge-ic" style="width:36px;height:36px"><i data-lucide="lock"></i></span>
             <div>
               <h2 style="font-size:16px;font-weight:600">Đổi mật khẩu</h2>
               <div class="faint" style="font-size:12.5px">Mật khẩu mới tối thiểu 8 ký tự</div>
@@ -232,15 +310,26 @@
               <label for="pwd-cur">Mật khẩu hiện tại</label>
               <input id="pwd-cur" type="password" class="input" required autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại">
             </div>
+
             <div class="field">
               <label for="pwd-new">Mật khẩu mới</label>
               <input id="pwd-new" type="password" class="input" required autocomplete="new-password" minlength="8" placeholder="Tối thiểu 8 ký tự">
+              <!-- Thanh vạch 4 bước kiểm tra độ mạnh + chữ -->
+              <div id="pwd-strength-wrap" style="margin-top:6px;display:none">
+                <div class="row-between" style="font-size:12px;margin-bottom:6px">
+                  <span class="faint">Độ mạnh mật khẩu:</span>
+                  <span id="pwd-strength-text" style="font-weight:500">Trung bình</span>
+                </div>
+                <div id="pwd-strength-ticks"></div>
+              </div>
             </div>
+
             <div class="field">
               <label for="pwd-conf">Xác nhận mật khẩu mới</label>
               <input id="pwd-conf" type="password" class="input" required autocomplete="new-password" minlength="8" placeholder="Nhập lại mật khẩu mới">
             </div>
-            <button type="submit" class="btn btn-primary" id="btn-submit-pwd" style="width:100%;margin-top:8px">
+
+            <button type="submit" class="btn btn-primary" id="btn-submit-pwd" style="width:100%;height:38px;margin-top:8px">
               <i data-lucide="check"></i>Cập nhật mật khẩu
             </button>
           </form>
@@ -248,6 +337,20 @@
       </section>
     </div>
   </main>
+
+  <!-- Hộp thoại xác nhận khi bấm Hủy có thay đổi (CLXUI.modal) -->
+  <div class="dlg-scrim" id="confirm-reset-dialog" hidden>
+    <div class="card card-pad" role="dialog" aria-modal="true" aria-labelledby="profile-reset-title" style="width:min(440px,calc(100vw - 32px))">
+      <h2 id="profile-reset-title" style="font-size:15px;font-weight:600;margin-bottom:6px">Hủy các thay đổi đã nhập?</h2>
+      <div class="faint" style="font-size:13px;line-height:1.5;margin-bottom:20px">
+        Các thông tin cá nhân bạn đã chỉnh sửa sẽ không được lưu. Bạn có chắc chắn muốn hủy?
+      </div>
+      <div class="row-gap" style="justify-content:flex-end">
+        <button type="button" class="btn btn-sm" data-close id="btn-cancel-dialog">Tiếp tục sửa</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-reset">Xác nhận hủy</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <script src="assets/data.js"></script>
@@ -257,6 +360,8 @@
     (function () {
       var D = window.CLX;
       var S = D.student;
+      var U = window.CLXUI;
+      var esc = U.esc;
       var radarRendered = false;
 
       // 1. Gắn thông tin sinh viên lên đầu trang
@@ -266,7 +371,7 @@
       document.getElementById('stu-class').textContent = S.classCode;
       document.getElementById('stu-org').textContent = S.org;
 
-      // 2. Tab controller (hỗ trợ đọc ?tab=skills)
+      // 2. Tab controller (đọc ?tab=skills để mở tab kỹ năng)
       var tabs = ['info', 'skills', 'courses', 'password'];
       function setTab(tabName) {
         if (tabs.indexOf(tabName) === -1) tabName = 'info';
@@ -281,13 +386,13 @@
           }
         });
 
-        // Vẽ biểu đồ khi mở tab Kỹ năng
+        // Vẽ biểu đồ radar khi mở tab Kỹ năng
         if (tabName === 'skills' && !radarRendered) {
           CLXCharts.radar(document.getElementById('account-radar'), D.skills, { size: 280 });
           radarRendered = true;
         }
 
-        // Cập nhật URL mà không reload
+        // Cập nhật URL mà không tải lại trang
         try {
           var url = new URL(window.location);
           url.searchParams.set('tab', tabName);
@@ -297,11 +402,11 @@
         window.clxIcons();
       }
 
-      // Đọc URL param lúc khởi tạo
+      // Đọc query param lúc mở trang
       var initTab = new URLSearchParams(window.location.search).get('tab') || 'info';
       setTab(initTab);
 
-      // Bắt sự kiện bấm tab
+      // Bắt sự kiện bấm các tab
       tabs.forEach(function (t) {
         var btn = document.getElementById('tab-btn-' + t);
         if (btn) {
@@ -311,18 +416,29 @@
         }
       });
 
-      // 3. Tab Thông tin tài khoản: Xử lý lưu form (không dùng alert())
+      // 3. Tab Thông tin tài khoản: Lưu thành công không dùng alert(); Hủy có thay đổi thì hỏi xác nhận
       var profileForm = document.getElementById('profile-form');
       var profileNotice = document.getElementById('profile-notice');
       var profileNoticeText = document.getElementById('profile-notice-text');
 
+      var savedProfile = {
+        gender: S.gender,
+        birthday: S.birthday,
+        phone: S.phone,
+        address: S.address
+      };
+
       profileForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        // Cập nhật giả lập
-        S.gender = document.getElementById('f-gender').value;
-        S.birthday = document.getElementById('f-birthday').value;
-        S.phone = document.getElementById('f-phone').value;
-        S.address = document.getElementById('f-address').value;
+        savedProfile.gender = document.getElementById('f-gender').value;
+        savedProfile.birthday = document.getElementById('f-birthday').value;
+        savedProfile.phone = document.getElementById('f-phone').value;
+        savedProfile.address = document.getElementById('f-address').value;
+
+        S.gender = savedProfile.gender;
+        S.birthday = savedProfile.birthday;
+        S.phone = savedProfile.phone;
+        S.address = savedProfile.address;
 
         profileNotice.className = 'notice-box notice-ok';
         profileNoticeText.textContent = 'Đã lưu thay đổi thông tin cá nhân thành công.';
@@ -338,19 +454,20 @@
       var resetDialog = document.getElementById('confirm-reset-dialog');
       var cancelDialogBtn = document.getElementById('btn-cancel-dialog');
       var confirmResetBtn = document.getElementById('btn-confirm-reset');
+      var resetModal = CLXUI.modal(resetDialog, { initialFocus: '#btn-cancel-dialog' });
 
       function isProfileChanged() {
-        return document.getElementById('f-gender').value !== S.gender ||
-               document.getElementById('f-birthday').value !== S.birthday ||
-               document.getElementById('f-phone').value !== S.phone ||
-               document.getElementById('f-address').value !== S.address;
+        return document.getElementById('f-gender').value !== savedProfile.gender ||
+               document.getElementById('f-birthday').value !== savedProfile.birthday ||
+               document.getElementById('f-phone').value !== savedProfile.phone ||
+               document.getElementById('f-address').value !== savedProfile.address;
       }
 
       function doResetProfile() {
-        document.getElementById('f-gender').value = S.gender;
-        document.getElementById('f-birthday').value = S.birthday;
-        document.getElementById('f-phone').value = S.phone;
-        document.getElementById('f-address').value = S.address;
+        document.getElementById('f-gender').value = savedProfile.gender;
+        document.getElementById('f-birthday').value = savedProfile.birthday;
+        document.getElementById('f-phone').value = savedProfile.phone;
+        document.getElementById('f-address').value = savedProfile.address;
         profileNotice.style.display = 'none';
       }
 
@@ -359,125 +476,170 @@
           doResetProfile();
           return;
         }
-        if (typeof resetDialog.showModal === 'function') {
-          resetDialog.showModal();
-        } else {
-          if (confirm('Các thông tin đã sửa chưa được lưu. Bạn có chắc chắn muốn hủy?')) {
-            doResetProfile();
-          }
-        }
+        resetModal.open();
       });
 
       cancelDialogBtn.addEventListener('click', function () {
-        resetDialog.close();
-        resetBtn.focus();
+        resetModal.close();
       });
 
       confirmResetBtn.addEventListener('click', function () {
         doResetProfile();
-        resetDialog.close();
-        resetBtn.focus();
+        resetModal.close();
       });
 
-      // 4. Tab Kỹ năng: Công tắc công khai & Danh sách 9 kỹ năng & Huy hiệu
+      // 4. Tab Kỹ năng: Công tắc hồ sơ + 9 kỹ năng dùng CLXUI.ticks(20, ...)
       var publicToggle = document.getElementById('public-toggle');
-      var publicChip = document.getElementById('stu-public-chip');
-      var isPublic = true;
-
       publicToggle.addEventListener('click', function (e) {
         var btn = e.target.closest('button');
         if (!btn) return;
         var val = btn.dataset.val;
-        isPublic = (val === 'public');
         publicToggle.querySelectorAll('button').forEach(function (b) {
           b.setAttribute('aria-pressed', String(b.dataset.val === val));
         });
-        if (isPublic) {
-          publicChip.className = 'chip chip-ok';
-          publicChip.innerHTML = '<span class="dot"></span>Hồ sơ công khai';
-        } else {
-          publicChip.className = 'chip';
-          publicChip.innerHTML = '<span class="dot"></span>Hồ sơ riêng tư';
-        }
       });
 
-      // Render 9 skill cards
+      // Render 9 kỹ năng bằng thanh vạch CLXUI.ticks(20, ...)
       var skillContainer = document.getElementById('skill-cards-container');
       skillContainer.innerHTML = D.skillCards.map(function (sc) {
         var isExpert = sc.status === 'Chuyên gia';
         var chipClass = isExpert ? 'chip chip-accent' : 'chip';
-        return '<div class="card card-pad">' +
+        // 20 vạch, mỗi vạch 5%
+        var doneTicks = Math.round(sc.level / 5);
+        return '<div class="card card-pad skill-card">' +
           '<div class="row-between">' +
-            '<div style="font-weight:500;font-size:14px">' + sc.name + '</div>' +
-            '<span class="' + chipClass + '">' + sc.status + '</span>' +
+            '<div style="font-weight:500;font-size:14px">' + esc(sc.name) + '</div>' +
+            '<span class="' + chipClass + '">' + esc(sc.status) + '</span>' +
           '</div>' +
-          '<div class="progress" style="margin:14px 0 8px"><i style="width:' + sc.level + '%"></i></div>' +
+          '<div style="margin:8px 0 4px">' +
+            U.ticks(20, doneTicks) +
+          '</div>' +
           '<div class="row-between faint" style="font-size:12.5px">' +
-            '<span>Điểm thành thạo</span>' +
+            '<span>Mức độ thành thạo</span>' +
             '<span class="mono tnum" style="color:var(--text);font-weight:500">' + sc.level + '%</span>' +
           '</div>' +
         '</div>';
       }).join('');
 
-      // Render badges
+      // Danh hiệu
       var gotBadges = D.badges.filter(function (b) { return b.unlocked; }).length;
       document.getElementById('badge-count').textContent = gotBadges + '/' + D.badges.length + ' đã đạt';
       document.getElementById('account-badges').innerHTML = D.badges.map(function (b) {
         return '<div class="badge-row' + (b.unlocked ? '' : ' locked') + '">' +
-          '<span class="badge-ic"><i data-lucide="' + b.icon + '"></i></span>' +
+          '<span class="badge-ic"><i data-lucide="' + esc(b.icon) + '"></i></span>' +
           '<div style="min-width:0;flex:1">' +
-            '<div style="font-weight:500;font-size:13px">' + b.name + '</div>' +
-            '<div class="faint trunc" style="font-size:12px" title="' + b.desc + '">' + b.desc + '</div>' +
+            '<div style="font-weight:500;font-size:13px">' + esc(b.name) + '</div>' +
+            '<div class="faint trunc" style="font-size:12px" title="' + esc(b.desc) + '">' + esc(b.desc) + '</div>' +
           '</div>' +
           '<span class="faint tnum" style="margin-left:auto;font-size:12px;white-space:nowrap">' +
-            (b.unlocked ? b.date.slice(0, 5) : b.progress) +
+            (b.unlocked ? esc(b.date.slice(0, 5)) : esc(b.progress)) +
           '</span>' +
         '</div>';
       }).join('');
 
-      // 5. Tab Môn học: Danh sách môn học
+      // 5. Tab Môn học: Danh sách môn học hiển thị phẳng tự nhiên (hỗ trợ Xem thêm khi > 6 môn)
       document.getElementById('course-meta').textContent = D.classes.length + ' lớp học phần trong kỳ này';
-      document.getElementById('course-cards-container').innerHTML = D.classes.map(function (c) {
-        var donePct = Math.round((c.done / c.total) * 100);
-        return '<div class="card card-pad stack-sm">' +
-          '<div class="row-between">' +
-            '<span class="chip chip-mono">' + c.code + '</span>' +
-            '<span class="faint" style="font-size:12.5px">' + c.group + '</span>' +
-          '</div>' +
-          '<div>' +
-            '<h3 style="font-size:15px;font-weight:600">' + c.name + '</h3>' +
-            '<div class="faint" style="font-size:13px;margin-top:2px">' + c.teacher + ' · ' + c.credits + ' tín chỉ</div>' +
-          '</div>' +
-          '<div style="margin-top:8px">' +
-            '<div class="row-between" style="font-size:12.5px;margin-bottom:6px">' +
-              '<span class="dim">Tiến độ bài tập</span>' +
-              '<span class="mono tnum" style="font-weight:500">' + c.done + ' / ' + c.total + ' bài (' + donePct + '%)</span>' +
-            '</div>' +
-            '<div class="progress"><i style="width:' + donePct + '%"></i></div>' +
-          '</div>' +
-          '<div class="kv" style="grid-template-columns:auto 1fr;font-size:12.5px;color:var(--text-3);margin-top:4px">' +
-            '<i data-lucide="clock" style="width:14px;height:14px"></i>' +
-            '<span>Hạn nộp: <b class="tnum" style="color:var(--text-2);font-weight:500">' + c.deadline + '</b></span>' +
-          '</div>' +
-          '<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:flex-end">' +
-            '<a class="btn btn-sm" href="assignments.html?class=' + c.code + '">Xem bài tập<i data-lucide="arrow-right"></i></a>' +
-          '</div>' +
-        '</div>';
-      }).join('');
+      var courseContainer = document.getElementById('course-cards-container');
+      var courseMoreWrap = document.getElementById('course-more-wrap');
+      var courseLimit = 6;
 
-      // 6. Tab Đổi mật khẩu: Form xử lý xác nhận và thông báo
+      function renderCourses() {
+        if (!D.classes || !D.classes.length) {
+          courseContainer.innerHTML = '<div class="empty">Chưa đăng ký lớp học phần nào trong học kỳ này.</div>';
+          return;
+        }
+        var visible = D.classes.slice(0, courseLimit);
+        courseContainer.innerHTML = visible.map(function (c) {
+          var donePct = Math.round((c.done / c.total) * 100);
+          return '<div class="card card-pad stack-sm">' +
+            '<div class="row-between">' +
+              '<span class="chip chip-mono">' + esc(c.code) + '</span>' +
+              '<span class="faint" style="font-size:12.5px">' + esc(c.group) + '</span>' +
+            '</div>' +
+            '<div>' +
+              '<h3 style="font-size:15px;font-weight:600">' + esc(c.name) + '</h3>' +
+              '<div class="faint" style="font-size:13px;margin-top:2px">' + esc(c.teacher) + ' · ' + c.credits + ' tín chỉ</div>' +
+            '</div>' +
+            '<div style="margin-top:8px">' +
+              '<div class="row-between" style="font-size:12.5px;margin-bottom:6px">' +
+                '<span class="dim">Tiến độ bài tập</span>' +
+                '<span class="mono tnum" style="font-weight:500">' + c.done + ' / ' + c.total + ' bài (' + donePct + '%)</span>' +
+              '</div>' +
+              '<div class="progress" role="progressbar" aria-valuenow="' + donePct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + donePct + '%"></i></div>' +
+            '</div>' +
+            '<div class="kv" style="grid-template-columns:auto 1fr;font-size:12.5px;color:var(--text-3);margin-top:4px">' +
+              '<i data-lucide="clock" style="width:14px;height:14px"></i>' +
+              '<span>Hạn nộp: <b class="tnum" style="color:var(--text-2);font-weight:500">' + esc(c.deadline) + '</b></span>' +
+            '</div>' +
+            '<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:flex-end">' +
+              '<a class="btn btn-sm" href="assignments.html?class=' + encodeURIComponent(c.code) + '">Xem bài tập<i data-lucide="arrow-right"></i></a>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        if (D.classes.length > courseLimit) {
+          courseMoreWrap.style.display = 'block';
+        } else {
+          courseMoreWrap.style.display = 'none';
+        }
+        window.clxIcons();
+      }
+
+      var btnMore = document.getElementById('btn-course-more');
+      if (btnMore) {
+        btnMore.addEventListener('click', function () {
+          courseLimit += 6;
+          renderCourses();
+        });
+      }
+      renderCourses();
+
+      // 6. Tab Đổi mật khẩu: Kiểm tra độ mạnh bằng chữ + thanh vạch 4 bước
       var pwdForm = document.getElementById('password-form');
+      var pwdNewInput = document.getElementById('pwd-new');
+      var pwdStrengthWrap = document.getElementById('pwd-strength-wrap');
+      var pwdStrengthText = document.getElementById('pwd-strength-text');
+      var pwdStrengthTicks = document.getElementById('pwd-strength-ticks');
       var pwdNotice = document.getElementById('password-notice');
+
+      function calculateStrength(pwd) {
+        if (!pwd) return { score: 0, text: 'Chưa nhập', kind: 'is-error' };
+        var score = 0;
+        if (pwd.length >= 8) score++;
+        if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+        if (/\d/.test(pwd)) score++;
+        if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+        var labels = ['Rất yếu', 'Yếu', 'Trung bình', 'Khá', 'Mạnh'];
+        var kinds = ['is-error', 'is-error', 'is-error', '', 'is-ok'];
+        return {
+          score: score,
+          text: labels[score],
+          kind: kinds[score]
+        };
+      }
+
+      pwdNewInput.addEventListener('input', function () {
+        var val = pwdNewInput.value;
+        if (!val) {
+          pwdStrengthWrap.style.display = 'none';
+          return;
+        }
+        pwdStrengthWrap.style.display = 'block';
+        var res = calculateStrength(val);
+        pwdStrengthText.textContent = res.text;
+        pwdStrengthTicks.innerHTML = U.ticks(4, res.score, res.kind);
+      });
 
       pwdForm.addEventListener('submit', function (e) {
         e.preventDefault();
         var cur = document.getElementById('pwd-cur').value;
-        var pNew = document.getElementById('pwd-new').value;
+        var pNew = pwdNewInput.value;
         var conf = document.getElementById('pwd-conf').value;
 
         if (pNew.length < 8) {
           pwdNotice.className = 'notice-box notice-err';
-          pwdNotice.innerHTML = '<i data-lucide="circle-alert"></i><span>Mật khẩu mới phải có tối thiểu 8 ký tự.</span>';
+          pwdNotice.innerHTML = '<i data-lucide="circle-alert" style="flex:none;margin-top:2px"></i><span>Mật khẩu mới phải có tối thiểu 8 ký tự.</span>';
           pwdNotice.style.display = 'flex';
           window.clxIcons();
           return;
@@ -485,16 +647,17 @@
 
         if (pNew !== conf) {
           pwdNotice.className = 'notice-box notice-err';
-          pwdNotice.innerHTML = '<i data-lucide="circle-alert"></i><span>Mật khẩu xác nhận không khớp với mật khẩu mới.</span>';
+          pwdNotice.innerHTML = '<i data-lucide="circle-alert" style="flex:none;margin-top:2px"></i><span>Mật khẩu xác nhận không khớp với mật khẩu mới.</span>';
           pwdNotice.style.display = 'flex';
           window.clxIcons();
           return;
         }
 
         pwdNotice.className = 'notice-box notice-ok';
-        pwdNotice.innerHTML = '<i data-lucide="check"></i><span>Đổi mật khẩu thành công. Mật khẩu mới đã được kích hoạt.</span>';
+        pwdNotice.innerHTML = '<i data-lucide="check" style="flex:none;margin-top:2px"></i><span>Đổi mật khẩu thành công. Mật khẩu mới đã được kích hoạt.</span>';
         pwdNotice.style.display = 'flex';
         pwdForm.reset();
+        pwdStrengthWrap.style.display = 'none';
         window.clxIcons();
 
         setTimeout(function () {

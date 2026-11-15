@@ -6,35 +6,31 @@
   <title>Tổng quan · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
   <script src="assets/theme.js"></script>
   <style>
     /* Riêng trang Tổng quan */
-    .pick { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); transition: background var(--dur) var(--ease); }
-    .pick:last-child { border-bottom: 0; }
-    .pick:hover { background: var(--mute-soft); }
+    a.pick { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr) 112px 120px auto; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); transition: background-color var(--dur) var(--ease); }
+    a.pick:hover { background: var(--mute-soft); }
+    a.pick:hover::after { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 0 2px 2px 0; background: var(--accent); }
     .pick .t { font-weight: 500; }
     .pick .m { font-size: 12.5px; color: var(--text-3); }
-    .due { font-size: 12.5px; color: var(--text-2); text-align: right; white-space: nowrap; }
-    .due.soon { color: var(--warn); }
-    .rank-bar { margin-top: 12px; }
+    .pick .left { font-size: 13px; text-align: right; color: var(--text-2); white-space: nowrap; }
+    .pick .left.soon { color: var(--warn); }
+    .attempts { display: flex; flex-direction: column; gap: 4px; }
+    .attempts .n { font: 400 12px var(--mono); color: var(--text-3); }
     .badge-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
     .badge-row + .badge-row { border-top: 1px solid var(--line); }
-    .badge-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-2); }
-    .badge-ic svg { width: 16px; height: 16px; }
-    .badge-row.locked { opacity: 0.55; }
+    .badge-ic { width: 32px; height: 32px; border-radius: var(--r-control); display: grid; place-items: center; background: var(--surface-2); color: var(--text-2); }
+    .badge-row.locked { opacity: 0.6; }
     .legend { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-3); justify-content: flex-end; margin-top: 12px; }
-    .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-    @media (max-width: 640px) {
-      .pick { grid-template-columns: minmax(0, 1fr) auto; }
-      .pick .code, .pick .due { display: none; }
-      .stat-strip > div { padding: 16px; }
-      .stat .value { font-size: 22px; }
-      .badge-row .trunc { white-space: normal; }
-    }
+    .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    .rank-big { font-size: 28px; line-height: 36px; font-weight: 500; letter-spacing: -0.01em; }
+    .ruler-wrap { padding: 20px 20px 8px; }
+    @media (max-width: 760px) { a.pick { grid-template-columns: minmax(0, 1fr) auto; } .pick .code, .pick .attempts, .pick .left { display: none; } .stat-strip > div { padding: 14px; } .stat .value { font-size: 22px; } }
   </style>
 </head>
 <body data-page="dashboard" data-title="Tổng quan">
@@ -45,10 +41,13 @@
 
         <section>
           <div class="section-head">
-            <h2>Tiếp tục làm bài</h2>
+            <h2>Hạn nộp 14 ngày tới</h2>
             <span class="meta" id="pending-meta"></span>
           </div>
-          <div class="card" id="in-progress"></div>
+          <div class="card">
+            <div class="ruler-wrap"><div class="ruler" id="ruler" role="img" aria-label="Thước hạn nộp 14 ngày tới"></div></div>
+            <div id="in-progress"></div>
+          </div>
         </section>
 
         <section>
@@ -70,9 +69,9 @@
         </section>
 
         <section class="card card-pad">
-          <div class="row-between"><h2>Cấp bậc</h2><span class="chip chip-accent tnum" id="rank-level"></span></div>
-          <div style="margin-top:12px"><div style="font-size:18px;font-weight:500" id="rank-title"></div><div class="faint tnum" style="font-size:13px" id="rank-xp"></div></div>
-          <div class="progress rank-bar"><i id="rank-bar"></i></div>
+          <div class="row-between"><h2>Cấp bậc</h2><span class="kicker tnum" id="rank-level"></span></div>
+          <div style="margin-top:12px"><div class="rank-big" id="rank-title"></div><div class="faint tnum" style="font-size:13px" id="rank-xp"></div></div>
+          <div id="rank-ticks" style="margin-top:12px"></div>
           <div class="faint" style="font-size:12px;margin-top:8px" id="rank-next"></div>
         </section>
 
@@ -90,25 +89,59 @@
   <script src="assets/shell.js"></script>
   <script>
     (function () {
-      var D = window.CLX, S = D.student;
+      var D = window.CLX, S = D.student, U = window.CLXUI, esc = U.esc;
       var nf = function (n) { return n.toLocaleString('en-US'); };
+      var DAY = 86400000;
+      var today = new Date(D.today + 'T00:00:00');
+      var dm = function (d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'); };
 
       var tier = D.streakTiers.filter(function (t) { return S.streak >= t.min; }).pop();
       var next = D.streakTiers.filter(function (t) { return S.streak < t.min; })[0];
       document.getElementById('stats').innerHTML =
         '<div class="stat"><div class="label">Lab hoàn thành</div><div class="value">' + S.labsDone + '</div></div>' +
         '<div class="stat"><div class="label">Tổng điểm XP</div><div class="value">' + nf(S.xp) + '</div></div>' +
-        '<div class="stat"><div class="label">Chuỗi ngày</div><div class="value">' + S.streak + '</div><div class="hint">' + tier.label + (next ? ' · còn ' + (next.min - S.streak) + ' ngày lên ' + next.label : '') + '</div></div>';
+        '<div class="stat"><div class="label">Chuỗi ngày</div><div class="value">' + S.streak + '</div><div class="hint">' + esc(tier.label) + (next ? ' · còn ' + (next.min - S.streak) + ' ngày lên ' + esc(next.label) : '') + '</div></div>';
 
-      var soon = D.inProgress.filter(function (p) { return p.dueSoon; }).length;
-      document.getElementById('pending-meta').textContent = soon + ' bài hạn trong tuần này';
-      document.getElementById('in-progress').innerHTML = D.inProgress.map(function (p) {
-        return '<a class="pick" href="assignments.html?class=' + p.course + '&code=' + p.code + '">' +
-          '<span class="chip chip-mono code">' + p.course + '</span>' +
-          '<div style="min-width:0"><div class="t trunc" title="' + p.title + '">' + p.title + '</div><div class="m">' + p.topic + ' · ' + p.xp + ' XP · lần nộp ' + p.attempts + ' <span class="verdict v-' + p.status + '" style="margin-left:4px">' + p.status + '</span></div></div>' +
-          '<span class="due tnum' + (p.dueSoon ? ' soon' : '') + '">Hạn ' + p.deadline + '</span>' +
-          '<span class="btn btn-sm">Tiếp tục<i data-lucide="arrow-right"></i></span></a>';
-      }).join('');
+      /* Các bài chưa đạt AC có hạn trong 14 ngày tới (tính từ hôm nay) */
+      var due = [];
+      D.classes.forEach(function (c) {
+        c.assignments.forEach(function (a) {
+          if (a.status === 'AC') return;
+          var d = new Date(a.deadline.slice(0, 10) + 'T00:00:00');
+          var diff = Math.round((d - today) / DAY);
+          if (diff >= 0 && diff <= 13) due.push({ cls: c, a: a, d: d, diff: diff });
+        });
+      });
+      due.sort(function (x, y) { return x.diff - y.diff; });
+
+      /* Thước 14 ngày: mỗi hạn là một vạch; hai hạn sát nhau xếp hai làn để nhãn không chồng */
+      var html = '<div class="axis"></div>';
+      for (var i = 0; i < 14; i++) {
+        var dd = new Date(today.getTime() + i * DAY);
+        var show = i === 0 || i % 2 === 0 || i === 13;
+        html += '<div class="day' + (i === 0 ? ' is-today' : '') + '" style="left:' + (i / 13 * 100) + '%">' + (show ? '<span>' + (i === 0 ? 'Hôm nay' : dm(dd)) + '</span>' : '') + '</div>';
+      }
+      var lane = [];
+      due.forEach(function (x, idx) {
+        var prev = due[idx - 1];
+        lane[idx] = prev && x.diff - prev.diff <= 1 && !lane[idx - 1] ? 1 : 0;
+        html += '<div class="due' + (x.diff <= 2 ? ' is-late' : '') + '" style="left:' + (x.diff / 13 * 100) + '%;--lane:' + (lane[idx] ? 28 : 0) + 'px;--len:' + (lane[idx] ? 28 : 56) + 'px"><b>' + esc(x.a.code.split('-')[0]) + '</b><i></i></div>';
+      });
+      document.getElementById('ruler').innerHTML = html;
+
+      var soon = due.filter(function (x) { return x.diff <= 3; }).length;
+      document.getElementById('pending-meta').textContent = due.length + ' bài chưa đạt AC' + (soon ? ' · ' + soon + ' bài hạn trong 3 ngày' : '');
+
+      document.getElementById('in-progress').innerHTML = due.map(function (x) {
+        var a = x.a, parts = a.attempts ? a.attempts.split('/') : null;
+        var left = x.diff === 0 ? 'Hạn hôm nay' : 'Còn ' + x.diff + ' ngày';
+        return '<a class="pick" href="assignments.html?class=' + encodeURIComponent(x.cls.code) + '&code=' + encodeURIComponent(a.code) + '">' +
+          '<span class="chip chip-mono code">' + esc(x.cls.course) + '</span>' +
+          '<div style="min-width:0"><div class="t trunc" title="' + esc(a.title) + '">' + esc(a.title) + '</div><div class="m">' + esc(a.topic) + ' · ' + a.xp + ' XP</div></div>' +
+          '<div class="attempts">' + (parts ? U.ticks(+parts[1], +parts[0], 'is-error') + '<span class="n">Lượt nộp ' + esc(a.attempts) + '</span>' : '<span class="n">Chưa nộp</span>') + '</div>' +
+          '<div class="left tnum' + (x.diff <= 3 ? ' soon' : '') + '">' + left + '<div class="m tnum">' + esc(a.deadline.slice(8, 10) + '/' + a.deadline.slice(5, 7) + ' ' + a.deadline.slice(11)) + '</div></div>' +
+          '<span class="row-gap">' + (a.status ? U.verdict(a.status) : '') + '<i data-lucide="arrow-right" class="faint"></i></span></a>';
+      }).join('') || '<div class="empty">Không có bài nào đến hạn trong 14 ngày tới.</div>';
 
       document.getElementById('act-total').textContent = D.activityTotal;
       CLXCharts.heatmap(document.getElementById('heat'), D.heat);
@@ -117,15 +150,17 @@
       document.getElementById('rank-level').textContent = 'Lv.' + D.rank.level;
       document.getElementById('rank-title').textContent = D.rank.title;
       document.getElementById('rank-xp').textContent = nf(D.rank.xp) + ' XP';
-      document.getElementById('rank-bar').style.width = D.rank.pct + '%';
+      var rt = document.getElementById('rank-ticks');
+      rt.innerHTML = U.ticks(20, Math.round(D.rank.pct / 5));
+      rt.firstChild.style.maxWidth = 'none';
       document.getElementById('rank-next').textContent = 'Còn ' + nf(D.rank.toNext) + ' XP tới Lv.' + D.rank.nextLevel;
 
       var got = D.badges.filter(function (b) { return b.unlocked; }).length;
       document.getElementById('badge-count').textContent = got + '/' + D.badges.length + ' đã đạt';
       document.getElementById('badges').innerHTML = D.badges.map(function (b) {
-        return '<div class="badge-row' + (b.unlocked ? '' : ' locked') + '"><span class="badge-ic"><i data-lucide="' + b.icon + '"></i></span>' +
-          '<div style="min-width:0"><div style="font-weight:500;font-size:13.5px">' + b.name + '</div><div class="faint trunc" style="font-size:12px" title="' + b.desc + '">' + b.desc + '</div></div>' +
-          '<span class="faint tnum" style="margin-left:auto;font-size:12px;white-space:nowrap">' + (b.unlocked ? b.date.slice(0, 5) : b.progress) + '</span></div>';
+        return '<div class="badge-row' + (b.unlocked ? '' : ' locked') + '"><span class="badge-ic"><i data-lucide="' + esc(b.icon) + '"></i></span>' +
+          '<div style="min-width:0"><div style="font-weight:500;font-size:13.5px">' + esc(b.name) + '</div><div class="faint trunc" title="' + esc(b.desc) + '" style="font-size:12px">' + esc(b.desc) + '</div></div>' +
+          '<span class="faint tnum" style="margin-left:auto;font-size:12px;white-space:nowrap">' + (b.unlocked ? esc(b.date.slice(0, 5)) : esc(b.progress)) + '</span></div>';
       }).join('');
 
       window.clxIcons();

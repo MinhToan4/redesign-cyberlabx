@@ -6,60 +6,94 @@
   <title>Hướng dẫn · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
   <script src="assets/theme.js"></script>
   <style>
-    b, strong {
-      font-weight: 500;
+    /* Riêng trang Hướng dẫn */
+    .steps-progress-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .steps-ticks-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* Riêng trang Hướng dẫn */
-    .step-item {
+    /* Danh sách bước có đường dọc nối các bước */
+    .step-stepper {
+      display: flex;
+      flex-direction: column;
+    }
+    .step-row {
       display: flex;
       gap: 16px;
-      padding: 16px 0;
+      position: relative;
     }
-    .step-item + .step-item {
-      border-top: 1px solid var(--line);
+    .step-spine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: none;
     }
     .step-num {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: var(--r-control);
       background: var(--surface-2);
-      border: 1px solid var(--line);
+      border: 1px solid var(--line-strong);
       display: grid;
       place-items: center;
-      font-size: 13px;
-      font-weight: 500;
+      font: 500 12.5px var(--mono);
       color: var(--accent);
       flex: none;
     }
-    .step-body {
+    .step-line {
+      width: 2px;
+      flex: 1;
+      min-height: 28px;
+      background: var(--line);
+      margin: 4px 0;
+    }
+    .step-row:last-child .step-line {
+      display: none;
+    }
+    .step-content {
       flex: 1;
       min-width: 0;
+      padding-bottom: 24px;
+    }
+    .step-row:last-child .step-content {
+      padding-bottom: 4px;
     }
     .step-title {
       font-weight: 500;
       font-size: 14.5px;
-      margin-bottom: 4px;
       color: var(--text);
+      margin: 3px 0 6px;
     }
     .step-desc {
       font-size: 13.5px;
       color: var(--text-2);
       line-height: 1.6;
+      margin: 0;
     }
-    .step-code {
+
+    .code-tag {
       display: inline-block;
       padding: 1px 6px;
-      border-radius: 4px;
+      border-radius: var(--r-tag);
       background: var(--surface-2);
       font-family: var(--mono);
-      font-size: 12.5px;
+      font-size: 12px;
       color: var(--text);
     }
 
@@ -70,25 +104,33 @@
       align-items: flex-start;
       padding: 14px 16px;
       border-radius: var(--r-card);
-      background: var(--warn-soft);
-      border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--warn);
       color: var(--text);
       font-size: 13.5px;
       line-height: 1.5;
-      margin-top: 8px;
     }
-    .guide-note svg {
+    .guide-note-ic {
       color: var(--warn);
       margin-top: 2px;
+      flex: none;
+      width: 18px;
+      height: 18px;
     }
 
-    /* Danh sách nội quy */
+    /* Danh sách nội quy ca thi ngắn gọn */
+    .rule-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
     .rule-item {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-start;
       padding: 10px 0;
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-2);
       line-height: 1.5;
     }
@@ -99,22 +141,15 @@
       color: var(--err);
       margin-top: 2px;
       flex: none;
-    }
-    .rule-ic svg {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
     }
 
     @media (max-width: 640px) {
-      .section-head {
+      .steps-progress-bar {
         flex-direction: column;
         align-items: flex-start;
-        gap: 2px;
-      }
-    }
-    @media (max-width: 540px) {
-      html, body, .app, .main, .topbar {
-        max-width: 390px;
+        gap: 8px;
       }
     }
   </style>
@@ -122,38 +157,51 @@
 <body data-page="guide" data-title="Hướng dẫn">
   <main class="content" id="content">
     <div class="cols">
-      <!-- Cột chính: Các bước làm bài & nộp bài -->
+      <!-- Cột chính: Quy trình làm bài & nộp bài -->
       <div class="stack">
         <section>
           <div class="section-head">
             <h2>Quy trình nộp bài thực hành</h2>
-            <span class="meta">4 bước hoàn thành và nộp lab</span>
+            <span class="meta">4 bước tuần tự</span>
           </div>
 
           <div class="card card-pad">
-            <div id="steps-container"></div>
+            <!-- Thanh vạch 4 bước ở đầu -->
+            <div class="steps-progress-bar">
+              <span class="kicker">Tiến trình chuẩn</span>
+              <div class="steps-ticks-wrap">
+                <div class="ticks is-ok" role="img" aria-label="4/4 bước chuẩn">
+                  <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+                </div>
+                <span class="faint tnum" style="font-size:12px">4 bước hoàn thành</span>
+              </div>
+            </div>
 
-            <div class="guide-note">
-              <i data-lucide="circle-alert"></i>
+            <!-- Danh sách 4 bước có đường dọc nối các bước -->
+            <div class="step-stepper" id="steps-container"></div>
+
+            <!-- Khối lưu ý định dạng tệp -->
+            <div class="guide-note" style="margin-top:20px">
+              <i data-lucide="circle-alert" class="guide-note-ic"></i>
               <div>
-                <b>Lưu ý quan trọng về tệp kết quả:</b> Tệp <span class="step-code">.lab</span> được sinh tự động sau khi kết thúc bài lab. Tuyệt đối không chỉnh sửa hoặc đổi tên tệp; nếu tên không khớp hệ thống sẽ chấm kết quả <b>WFN</b> (Wrong File Name).
+                <b>Lưu ý quan trọng về tệp kết quả:</b> Tệp <code class="code-tag">.lab</code> được sinh tự động sau khi kết thúc bài lab. Tuyệt đối không chỉnh sửa hoặc đổi tên tệp; nếu tên không khớp hệ thống sẽ chấm kết quả <b>WFN</b> (Wrong File Name).
               </div>
             </div>
           </div>
         </section>
       </div>
 
-      <!-- Cột phụ: Nội quy phòng thi và thông số lab -->
+      <!-- Cột phụ: Nội quy ca thi và môi trường Labtainer -->
       <aside class="stack">
         <section>
           <div class="section-head">
-            <h2>Nội quy phòng thi</h2>
+            <h2>Nội quy ca thi</h2>
             <span class="meta">Quy định bắt buộc</span>
           </div>
           <div class="card card-pad">
-            <div id="rules-container"></div>
+            <ul class="rule-list" id="rules-container"></ul>
             <div style="margin-top:12px;font-size:12px;color:var(--text-3);line-height:1.4">
-              Mọi vi phạm nội quy trong ca thi đều dẫn đến điểm 0 và biên bản kỷ luật theo quy chế của Học viện.
+              Mọi vi phạm nội quy trong ca thi đều dẫn đến điểm 0 và lập biên bản kỷ luật theo quy chế của Học viện.
             </div>
           </div>
         </section>
@@ -168,11 +216,11 @@
               <dt>Nền tảng</dt>
               <dd>Linux VM (Ubuntu)</dd>
               <dt>Bắt đầu lab</dt>
-              <dd><span class="step-code">labtainer &lt;lab-name&gt;</span></dd>
+              <dd><code class="code-tag">labtainer &lt;lab-name&gt;</code></dd>
               <dt>Kết thúc lab</dt>
-              <dd><span class="step-code">stoplab</span></dd>
+              <dd><code class="code-tag">stoplab</code></dd>
               <dt>Thư mục tệp</dt>
-              <dd><span class="step-code faint">~/labtainer_xfer</span></dd>
+              <dd><code class="code-tag faint">~/labtainer_xfer</code></dd>
             </dl>
             <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-3)">
               Gặp sự cố môi trường? Bạn có thể hỏi nhanh tại <a class="link" href="chatbot.html">ChatBot</a> hoặc liên hệ trợ giảng trực lab.
@@ -189,6 +237,8 @@
   <script>
     (function () {
       var D = window.CLX;
+      var U = window.CLXUI;
+      var esc = U.esc;
       var guideSteps = D.guide || [];
       var examRules = D.examRules || [
         'Không gian lận, trao đổi bài dưới mọi hình thức trong suốt ca thi.',
@@ -198,26 +248,29 @@
         'Mọi thao tác đều được ghi log; vi phạm sẽ bị hủy kết quả ca thi.'
       ];
 
-      // Render steps
+      // Dựng danh sách 4 bước có đường dọc nối các bước
       var stepsContainer = document.getElementById('steps-container');
       stepsContainer.innerHTML = guideSteps.map(function (step, idx) {
         var num = String(idx + 1).padStart(2, '0');
-        return '<div class="step-item">' +
-          '<div class="step-num mono">' + num + '</div>' +
-          '<div class="step-body">' +
-            '<div class="step-title">' + step.h + '</div>' +
-            '<div class="step-desc">' + step.p + '</div>' +
+        return '<div class="step-row">' +
+          '<div class="step-spine">' +
+            '<div class="step-num mono">' + num + '</div>' +
+            '<div class="step-line" aria-hidden="true"></div>' +
+          '</div>' +
+          '<div class="step-content">' +
+            '<h3 class="step-title">' + esc(step.h) + '</h3>' +
+            '<p class="step-desc">' + esc(step.p) + '</p>' +
           '</div>' +
         '</div>';
       }).join('');
 
-      // Render exam rules
+      // Dựng danh sách nội quy ca thi ngắn gọn
       var rulesContainer = document.getElementById('rules-container');
       rulesContainer.innerHTML = examRules.map(function (rule) {
-        return '<div class="rule-item">' +
-          '<span class="rule-ic"><i data-lucide="circle-alert"></i></span>' +
-          '<span>' + rule + '</span>' +
-        '</div>';
+        return '<li class="rule-item">' +
+          '<i data-lucide="circle-alert" class="rule-ic"></i>' +
+          '<span>' + esc(rule) + '</span>' +
+        '</li>';
       }).join('');
 
       window.clxIcons();

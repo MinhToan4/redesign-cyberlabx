@@ -6,7 +6,7 @@
   <title>Bài tập · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
@@ -24,6 +24,8 @@
     b, strong {
       font-weight: 500;
     }
+
+    /* Tabs cuộn ngang mượt mà trên mobile */
     .tabs {
       display: flex;
       max-width: 100%;
@@ -40,15 +42,11 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .tabs button svg {
-      width: 16px;
-      height: 16px;
-      stroke-width: 1.5;
-    }
 
+    /* Lưới lớp học phần */
     .class-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
     }
     @media (max-width: 640px) {
@@ -67,19 +65,40 @@
     .class-card:hover {
       background: var(--surface-2);
     }
+    .class-ticks .ticks {
+      max-width: none;
+      width: 100%;
+    }
 
+    /* Thông số kiểm thử & rubric */
     .metric-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      padding: 12px 16px;
+      padding: 16px;
       border-radius: var(--r-card);
       background: var(--surface-2);
       border: 1px solid var(--line);
     }
-    .metric-item .m-label { font-size: 11.5px; color: var(--text-3); }
-    .metric-item .m-val { font-size: 13.5px; font-weight: 500; color: var(--text); margin-top: 2px; }
+    .metric-item .m-label {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .metric-item .m-val {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-top: 4px;
+    }
 
+    /* Cột số lượt nộp */
+    .attempts {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Timeline các bước thực hiện */
     .step-item {
       display: flex;
       gap: 16px;
@@ -90,42 +109,49 @@
       flex-direction: column;
       align-items: center;
       flex: none;
+      width: 24px;
     }
     .step-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--r-control);
       display: grid;
       place-items: center;
       background: var(--surface-2);
       border: 1px solid var(--line-strong);
-      font-size: 12px;
-      font-weight: 500;
-      font-family: var(--mono);
-      color: var(--accent);
+      font: 500 11.5px var(--mono);
+      color: var(--text-2);
+    }
+    .step-num.is-done {
+      background: var(--ok-soft);
+      border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+      color: var(--ok);
     }
     .step-line {
       flex: 1;
       width: 1px;
       background: var(--line);
       margin: 6px 0;
-      min-height: 20px;
+      min-height: 24px;
     }
     .step-body {
       padding-bottom: 20px;
       min-width: 0;
+      flex: 1;
     }
-    .step-body .step-title {
+    .step-title {
       font-weight: 500;
       font-size: 14px;
       margin-bottom: 4px;
+      color: var(--text);
     }
-    .step-body .step-desc {
+    .step-desc {
       font-size: 13px;
       color: var(--text-2);
       line-height: 1.6;
     }
 
+    /* Vùng thả tệp */
     .dropzone {
       display: flex;
       flex-direction: column;
@@ -150,10 +176,11 @@
       border-color: var(--accent);
     }
     .dropzone:focus-visible {
-      outline: none;
-      border-color: var(--accent);
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
+    /* Bình luận đa cấp */
     .comment-card {
       padding: 16px;
       border-radius: var(--r-card);
@@ -170,6 +197,7 @@
       border-left: 2px solid var(--line);
     }
 
+    /* Thẻ bài tập dạng lưới */
     .lab-grid-card {
       display: flex;
       flex-direction: column;
@@ -184,54 +212,47 @@
     .mobile-sub {
       display: none;
     }
-    .desktop-deadline {
-      display: block;
+
+    /* Bảng danh sách bài của lớp */
+    .tbl-class-assign {
+      --cols: 44px 130px minmax(0, 1.8fr) 110px 100px 84px 90px;
     }
 
-    @media (max-width: 900px) {
+    /* Bảng sổ cái lịch sử nộp bài */
+    .tbl-ledger-hist {
+      --cols: 52px 76px 140px minmax(0, 1fr) 76px 84px;
+    }
+
+    @media (max-width: 960px) {
       .tbl-class-assign {
-        --cols: 44px 120px minmax(0, 1fr) 76px 76px !important;
+        --cols: 44px 120px minmax(0, 1fr) 100px 84px;
       }
-      .tbl-class-assign .col-group,
-      .tbl-class-assign .col-topic {
-        display: none !important;
+      .tbl-class-assign .col-topic,
+      .tbl-class-assign .col-diff {
+        display: none;
+      }
+      .metric-strip {
+        grid-template-columns: 1fr 1fr;
       }
     }
 
     @media (max-width: 640px) {
       .tbl-class-assign {
-        display: block !important;
+        --cols: minmax(0, 1fr) auto !important;
       }
-      .tbl-class-assign [role="rowgroup"]:first-child,
       .tbl-class-assign .tbl-head {
         display: none !important;
       }
       .tbl-class-assign .tbl-row:not(.tbl-head) {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 12px 16px !important;
-        gap: 12px !important;
-        height: auto !important;
-        min-height: 52px !important;
+        padding: 12px 16px;
+        min-height: unset;
+        gap: 12px;
       }
       .tbl-class-assign .col-stt,
       .tbl-class-assign .col-code,
-      .tbl-class-assign .col-diff,
-      .tbl-class-assign .col-group,
-      .tbl-class-assign .col-topic {
-        display: none !important;
-      }
-      .tbl-class-assign .col-title {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-      }
-      .tbl-class-assign .col-status {
-        flex: 0 0 auto !important;
-        text-align: right !important;
-      }
-      .desktop-deadline {
+      .tbl-class-assign .col-attempts,
+      .tbl-class-assign .col-topic,
+      .tbl-class-assign .col-diff {
         display: none !important;
       }
       .mobile-sub {
@@ -241,16 +262,52 @@
         flex-wrap: wrap;
         font-size: 12px;
         color: var(--text-3);
-        margin-top: 3px;
+        margin-top: 4px;
       }
-    }
 
-    @media (max-width: 768px) {
-      .metric-strip { grid-template-columns: 1fr 1fr; }
-      .stat-strip-4 { grid-template-columns: 1fr 1fr !important; }
-      .stat-strip-4 > div:nth-child(2n+1) { border-left: 0; }
-      .stat-strip-4 > div:nth-child(n+3) { border-top: 1px solid var(--line); }
-      .comment-reply { margin-left: 12px; }
+      /* Ledger trên mobile */
+      .tbl-ledger-hist {
+        --cols: minmax(0, 1fr) auto !important;
+      }
+      .tbl-ledger-hist .tbl-head {
+        display: none !important;
+      }
+      .tbl-ledger-hist .tbl-row {
+        padding: 12px 16px;
+        min-height: unset;
+        gap: 12px;
+      }
+      .tbl-ledger-hist.ledger .tbl-row::before {
+        display: none !important;
+      }
+      .tbl-ledger-hist .no,
+      .tbl-ledger-hist .col-id,
+      .tbl-ledger-hist .col-time {
+        display: none !important;
+      }
+      .ledger-mobile-meta {
+        display: flex !important;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      .ledger-mobile-sub {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-3);
+      }
+
+      .metric-strip {
+        grid-template-columns: 1fr;
+      }
+      .stat-strip-4 {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .comment-reply {
+        margin-left: 12px;
+      }
     }
   </style>
 </head>
@@ -266,7 +323,27 @@
   <script>
     (function () {
       var D = window.CLX;
+      var U = window.CLXUI;
+      var esc = U.esc;
+      var ticks = U.ticks;
+      var verdict = U.verdict;
+      var paginate = U.paginate;
+      var pager = U.pager;
       var container = document.getElementById('view-container');
+
+      // Đọc tham số URL
+      function getParams() {
+        var p = new URLSearchParams(window.location.search);
+        return {
+          classCode: p.get('class') || '',
+          code: p.get('code') || '',
+          tab: p.get('tab') || '',
+          page: parseInt(p.get('p') || p.get('page'), 10) || 1,
+          size: parseInt(p.get('size'), 10) || 20
+        };
+      }
+
+      var initParams = getParams();
 
       // State lưu trữ cục bộ
       var state = {
@@ -277,8 +354,8 @@
         fDiff: '',
         fTopic: '',
         fStatus: '',
-        page: 1,
-        pageSize: 10,
+        page: initParams.page,
+        pageSize: initParams.size,
         mapSearch: '',
         mapStage: 'all',
         mapStatus: 'all',
@@ -286,46 +363,116 @@
         submitResult: null,
         commentText: '',
         replyParentId: null,
-        comments: (D.baseComments || []).slice(),
+        currentCode: null,
+        comments: (function () {
+          return (D.baseComments || []).map(function (c) {
+            var cp = Object.assign({}, c);
+            if (!cp.assignmentCode) cp.assignmentCode = 'nmap-discovery';
+            if (!cp.classCode) cp.classCode = 'INT1449.01';
+            return cp;
+          });
+        })(),
         extraHistory: [],
-        histPage: 1
+        histPage: 1,
+        histPageSize: 5,
+        assignmentOverrides: {}
       };
-
-      // Đọc tham số URL
-      function getParams() {
-        var p = new URLSearchParams(window.location.search);
-        return {
-          classCode: p.get('class') || '',
-          code: p.get('code') || '',
-          tab: p.get('tab') || ''
-        };
-      }
 
       // Cập nhật tiêu đề Topbar và Document
       function setPageHeader(title, crumb) {
         document.title = (crumb ? title + ' · ' + crumb : title) + ' · CyberLabX';
         var titleEl = document.querySelector('.topbar .page-title');
         if (titleEl) {
-          titleEl.innerHTML = (crumb ? '<span class="crumb">' + crumb + ' / </span>' : '') + title;
+          titleEl.innerHTML = (crumb ? '<span class="crumb">' + esc(crumb) + ' / </span>' : '') + esc(title);
         }
       }
 
-      // Lấy thời gian hiện tại từ đồng hồ thực
+      // Lấy thời gian hiện tại từ đồng hồ thực dạng YYYY-MM-DD HH:mm
       function getNowFormatted() {
         var now = new Date();
         var pad = function (n) { return n < 10 ? '0' + n : String(n); };
         return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
       }
 
-      // Thoát chuỗi an toàn khi chèn vào thuộc tính HTML
-      function escapeAttr(str) {
-        if (str == null) return '';
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+      // Lấy số lượt nộp đã dùng và tối đa từ chuỗi 'used/max'
+      function getAssignmentAttempts(assignment) {
+        var used = 0;
+        var max = 4;
+        if (assignment && assignment.attempts && typeof assignment.attempts === 'string' && assignment.attempts.indexOf('/') !== -1) {
+          var parts = assignment.attempts.split('/');
+          used = parseInt(parts[0], 10) || 0;
+          max = parseInt(parts[1], 10) || 4;
+        }
+        return { used: used, max: max };
+      }
+
+      // Cập nhật trạng thái và số lượt nộp của bài tập vào state và dữ liệu dùng chung (Item 2 & 4)
+      function updateAssignmentState(code, newStatus, newAttemptsStr) {
+        if (!code) return;
+        if (!state.assignmentOverrides) state.assignmentOverrides = {};
+        state.assignmentOverrides[code] = {
+          status: newStatus,
+          attempts: newAttemptsStr
+        };
+
+        // Cập nhật danh sách bài tập của mọi lớp trong bộ nhớ
+        if (D.classes) {
+          for (var c = 0; c < D.classes.length; c++) {
+            if (D.classes[c].assignments) {
+              for (var a = 0; a < D.classes[c].assignments.length; a++) {
+                if (D.classes[c].assignments[a].code === code) {
+                  if (newStatus) D.classes[c].assignments[a].status = newStatus;
+                  if (newAttemptsStr) D.classes[c].assignments[a].attempts = newAttemptsStr;
+                }
+              }
+            }
+          }
+        }
+
+        // Cập nhật D.assignmentDetails
+        if (D.assignmentDetails && D.assignmentDetails[code]) {
+          if (newStatus) D.assignmentDetails[code].status = newStatus;
+          if (newAttemptsStr) D.assignmentDetails[code].attempts = newAttemptsStr;
+        }
+
+        // Cập nhật D.dueAssignments
+        if (D.dueAssignments) {
+          for (var d = 0; d < D.dueAssignments.length; d++) {
+            if (D.dueAssignments[d].code === code) {
+              if (newStatus) D.dueAssignments[d].status = newStatus;
+              if (newAttemptsStr) D.dueAssignments[d].attempts = newAttemptsStr;
+            }
+          }
+        }
+
+        // Cập nhật D.publicLabMapStages
+        if (D.publicLabMapStages) {
+          for (var s = 0; s < D.publicLabMapStages.length; s++) {
+            if (D.publicLabMapStages[s].labs) {
+              for (var l = 0; l < D.publicLabMapStages[s].labs.length; l++) {
+                if (D.publicLabMapStages[s].labs[l].code === code) {
+                  if (newStatus === 'AC') D.publicLabMapStages[s].labs[l].status = 'completed';
+                  else if (newStatus) D.publicLabMapStages[s].labs[l].status = 'in_progress';
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Render vạch số lượt nộp đã dùng / tối đa
+      function renderAttemptsTicks(attemptsStr) {
+        if (!attemptsStr || typeof attemptsStr !== 'string' || attemptsStr.indexOf('/') === -1) {
+          return '<span class="faint" style="font-size:12px">Chưa nộp</span>';
+        }
+        var parts = attemptsStr.split('/');
+        var used = parseInt(parts[0], 10) || 0;
+        var max = parseInt(parts[1], 10) || 1;
+        var isExhausted = used >= max;
+        return '<div class="attempts">' +
+          ticks(max, used, isExhausted ? 'is-error' : '') +
+          '<span class="mono tnum faint" style="font-size:11.5px">' + esc(attemptsStr) + '</span>' +
+          '</div>';
       }
 
       // Tìm thông tin lớp
@@ -410,18 +557,23 @@
           res.courseName = res.courseName || mapStageName;
           res.classCode = res.classCode || 'PUBLIC-MAP';
         }
+        if (state.assignmentOverrides && state.assignmentOverrides[code]) {
+          Object.assign(res, state.assignmentOverrides[code]);
+        }
         return res;
       }
 
       // Điều hướng nội bộ không tải lại trang
       function navigate(url) {
         window.history.pushState(null, '', url);
+        var p = getParams();
         state.search = '';
         state.fGroup = '';
         state.fDiff = '';
         state.fTopic = '';
         state.fStatus = '';
-        state.page = 1;
+        state.page = p.page || 1;
+        state.pageSize = p.size || 20;
         state.pickedFile = null;
         state.submitResult = null;
         state.replyParentId = null;
@@ -455,28 +607,30 @@
 
           D.classes.forEach(function (c) {
             var pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
+            var doneTicks = Math.round((c.done / c.total) * 20);
+
             html += '<div class="card card-pad class-card">';
             html += '<div>';
             html += '<div class="row-between" style="margin-bottom:12px">';
-            html += '<div class="row-gap"><span class="chip chip-mono">' + c.code + '</span><span class="dim" style="font-size:12.5px">' + c.group + '</span></div>';
+            html += '<div class="row-gap"><span class="chip chip-mono">' + esc(c.code) + '</span><span class="faint" style="font-size:12.5px">' + esc(c.group) + '</span></div>';
             html += '<span class="chip" style="font-size:11.5px">' + c.credits + ' tín chỉ</span>';
             html += '</div>';
-            html += '<h2 style="font-size:16.5px;margin-bottom:8px;line-height:1.4">' + c.name + '</h2>';
-            html += '<div class="dim" style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:16px">';
-            html += '<i data-lucide="user-round"></i><span>GV: <b style="color:var(--text);font-weight:500">' + c.teacher + '</b></span>';
+            html += '<h2 style="font-size:16px;margin:8px 0;line-height:1.4">' + esc(c.name) + '</h2>';
+            html += '<div class="faint" style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:16px">';
+            html += '<i data-lucide="user-round"></i><span>GV: <b style="color:var(--text);font-weight:500">' + esc(c.teacher) + '</b></span>';
             html += '</div>';
             html += '</div>';
 
             html += '<div>';
             html += '<div style="margin-bottom:16px">';
             html += '<div class="row-between" style="font-size:12.5px;margin-bottom:6px;gap:8px">';
-            html += '<span class="dim">Tiến độ hoàn thành:</span>';
+            html += '<span class="dim">Tiến độ bài tập:</span>';
             html += '<span class="mono tnum dim" style="flex-shrink:0;white-space:nowrap">' + c.done + '/' + c.total + ' bài (' + pct + '%)</span>';
             html += '</div>';
-            html += '<div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>';
+            html += '<div class="class-ticks">' + ticks(20, doneTicks) + '</div>';
             html += '</div>';
 
-            html += '<button type="button" class="btn class-enter-btn" data-class="' + c.code + '" style="width:100%"><i data-lucide="flask-conical"></i>Luyện tập<i data-lucide="arrow-right"></i></button>';
+            html += '<a class="btn class-enter-btn" href="assignments.html?class=' + encodeURIComponent(c.code) + '" data-class="' + esc(c.code) + '" style="width:100%"><i data-lucide="flask-conical"></i>Vào lớp học phần<i data-lucide="arrow-right"></i></a>';
             html += '</div>';
             html += '</div>';
           });
@@ -486,10 +640,11 @@
 
           container.innerHTML = html;
 
-          // Bắt sự kiện Luyện tập
+          // Bắt sự kiện Vào lớp học phần (SPA click)
           document.querySelectorAll('.class-enter-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-              navigate('assignments.html?class=' + btn.dataset.class);
+            btn.addEventListener('click', function (e) {
+              e.preventDefault();
+              navigate(btn.getAttribute('href'));
             });
           });
 
@@ -509,18 +664,18 @@
           // Thẻ chỉ số tổng quan
           html += '<section class="card stat-strip stat-strip-4" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px" aria-label="Chỉ số lộ trình">';
           html += '<div class="stat"><div class="label">Tiến độ toàn bản đồ</div><div class="value mono">' + solvedLabs + '/' + totalLabs + '</div><div class="hint">' + overallPct + '% hoàn thành</div></div>';
-          html += '<div class="stat"><div class="label">Điểm XP đã đạt</div><div class="value mono">' + earnedXp.toLocaleString() + '</div><div class="hint">trên ' + totalXp.toLocaleString() + ' XP</div></div>';
+          html += '<div class="stat"><div class="label">Điểm XP đã đạt</div><div class="value mono">' + earnedXp.toLocaleString('en-US') + '</div><div class="hint">trên ' + totalXp.toLocaleString('en-US') + ' XP</div></div>';
           html += '<div class="stat"><div class="label">Đang thực hành dở</div><div class="value mono">' + inProgressLabs + '</div><div class="hint">bài lab chưa nộp đủ</div></div>';
           html += '<div class="stat"><div class="label">Chặng lộ trình</div><div class="value mono">' + stages.length + '</div><div class="hint">Cơ bản → Nâng cao</div></div>';
           html += '</section>';
 
           // Toolbar tìm kiếm & lọc chặng
           html += '<div class="toolbar" style="margin-bottom:20px">';
-          html += '<div class="search" style="flex:1;min-width:240px"><i data-lucide="search"></i><input class="input" id="map-search-input" placeholder="Tìm theo tên bài, mã bài hoặc kỹ năng" value="' + escapeAttr(state.mapSearch) + '" aria-label="Tìm kiếm lộ trình"></div>';
+          html += '<div class="search" style="flex:1;min-width:240px"><i data-lucide="search"></i><input class="input" id="map-search-input" placeholder="Tìm theo tên bài, mã bài hoặc kỹ năng" value="' + esc(state.mapSearch) + '" aria-label="Tìm kiếm lộ trình"></div>';
           html += '<select class="select" id="map-stage-select" style="width:auto" aria-label="Chọn chặng">';
           html += '<option value="all">Tất cả các chặng (' + stages.length + ')</option>';
           stages.forEach(function (s) {
-            html += '<option value="' + s.id + '"' + (state.mapStage === s.id ? ' selected' : '') + '>' + s.title + '</option>';
+            html += '<option value="' + esc(s.id) + '"' + (state.mapStage === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>';
           });
           html += '</select>';
           html += '<select class="select" id="map-status-select" style="width:auto" aria-label="Lọc trạng thái">';
@@ -575,31 +730,37 @@
               stagesHtml += '<section class="card card-pad">';
               stagesHtml += '<div class="row-between" style="flex-wrap:wrap;margin-bottom:12px;gap:8px">';
               stagesHtml += '<div>';
-              stagesHtml += '<div class="row-gap" style="margin-bottom:4px"><span class="chip chip-mono">Chặng ' + stageNumStr + '</span><h2 style="font-size:16px;margin:0">' + stage.title + '</h2></div>';
-              stagesHtml += '<div class="faint" style="font-size:13px">' + stage.desc + '</div>';
+              stagesHtml += '<div class="row-gap" style="margin-bottom:4px"><span class="chip chip-mono">Chặng ' + stageNumStr + '</span><h2 style="font-size:16px;margin:0">' + esc(stage.title) + '</h2></div>';
+              stagesHtml += '<div class="faint" style="font-size:13px">' + esc(stage.desc) + '</div>';
               stagesHtml += '</div>';
               stagesHtml += '<div style="text-align:right">';
-              stagesHtml += '<div class="mono tnum" style="font-size:12.5px;color:var(--text-2)">' + stageDone + '/' + stageTotal + ' bài (' + stagePct + '%)</div>';
-              stagesHtml += '<div class="progress" style="width:80px;margin-top:6px"><i style="width:' + stagePct + '%"></i></div>';
+              stagesHtml += '<div class="mono tnum" style="font-size:12.5px;color:var(--text-2);margin-bottom:4px">' + stageDone + '/' + stageTotal + ' bài (' + stagePct + '%)</div>';
+              stagesHtml += '<div class="class-ticks" style="width:120px">' + ticks(stageTotal, stageDone, 'is-ok') + '</div>';
               stagesHtml += '</div>';
               stagesHtml += '</div>';
 
               if (filteredLabs.length === 0) {
                 stagesHtml += '<div class="empty" style="padding:24px 0">Không có bài tập nào phù hợp với bộ lọc trong chặng này.</div>';
               } else {
-                stagesHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:16px">';
+                stagesHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px">';
                 filteredLabs.forEach(function (lab) {
                   var isCompleted = lab.status === 'completed';
                   var isInProgress = lab.status === 'in_progress';
                   var isLocked = lab.status === 'locked';
+                  var detailUrl = 'assignments.html?code=' + encodeURIComponent(lab.code);
 
-                  stagesHtml += '<div class="card card-pad lab-grid-card" style="background:var(--surface-2)">';
+                  if (isLocked) {
+                    stagesHtml += '<div class="card card-pad lab-grid-card" style="background:var(--surface-2);opacity:0.7">';
+                  } else {
+                    stagesHtml += '<a class="card card-pad lab-grid-card is-link" href="' + detailUrl + '" style="background:var(--surface-2);text-decoration:none;color:inherit">';
+                  }
+
                   stagesHtml += '<div>';
                   stagesHtml += '<div class="row-between" style="margin-bottom:8px">';
                   if (isCompleted) {
-                    stagesHtml += '<span class="chip chip-ok"><span class="dot"></span>Đã giải (AC)</span>';
+                    stagesHtml += verdict('AC');
                   } else if (isInProgress) {
-                    stagesHtml += '<span class="chip chip-warn"><span class="dot"></span>Đang làm dở</span>';
+                    stagesHtml += verdict('WA');
                   } else if (isLocked) {
                     stagesHtml += '<span class="chip"><i data-lucide="lock" style="width:12px;height:12px"></i>Chưa mở khóa</span>';
                   } else {
@@ -608,12 +769,12 @@
                   stagesHtml += '<span class="mono tnum" style="font-size:12px;color:var(--accent)">+' + (lab.points || 50) + ' XP</span>';
                   stagesHtml += '</div>';
 
-                  stagesHtml += '<div style="font-weight:500;font-size:14px;line-height:1.4;margin-bottom:4px">' + lab.title + '</div>';
-                  stagesHtml += '<div class="mono faint" style="font-size:12px;margin-bottom:10px">' + lab.code + '</div>';
+                  stagesHtml += '<div style="font-weight:500;font-size:14px;line-height:1.4;margin-bottom:4px">' + esc(lab.title) + '</div>';
+                  stagesHtml += '<div class="mono faint" style="font-size:12px;margin-bottom:10px">' + esc(lab.code) + '</div>';
 
                   stagesHtml += '<div class="row-gap" style="flex-wrap:wrap;margin-bottom:12px">';
-                  if (lab.skill) stagesHtml += '<span class="chip" style="font-size:11px">' + lab.skill + '</span>';
-                  stagesHtml += '<span class="chip" style="font-size:11px">' + (lab.diff || 'Mức 1') + '</span>';
+                  if (lab.skill) stagesHtml += '<span class="chip" style="font-size:11px">' + esc(lab.skill) + '</span>';
+                  stagesHtml += '<span class="chip" style="font-size:11px">' + esc(lab.diff || 'Mức 1') + '</span>';
                   if (typeof lab.solveRate === 'number') {
                     stagesHtml += '<span class="faint tnum" style="font-size:11.5px">' + lab.solveRate + '% giải</span>';
                   }
@@ -624,13 +785,17 @@
                   if (isLocked) {
                     stagesHtml += '<button type="button" class="btn btn-sm" disabled style="width:100%"><i data-lucide="lock"></i>Cần mở khóa</button>';
                   } else {
-                    var btnTxt = isCompleted ? 'Xem lại đề bài' : isInProgress ? 'Làm tiếp ngay' : 'Bắt đầu làm bài';
-                    var btnIcon = isCompleted ? 'check' : isInProgress ? 'terminal' : 'arrow-right';
-                    stagesHtml += '<button type="button" class="btn btn-sm open-lab-btn" data-code="' + lab.code + '" style="width:100%"><i data-lucide="' + btnIcon + '"></i>' + btnTxt + '</button>';
+                    var btnTxt = isCompleted ? 'Xem lại đề bài' : isInProgress ? 'Làm tiếp' : 'Bắt đầu làm';
+                    var btnIcon = isCompleted ? 'check' : 'arrow-right';
+                    stagesHtml += '<span class="btn btn-sm" style="width:100%"><i data-lucide="' + btnIcon + '"></i>' + btnTxt + '</span>';
                   }
                   stagesHtml += '</div>';
 
-                  stagesHtml += '</div>';
+                  if (isLocked) {
+                    stagesHtml += '</div>';
+                  } else {
+                    stagesHtml += '</a>';
+                  }
                 });
                 stagesHtml += '</div>';
               }
@@ -647,10 +812,11 @@
 
             listEl.innerHTML = stagesHtml;
 
-            // Bắt sự kiện Mở bài trong bản đồ
-            listEl.querySelectorAll('.open-lab-btn').forEach(function (btn) {
-              btn.addEventListener('click', function () {
-                navigate('assignments.html?code=' + btn.dataset.code);
+            // Bắt sự kiện SPA click cho bài tập trong bản đồ
+            listEl.querySelectorAll('a.lab-grid-card').forEach(function (link) {
+              link.addEventListener('click', function (e) {
+                e.preventDefault();
+                navigate(link.getAttribute('href'));
               });
             });
 
@@ -743,8 +909,8 @@
         // Hàng điều hướng trên cùng
         html += '<div class="row-between" style="margin-bottom:16px;flex-wrap:wrap;gap:12px">';
         html += '<div class="row-gap">';
-        html += '<button type="button" class="btn btn-sm" id="back-to-roster"><i data-lucide="arrow-left"></i>Quay lại danh sách lớp</button>';
-        html += '<div class="dim" style="font-size:13px">Lớp học phần <span class="faint">/</span> <b class="mono" style="color:var(--text);font-weight:500">' + classObj.code + '</b> · ' + classObj.name + '</div>';
+        html += '<a class="btn btn-sm" href="assignments.html" id="back-to-roster"><i data-lucide="arrow-left"></i>Danh sách lớp</a>';
+        html += '<div class="dim" style="font-size:13px">Lớp học phần <span class="faint">/ </span><b class="mono" style="color:var(--text);font-weight:500">' + esc(classObj.code) + '</b> · ' + esc(classObj.name) + '</div>';
         html += '</div>';
 
         // Toggle chuyển bảng / lưới
@@ -756,43 +922,45 @@
         html += '</div>';
         html += '</div>';
 
-        // Card tóm tắt lớp học phần
+        // Card tóm tắt lớp học phần (tiến độ 20 vạch)
         var pct = classObj.total ? Math.round((classObj.done / classObj.total) * 100) : 0;
+        var doneTicks = Math.round((classObj.done / classObj.total) * 20);
+
         html += '<section class="card card-pad" style="margin-bottom:20px">';
-        html += '<div class="row-between" style="flex-wrap:wrap;gap:12px">';
+        html += '<div class="row-between" style="flex-wrap:wrap;gap:16px">';
         html += '<div>';
-        html += '<h2 style="font-size:18px;margin-bottom:6px">' + classObj.name + '</h2>';
+        html += '<h2 style="font-size:18px;margin-bottom:6px">' + esc(classObj.name) + '</h2>';
         html += '<div class="row-gap" style="font-size:13px;color:var(--text-2);flex-wrap:wrap">';
-        html += '<span>Mã lớp: <b class="mono" style="color:var(--text);font-weight:500">' + classObj.code + '</b></span>';
+        html += '<span>Mã lớp: <b class="mono" style="color:var(--text);font-weight:500">' + esc(classObj.code) + '</b></span>';
         html += '<span>·</span>';
-        html += '<span>' + classObj.group + '</span>';
+        html += '<span>' + esc(classObj.group) + '</span>';
         html += '<span>·</span>';
-        html += '<span>GV: ' + classObj.teacher + '</span>';
+        html += '<span>GV: ' + esc(classObj.teacher) + '</span>';
         html += '<span>·</span>';
         html += '<span>' + classObj.credits + ' tín chỉ</span>';
         html += '<span>·</span>';
-        html += '<span>Hạn nộp: ' + classObj.deadline + '</span>';
+        html += '<span class="tnum">Hạn nộp: ' + esc(classObj.deadline) + '</span>';
         html += '</div>';
         html += '</div>';
 
-        html += '<div style="min-width:180px">';
+        html += '<div style="min-width:200px">';
         html += '<div class="row-between" style="font-size:12px;margin-bottom:6px">';
         html += '<span class="dim">Tiến độ bài tập:</span>';
-        html += '<span class="mono tnum dim">' + classObj.done + '/' + classObj.total + ' (' + pct + '%)</span>';
+        html += '<span class="mono tnum dim">' + classObj.done + '/' + classObj.total + ' bài (' + pct + '%)</span>';
         html += '</div>';
-        html += '<div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>';
+        html += '<div class="class-ticks">' + ticks(20, doneTicks) + '</div>';
         html += '</div>';
         html += '</div>';
         html += '</section>';
 
         // Thanh công cụ tìm kiếm và lọc
         html += '<div class="toolbar" style="margin-bottom:16px">';
-        html += '<div class="search" style="flex:1;min-width:220px"><i data-lucide="search"></i><input class="input" id="assign-search" placeholder="Tìm theo tên hoặc mã bài" value="' + escapeAttr(state.search) + '" aria-label="Tìm bài tập"></div>';
+        html += '<div class="search" style="flex:1;min-width:220px"><i data-lucide="search"></i><input class="input" id="assign-search" placeholder="Tìm theo tên hoặc mã bài" value="' + esc(state.search) + '" aria-label="Tìm bài tập"></div>';
 
         html += '<select class="select" id="filter-group" style="width:auto" aria-label="Lọc nhóm">';
         html += '<option value="">Tất cả nhóm</option>';
         groups.forEach(function (g) {
-          html += '<option value="' + g + '"' + (state.fGroup === g ? ' selected' : '') + '>' + g + '</option>';
+          html += '<option value="' + esc(g) + '"' + (state.fGroup === g ? ' selected' : '') + '>' + esc(g) + '</option>';
         });
         html += '</select>';
 
@@ -806,7 +974,7 @@
         html += '<select class="select" id="filter-topic" style="width:auto" aria-label="Lọc chủ đề">';
         html += '<option value="">Mọi chủ đề</option>';
         topics.forEach(function (t) {
-          html += '<option value="' + t + '"' + (state.fTopic === t ? ' selected' : '') + '>' + t + '</option>';
+          html += '<option value="' + esc(t) + '"' + (state.fTopic === t ? ' selected' : '') + '>' + esc(t) + '</option>';
         });
         html += '</select>';
 
@@ -817,15 +985,19 @@
         html += '</div>';
         html += '</div>';
 
-        // Vùng chứa danh sách bài tập (sẽ được cập nhật riêng khi gõ tìm kiếm)
-        html += '<div id="assign-list-container"></div>';
+        // Card chứa danh sách bài tập + host phân trang chuẩn CLXUI.pager
+        html += '<div class="card" id="assign-card">';
+        html += '<div id="assign-list-view"></div>';
+        html += '<div class="pager-host" id="assign-pager"></div>';
+        html += '</div>';
 
         container.innerHTML = html;
 
         // Bắt sự kiện quay lại
         var backBtn = document.getElementById('back-to-roster');
         if (backBtn) {
-          backBtn.addEventListener('click', function () {
+          backBtn.addEventListener('click', function (e) {
+            e.preventDefault();
             navigate('assignments.html');
           });
         }
@@ -850,10 +1022,23 @@
           });
         }
 
-        // Hàm cập nhật danh sách bài tập (không thay đổi toolbar và input)
+        // Khởi tạo phân trang chuẩn bằng CLXUI.pager (chọn số dòng [1, 2, 5, 10, 20])
+        var assignPager = pager(document.getElementById('assign-pager'), {
+          total: assignments.length,
+          page: state.page,
+          size: state.pageSize,
+          sizes: [1, 2, 5, 10, 20],
+          onChange: function (p, s) {
+            state.page = p;
+            state.pageSize = s;
+            updateAssignList();
+          }
+        });
+
+        // Hàm cập nhật danh sách bài tập (sử dụng CLXUI.paginate và CLXUI.pager)
         function updateAssignList() {
-          var listContainer = document.getElementById('assign-list-container');
-          if (!listContainer) return;
+          var listView = document.getElementById('assign-list-view');
+          if (!listView) return;
 
           // Áp dụng bộ lọc
           var q = state.search.trim().toLowerCase();
@@ -871,33 +1056,60 @@
             return true;
           });
 
-          // Phân trang
           var total = filtered.length;
+
+          if (total === 0) {
+            listView.innerHTML = '<div class="empty" style="padding:32px 16px;display:flex;flex-direction:column;align-items:center;gap:12px">' +
+              '<span>Không tìm thấy bài tập nào phù hợp. Thử đổi từ khóa hoặc xóa bộ lọc.</span>' +
+              '<button type="button" class="btn btn-sm" id="reset-filter-btn"><i data-lucide="refresh-cw"></i>Xóa bộ lọc</button>' +
+              '</div>';
+            assignPager.set({ total: 0, page: 1 });
+
+            var resetBtn = document.getElementById('reset-filter-btn');
+            if (resetBtn) {
+              resetBtn.addEventListener('click', function () {
+                state.search = '';
+                state.fGroup = '';
+                state.fDiff = '';
+                state.fTopic = '';
+                state.fStatus = '';
+                state.page = 1;
+                var sInp = document.getElementById('assign-search');
+                if (sInp) sInp.value = '';
+                var fgEl = document.getElementById('filter-group');
+                if (fgEl) fgEl.value = '';
+                var fdEl = document.getElementById('filter-diff');
+                if (fdEl) fdEl.value = '';
+                var ftEl = document.getElementById('filter-topic');
+                if (ftEl) ftEl.value = '';
+                document.querySelectorAll('.status-seg-btn').forEach(function (b) {
+                  b.setAttribute('aria-pressed', b.dataset.status === '' ? 'true' : 'false');
+                });
+                updateAssignList();
+              });
+            }
+            window.clxIcons();
+            return;
+          }
+
           var totalPages = Math.ceil(total / state.pageSize) || 1;
           if (state.page > totalPages) state.page = 1;
           var startIdx = (state.page - 1) * state.pageSize;
-          var pageItems = filtered.slice(startIdx, startIdx + state.pageSize);
+          var pageItems = paginate(filtered, state.page, state.pageSize);
 
           var listHtml = '';
 
-          if (total === 0) {
-            listHtml += '<div class="card card-pad"><div class="empty" style="padding:28px 16px;display:flex;flex-direction:column;align-items:center;gap:12px">';
-            listHtml += '<span>Không tìm thấy bài tập nào phù hợp. Thử đổi từ khóa hoặc xóa bộ lọc.</span>';
-            listHtml += '<button type="button" class="btn btn-sm" id="reset-filter-btn"><i data-lucide="refresh-cw"></i>Xóa bộ lọc</button>';
-            listHtml += '</div></div>';
-          } else if (state.assignView === 'table') {
-            listHtml += '<div class="card">';
-            listHtml += '<div style="overflow-x:auto">';
-            listHtml += '<div class="tbl tbl-class-assign" style="--cols: 56px 140px minmax(0,1.5fr) 140px 140px 90px 100px" role="table" aria-label="Danh sách bài tập">';
+          if (state.assignView === 'table') {
+            listHtml += '<div class="tbl tbl-class-assign" role="table" aria-label="Danh sách bài tập">';
             listHtml += '<div role="rowgroup">';
             listHtml += '<div class="tbl-row tbl-head" role="row">';
             listHtml += '<span role="columnheader" class="col-stt">STT</span>';
             listHtml += '<span role="columnheader" class="col-code">Mã bài</span>';
             listHtml += '<span role="columnheader" class="col-title">Tiêu đề</span>';
-            listHtml += '<span role="columnheader" class="col-group">Nhóm</span>';
+            listHtml += '<span role="columnheader" class="col-attempts">Lượt nộp</span>';
             listHtml += '<span role="columnheader" class="col-topic">Chủ đề</span>';
             listHtml += '<span role="columnheader" class="col-diff">Độ khó</span>';
-            listHtml += '<span role="columnheader" class="num col-status">Trạng thái</span>';
+            listHtml += '<span role="columnheader" class="num col-status">Kết quả</span>';
             listHtml += '</div>';
             listHtml += '</div>';
 
@@ -905,71 +1117,54 @@
             pageItems.forEach(function (row, idx) {
               var stt = startIdx + idx + 1;
               var diffLabel = 'Mức ' + (row.diff || 1);
-              var statusHtml = row.status ? '<span class="verdict v-' + row.status + '">' + row.status + '</span>' : '<span class="faint">Chưa làm</span>';
-              var detailUrl = 'assignments.html?class=' + classObj.code + '&code=' + row.code;
+              var statusHtml = row.status ? verdict(row.status) : '<span class="faint" style="font-size:12px">Chưa làm</span>';
+              var detailUrl = 'assignments.html?class=' + encodeURIComponent(classObj.code) + '&code=' + encodeURIComponent(row.code);
 
-              listHtml += '<div class="tbl-row is-link assign-row" data-code="' + row.code + '" role="row">';
+              listHtml += '<a class="tbl-row is-link assign-row" href="' + detailUrl + '" data-code="' + esc(row.code) + '" role="row">';
               listHtml += '<span role="cell" class="mono tnum faint col-stt">' + stt + '</span>';
-              listHtml += '<span role="cell" class="mono col-code" style="color:var(--accent);font-size:12.5px">' + row.code + '</span>';
+              listHtml += '<span role="cell" class="mono col-code" style="color:var(--accent);font-size:12.5px">' + esc(row.code) + '</span>';
               listHtml += '<div role="cell" class="col-title" style="min-width:0">';
-              listHtml += '<a class="trunc is-link" href="' + detailUrl + '" style="font-weight:500;color:var(--text);display:block;text-decoration:none" title="' + escapeAttr(row.title) + '">' + row.title + '</a>';
-              if (row.deadline) {
-                listHtml += '<div class="faint tnum desktop-deadline" style="font-size:11.5px">Hạn: ' + row.deadline + '</div>';
-              }
+              listHtml += '<div class="trunc" style="font-weight:500" title="' + esc(row.title) + '">' + esc(row.title) + '</div>';
               listHtml += '<div class="mobile-sub">';
-              listHtml += '<span class="mono" style="color:var(--accent)">' + row.code + '</span>';
+              listHtml += '<span class="mono" style="color:var(--accent)">' + esc(row.code) + '</span>';
               listHtml += '<span>·</span>';
               listHtml += '<span>' + diffLabel + '</span>';
+              if (row.attempts) {
+                listHtml += '<span>·</span><span class="mono tnum">' + esc(row.attempts) + '</span>';
+              }
               if (row.deadline) {
-                listHtml += '<span>·</span><span class="tnum">Hạn: ' + row.deadline + '</span>';
+                listHtml += '<span>·</span><span class="tnum">Hạn: ' + esc(row.deadline) + '</span>';
               }
               listHtml += '</div>';
               listHtml += '</div>';
-              listHtml += '<span role="cell" class="dim trunc col-group" style="font-size:13px">' + (row.group || '—') + '</span>';
-              listHtml += '<span role="cell" class="faint trunc col-topic" style="font-size:13px">' + (row.topic || '—') + '</span>';
+              listHtml += '<div role="cell" class="col-attempts">' + renderAttemptsTicks(row.attempts) + '</div>';
+              listHtml += '<span role="cell" class="faint trunc col-topic" style="font-size:13px">' + esc(row.topic || '—') + '</span>';
               listHtml += '<span role="cell" class="col-diff"><span class="chip" style="font-size:11.5px">' + diffLabel + '</span></span>';
               listHtml += '<span role="cell" class="num col-status">' + statusHtml + '</span>';
-              listHtml += '</div>';
+              listHtml += '</a>';
             });
             listHtml += '</div>';
-
-            listHtml += '</div>';
-            listHtml += '</div>';
-
-            // Phân trang
-            if (totalPages > 1) {
-              listHtml += '<div class="pager">';
-              listHtml += '<span class="tnum">' + (startIdx + 1) + '–' + Math.min(startIdx + state.pageSize, total) + ' / ' + total + ' bài</span>';
-              listHtml += '<div class="pages">';
-              listHtml += '<button type="button" id="prev-page"' + (state.page <= 1 ? ' disabled' : '') + ' aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>';
-              for (var p = 1; p <= totalPages; p++) {
-                listHtml += '<button type="button" class="page-num-btn" data-page="' + p + '"' + (state.page === p ? ' aria-current="page"' : '') + '>' + p + '</button>';
-              }
-              listHtml += '<button type="button" id="next-page"' + (state.page >= totalPages ? ' disabled' : '') + ' aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>';
-              listHtml += '</div>';
-              listHtml += '</div>';
-            }
-
             listHtml += '</div>';
 
           } else {
             // Dạng lưới bài tập (Grid view)
-            listHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">';
+            listHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px">';
             pageItems.forEach(function (row) {
               var diffLabel = 'Mức ' + (row.diff || 1);
-              var statusHtml = row.status ? '<span class="verdict v-' + row.status + '">' + row.status + '</span>' : '<span class="faint" style="font-size:12px">Chưa làm</span>';
-              var detailUrl = 'assignments.html?class=' + classObj.code + '&code=' + row.code;
+              var statusHtml = row.status ? verdict(row.status) : '<span class="faint" style="font-size:12px">Chưa làm</span>';
+              var detailUrl = 'assignments.html?class=' + encodeURIComponent(classObj.code) + '&code=' + encodeURIComponent(row.code);
 
-              listHtml += '<a class="card card-pad lab-grid-card assign-row is-link" href="' + detailUrl + '" data-code="' + row.code + '" style="cursor:pointer;text-decoration:none;color:inherit;display:flex">';
+              listHtml += '<a class="card card-pad lab-grid-card assign-row is-link" href="' + detailUrl + '" data-code="' + esc(row.code) + '" style="text-decoration:none;color:inherit;background:var(--surface-2)">';
               listHtml += '<div>';
               listHtml += '<div class="row-between" style="margin-bottom:8px">';
-              listHtml += '<span class="chip chip-mono">' + row.code + '</span>';
+              listHtml += '<span class="chip chip-mono">' + esc(row.code) + '</span>';
               listHtml += '<span class="chip" style="font-size:11.5px">' + diffLabel + '</span>';
               listHtml += '</div>';
-              listHtml += '<div style="font-weight:500;font-size:15px;line-height:1.4;margin-bottom:6px">' + row.title + '</div>';
-              listHtml += '<div class="faint" style="font-size:12.5px;margin-bottom:10px">' + (row.group || '') + ' · ' + (row.topic || '') + '</div>';
+              listHtml += '<div style="font-weight:500;font-size:15px;line-height:1.4;margin-bottom:6px">' + esc(row.title) + '</div>';
+              listHtml += '<div class="faint" style="font-size:12.5px;margin-bottom:10px">' + esc(row.group || '') + ' · ' + esc(row.topic || '') + '</div>';
+              listHtml += '<div style="margin-bottom:8px">' + renderAttemptsTicks(row.attempts) + '</div>';
               if (row.deadline) {
-                listHtml += '<div class="faint tnum" style="font-size:12px"><i data-lucide="clock" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:3px"></i>Hạn: ' + row.deadline + '</div>';
+                listHtml += '<div class="faint tnum" style="font-size:12px"><i data-lucide="clock" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:3px"></i>Hạn: ' + esc(row.deadline) + '</div>';
               }
               listHtml += '</div>';
 
@@ -981,82 +1176,18 @@
               listHtml += '</a>';
             });
             listHtml += '</div>';
-
-            // Phân trang cho dạng lưới
-            if (totalPages > 1) {
-              listHtml += '<div class="card" style="margin-top:16px">';
-              listHtml += '<div class="pager">';
-              listHtml += '<span class="tnum">' + (startIdx + 1) + '–' + Math.min(startIdx + state.pageSize, total) + ' / ' + total + ' bài</span>';
-              listHtml += '<div class="pages">';
-              listHtml += '<button type="button" id="prev-page"' + (state.page <= 1 ? ' disabled' : '') + ' aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>';
-              for (var pg = 1; pg <= totalPages; pg++) {
-                listHtml += '<button type="button" class="page-num-btn" data-page="' + pg + '"' + (state.page === pg ? ' aria-current="page"' : '') + '>' + pg + '</button>';
-              }
-              listHtml += '<button type="button" id="next-page"' + (state.page >= totalPages ? ' disabled' : '') + ' aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>';
-              listHtml += '</div>';
-              listHtml += '</div>';
-              listHtml += '</div>';
-            }
           }
 
-          listContainer.innerHTML = listHtml;
+          listView.innerHTML = listHtml;
+
+          // Cập nhật phân trang chuẩn
+          assignPager.set({ total: total, page: state.page, size: state.pageSize });
 
           // Bắt sự kiện mở bài tập (SPA click)
-          listContainer.querySelectorAll('.assign-row').forEach(function (el) {
+          listView.querySelectorAll('.assign-row').forEach(function (el) {
             el.addEventListener('click', function (e) {
               e.preventDefault();
-              navigate('assignments.html?class=' + classObj.code + '&code=' + el.dataset.code);
-            });
-          });
-
-          // Bắt sự kiện Xóa bộ lọc (Item 20)
-          var resetBtn = document.getElementById('reset-filter-btn');
-          if (resetBtn) {
-            resetBtn.addEventListener('click', function () {
-              state.search = '';
-              state.fGroup = '';
-              state.fDiff = '';
-              state.fTopic = '';
-              state.fStatus = '';
-              state.page = 1;
-              var sInp = document.getElementById('assign-search');
-              if (sInp) sInp.value = '';
-              var fgEl = document.getElementById('filter-group');
-              if (fgEl) fgEl.value = '';
-              var fdEl = document.getElementById('filter-diff');
-              if (fdEl) fdEl.value = '';
-              var ftEl = document.getElementById('filter-topic');
-              if (ftEl) ftEl.value = '';
-              document.querySelectorAll('.status-seg-btn').forEach(function (b) {
-                b.setAttribute('aria-pressed', b.dataset.status === '' ? 'true' : 'false');
-              });
-              updateAssignList();
-            });
-          }
-
-          // Bắt sự kiện phân trang
-          var prevBtn = document.getElementById('prev-page');
-          if (prevBtn) {
-            prevBtn.addEventListener('click', function () {
-              if (state.page > 1) {
-                state.page--;
-                updateAssignList();
-              }
-            });
-          }
-          var nextBtn = document.getElementById('next-page');
-          if (nextBtn) {
-            nextBtn.addEventListener('click', function () {
-              if (state.page < totalPages) {
-                state.page++;
-                updateAssignList();
-              }
-            });
-          }
-          listContainer.querySelectorAll('.page-num-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-              state.page = parseInt(btn.dataset.page, 10);
-              updateAssignList();
+              navigate(el.getAttribute('href'));
             });
           });
 
@@ -1118,9 +1249,10 @@
       // VIEW 3: CHI TIẾT BÀI TẬP VÀ NỘP BÀI
       // ==========================================
       function renderDetail(assignment, classObj) {
-        setPageHeader(assignment.title, 'Bài tập');
+        var crumbName = classObj ? classObj.code : 'Bài tập';
+        setPageHeader(assignment.title, crumbName);
 
-        var backUrl = classObj ? ('assignments.html?class=' + classObj.code) : 'assignments.html';
+        var backUrl = classObj ? ('assignments.html?class=' + encodeURIComponent(classObj.code)) : 'assignments.html';
         var backLabel = classObj ? ('Danh sách bài của ' + classObj.code) : 'Danh sách bài tập';
 
         var metrics = assignment.codeMetrics || {
@@ -1136,7 +1268,26 @@
           { n: 3, t: 'Thu thập kết quả', d: 'Xuất file chứng nhận kết quả .lab để nộp bài.' }
         ];
 
-        // Lọc lịch sử nộp bài: đúng theo mã bài hoặc đúng cả tiêu đề và môn học (tránh kéo bài khác)
+        // Xác định số bước đã hoàn thành
+        var doneSteps = 0;
+        if (assignment.status === 'AC') {
+          doneSteps = steps.length;
+        } else if (assignment.status === 'WFN') {
+          doneSteps = 0;
+        } else if (assignment.status === 'WA' || assignment.status === 'WF') {
+          doneSteps = Math.max(1, steps.length - 1);
+        }
+
+        // Lọc bình luận theo đúng bài đang xem (Item 17)
+        var currentClassCode = assignment.classCode || (classObj ? classObj.code : '');
+        var currentLabComments = state.comments.filter(function (c) {
+          if (c.assignmentCode) {
+            return c.assignmentCode === assignment.code;
+          }
+          return assignment.code === 'nmap-discovery';
+        });
+
+        // Lọc lịch sử nộp bài: đúng theo mã bài hoặc đúng cả tiêu đề và môn học
         var allHistory = (state.extraHistory || []).concat(D.history || []);
         var currentLabHistory = allHistory.filter(function (h) {
           if (h.code && assignment.code) {
@@ -1152,20 +1303,11 @@
           return false;
         });
 
-        // Phân trang lịch sử bài này
-        var histPage = state.histPage || 1;
-        var histPageSize = 5;
-        var histTotal = currentLabHistory.length;
-        var histTotalPages = Math.ceil(histTotal / histPageSize) || 1;
-        if (histPage > histTotalPages) histPage = 1;
-        var histStart = (histPage - 1) * histPageSize;
-        var histItems = currentLabHistory.slice(histStart, histStart + histPageSize);
-
         var html = '';
 
         // Nút quay lại
         html += '<div style="margin-bottom:20px">';
-        html += '<button type="button" class="btn btn-sm" id="back-from-detail"><i data-lucide="arrow-left"></i>' + backLabel + '</button>';
+        html += '<a class="btn btn-sm" href="' + esc(backUrl) + '" id="back-from-detail"><i data-lucide="arrow-left"></i>' + esc(backLabel) + '</a>';
         html += '</div>';
 
         // Bố cục 2 cột chuẩn CyberLabX (.cols = cột chính + 340px aside)
@@ -1174,109 +1316,107 @@
         // CỘT CHÍNH
         html += '<div class="stack">';
 
-        // 1. Thẻ giới thiệu bài tập (Bỏ h1 lặp lại tiêu đề topbar)
+        // 1. Thẻ giới thiệu bài tập: đầu trang là hàng mã bài + Mức + hạn nộp (không lặp tiêu đề lớn)
         html += '<section class="card card-pad">';
         html += '<div class="row-between" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">';
         html += '<div class="row-gap">';
-        html += '<span class="chip chip-mono">' + assignment.code + '</span>';
-        html += '<span class="chip">' + (typeof assignment.diff === 'number' ? ('Mức ' + assignment.diff) : assignment.diff) + '</span>';
+        html += '<span class="chip chip-mono">' + esc(assignment.code) + '</span>';
+        html += '<span class="chip">' + esc(typeof assignment.diff === 'number' ? ('Mức ' + assignment.diff) : assignment.diff) + '</span>';
+        html += '<span class="chip chip-accent">+' + (assignment.points || assignment.xp || 50) + ' XP</span>';
+        if (assignment.status) {
+          html += verdict(assignment.status);
+        }
         html += '</div>';
         if (assignment.deadline) {
-          html += '<span class="faint tnum" style="font-size:12.5px"><i data-lucide="clock" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:3px"></i>Hạn nộp: <b style="color:var(--text);font-weight:500">' + assignment.deadline + '</b></span>';
+          html += '<span class="faint tnum" style="font-size:12.5px"><i data-lucide="clock" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:3px"></i>Hạn nộp: <b style="color:var(--text);font-weight:500">' + esc(assignment.deadline) + '</b></span>';
         }
         html += '</div>';
 
-        html += '<div class="dim" style="font-size:13px;margin-bottom:16px">' + (assignment.courseName || '') + ' · ' + (assignment.group || '') + ' · ' + (assignment.topic || assignment.sub || '') + '</div>';
+        html += '<div class="dim" style="font-size:13px;margin-bottom:16px">' + esc(assignment.courseName || '') + ' · ' + esc(assignment.group || '') + ' · ' + esc(assignment.topic || assignment.sub || '') + '</div>';
 
-        // Thông số kiểm thử & rubric (Dùng --text-2 trung tính cho rubric)
+        // Thông số kiểm thử & rubric (chữ --text-2 trung tính, không viền tô màu)
         html += '<div class="metric-strip" style="margin-bottom:20px">';
-        html += '<div class="metric-item"><div class="m-label">Thang kiểm thử</div><div class="m-val mono">' + metrics.testCases + '</div></div>';
-        html += '<div class="metric-item"><div class="m-label">Thời gian thực thi</div><div class="m-val mono">' + metrics.timeLimit + '</div></div>';
-        html += '<div class="metric-item"><div class="m-label">Bộ nhớ tối đa</div><div class="m-val mono">' + metrics.memoryLimit + '</div></div>';
-        html += '<div class="metric-item" style="grid-column:1/-1"><div class="m-label">Tiêu chuẩn chấm điểm</div><div class="m-val" style="color:var(--text-2);font-weight:400">' + (metrics.rubric || 'Đạt toàn bộ tiêu chí bài lab') + '</div></div>';
+        html += '<div class="metric-item"><div class="m-label">Thang kiểm thử</div><div class="m-val mono">' + esc(metrics.testCases) + '</div></div>';
+        html += '<div class="metric-item"><div class="m-label">Thời gian thực thi</div><div class="m-val mono">' + esc(metrics.timeLimit) + '</div></div>';
+        html += '<div class="metric-item"><div class="m-label">Bộ nhớ tối đa</div><div class="m-val mono">' + esc(metrics.memoryLimit) + '</div></div>';
+        html += '<div class="metric-item" style="grid-column:1/-1"><div class="m-label">Tiêu chuẩn chấm điểm</div><div class="m-val" style="color:var(--text-2);font-weight:400">' + esc(metrics.rubric || 'Đạt toàn bộ tiêu chí bài lab') + '</div></div>';
         html += '</div>';
 
         html += '<hr class="divider" style="margin:16px 0">';
         html += '<h2 style="font-size:15px;line-height:24px;margin-bottom:8px">Mô tả đề bài</h2>';
-        html += '<p style="color:var(--text-2);font-size:14px;line-height:1.7">' + (assignment.desc || 'Hoàn thành các yêu cầu trong phòng thực hành.') + '</p>';
+        html += '<p style="color:var(--text-2);font-size:14px;line-height:1.7">' + esc(assignment.desc || 'Hoàn thành các yêu cầu trong phòng thực hành.') + '</p>';
         html += '</section>';
 
-        // 2. Các bước thực hiện
+        // 2. Các bước thực hiện: đường dọc nối các bước và dấu vạch hoàn thành
         html += '<section class="card card-pad">';
-        html += '<div class="section-head"><h2 style="font-size:15px;line-height:24px"><i data-lucide="list" style="margin-right:6px"></i>Các bước thực hiện</h2></div>';
+        html += '<div class="section-head" style="align-items:center">';
+        html += '<h2 style="font-size:15px;line-height:24px;margin:0;display:flex;align-items:center"><i data-lucide="list" style="margin-right:6px"></i>Các bước thực hiện</h2>';
+        html += '<div class="row-gap" style="align-items:center;white-space:nowrap;flex-shrink:0"><span class="meta tnum" style="white-space:nowrap">' + doneSteps + '/' + steps.length + ' bước</span><div class="class-ticks" style="width:72px;flex-shrink:0">' + ticks(steps.length, doneSteps, doneSteps === steps.length ? 'is-ok' : '') + '</div></div>';
+        html += '</div>';
+
         html += '<div style="margin-top:16px">';
         steps.forEach(function (step, sIdx) {
           var isLast = sIdx === steps.length - 1;
+          var isDone = sIdx < doneSteps;
+
           html += '<div class="step-item">';
-          html += '<div class="step-spine"><span class="step-num">' + (step.n || (sIdx + 1)) + '</span>' + (!isLast ? '<span class="step-line"></span>' : '') + '</div>';
+          html += '<div class="step-spine">';
+          if (isDone) {
+            html += '<span class="step-num is-done"><i data-lucide="check" style="width:14px;height:14px"></i></span>';
+          } else {
+            html += '<span class="step-num">' + (step.n || (sIdx + 1)) + '</span>';
+          }
+          if (!isLast) {
+            html += '<span class="step-line"></span>';
+          }
+          html += '</div>';
           html += '<div class="step-body">';
-          html += '<div class="step-title">' + step.t + '</div>';
-          html += '<div class="step-desc">' + step.d + '</div>';
+          html += '<div class="step-title">' + esc(step.t) + '</div>';
+          html += '<div class="step-desc">' + esc(step.d) + '</div>';
           html += '</div>';
           html += '</div>';
         });
         html += '</div>';
 
-        // Khối kết quả cần đạt (màu trung tính, không tô màu trạng thái giả)
+        // Khối kết quả cần đạt (màu trung tính)
         html += '<div style="margin-top:12px;padding:12px 16px;border-radius:var(--r-card);background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);font-size:13px;display:flex;align-items:flex-start;gap:8px">';
         html += '<i data-lucide="check" style="width:16px;height:16px;flex:none;margin-top:2px;color:var(--text-2)"></i>';
-        html += '<div><b style="color:var(--text);font-weight:500">Kết quả cần đạt được:</b> ' + (assignment.expected || 'File kết quả phải ghi đầy đủ tiến trình của mọi bước mới được hệ thống chấm Accepted.') + '</div>';
+        html += '<div><b style="color:var(--text);font-weight:500">Kết quả cần đạt được:</b> ' + esc(assignment.expected || 'File kết quả phải ghi đầy đủ tiến trình của mọi bước mới được hệ thống chấm Accepted.') + '</div>';
         html += '</div>';
         html += '</section>';
 
-        // 3. Lịch sử nộp bài của bạn cho bài này
+        // 3. Lịch sử nộp bài của bạn cho bài này: dùng .ledger với cột số thứ tự .no + CLXUI.pager
         html += '<section class="card card-pad">';
-        html += '<div class="section-head"><h2 style="font-size:15px;line-height:24px">Lịch sử nộp bài của bạn</h2><span class="meta tnum">' + histTotal + ' lượt nộp</span></div>';
-        if (histTotal === 0) {
-          html += '<div class="empty" style="padding:20px 0">Bạn chưa nộp bài tập này lần nào.</div>';
-        } else {
-          html += '<div style="overflow-x:auto">';
-          html += '<div class="tbl" style="--cols: 72px 140px minmax(0,1fr) 90px" role="table" aria-label="Lịch sử bài này">';
-          html += '<div role="rowgroup">';
-          html += '<div class="tbl-row tbl-head" role="row"><span role="columnheader">ID</span><span role="columnheader">Thời gian</span><span role="columnheader">Bài tập</span><span role="columnheader" class="num">Kết quả</span></div>';
-          html += '</div>';
-          html += '<div role="rowgroup">';
-          histItems.forEach(function (item) {
-            html += '<div class="tbl-row" role="row">';
-            html += '<span role="cell" class="mono tnum faint">' + item.id + '</span>';
-            html += '<span role="cell" class="mono tnum faint" style="font-size:12.5px">' + item.time + '</span>';
-            html += '<span role="cell" class="trunc" style="font-weight:500">' + (item.ex || item.title || assignment.title) + '</span>';
-            html += '<span role="cell" class="num"><span class="verdict v-' + item.status + '">' + item.status + '</span></span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '</div>';
-          html += '</div>';
-
-          if (histTotalPages > 1) {
-            html += '<div class="pager" style="margin-top:12px">';
-            html += '<span class="tnum">' + (histStart + 1) + '–' + Math.min(histStart + histPageSize, histTotal) + ' / ' + histTotal + ' lượt</span>';
-            html += '<div class="pages">';
-            html += '<button type="button" id="hist-prev"' + (histPage <= 1 ? ' disabled' : '') + ' aria-label="Trang trước"><i data-lucide="chevron-left"></i></button>';
-            for (var hp = 1; hp <= histTotalPages; hp++) {
-              html += '<button type="button" class="hist-page-btn" data-page="' + hp + '"' + (histPage === hp ? ' aria-current="page"' : '') + '>' + hp + '</button>';
-            }
-            html += '<button type="button" id="hist-next"' + (histPage >= histTotalPages ? ' disabled' : '') + ' aria-label="Trang sau"><i data-lucide="chevron-right"></i></button>';
-            html += '</div>';
-            html += '</div>';
-          }
-        }
+        html += '<div class="section-head"><h2 style="font-size:15px;line-height:24px">Lịch sử nộp bài của bạn</h2><span class="meta tnum">' + currentLabHistory.length + ' lượt nộp</span></div>';
+        html += '<div class="card" id="detail-hist-card" style="margin-top:8px">';
+        html += '<div id="detail-hist-view"></div>';
+        html += '<div class="pager-host" id="detail-hist-pager"></div>';
+        html += '</div>';
         html += '</section>';
 
         // 4. Bình luận bài tập
         html += '<section class="card card-pad">';
-        html += '<div class="section-head"><h2 style="font-size:15px;line-height:24px">Bình luận & Trao đổi</h2><span class="meta tnum">' + state.comments.length + ' bình luận</span></div>';
+        html += '<div class="section-head"><h2 style="font-size:15px;line-height:24px">Bình luận & Trao đổi</h2><span class="meta tnum">' + currentLabComments.length + ' bình luận</span></div>';
+        if (state.replyParentId) {
+          var repTarget = currentLabComments.find(function (c) { return c.id === state.replyParentId; });
+          if (repTarget) {
+            html += '<div class="row-between" style="margin-bottom:8px;padding:6px 10px;border-radius:var(--r-control);background:var(--surface-2);border:1px solid var(--line);font-size:12px;color:var(--text-2)">';
+            html += '<span><i data-lucide="corner-down-right" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:4px;color:var(--accent)"></i>Đang trả lời <b>' + esc(repTarget.name) + '</b></span>';
+            html += '<button type="button" class="btn btn-ghost btn-sm" id="cancel-reply-btn" style="height:22px;padding:0 6px;font-size:11px">Hủy</button>';
+            html += '</div>';
+          }
+        }
         html += '<div style="margin-bottom:16px">';
-        html += '<textarea class="textarea" id="comment-textarea" placeholder="Nhập câu hỏi hoặc trao đổi về bài lab này..." aria-label="Nội dung bình luận">' + escapeAttr(state.commentText) + '</textarea>';
+        html += '<textarea class="textarea" id="comment-textarea" placeholder="Nhập câu hỏi hoặc trao đổi về bài lab này..." aria-label="Nội dung bình luận">' + esc(state.commentText) + '</textarea>';
         html += '<div class="row-between" style="margin-top:10px">';
         html += '<span class="faint" style="font-size:12px">Bình luận công khai cho giảng viên và sinh viên cùng lớp.</span>';
-        html += '<button type="button" class="btn" id="post-comment-btn"><i data-lucide="send"></i>Gửi bình luận</button>';
+        html += '<button type="button" class="btn btn-sm" id="post-comment-btn"><i data-lucide="send"></i>Gửi bình luận</button>';
         html += '</div>';
         html += '</div>';
 
         html += '<hr class="divider" style="margin:16px 0">';
 
-        // Vùng chứa bình luận (sẽ được dựng bằng DOM để gán textContent an toàn tuyệt đối)
+        // Vùng chứa bình luận (sẽ được dựng bằng DOM để gán textContent an toàn tuyệt đối chống XSS)
         html += '<div id="comments-list"></div>';
         html += '</section>';
 
@@ -1289,34 +1429,46 @@
         html += '<section class="card card-pad">';
         html += '<h2 style="font-size:15px;line-height:24px;margin-bottom:14px">Thông tin bài</h2>';
         html += '<dl class="kv">';
-        html += '<dt>Môn học</dt><dd>' + (assignment.courseName || '—') + '</dd>';
-        html += '<dt>Nhóm</dt><dd>' + (assignment.group || '—') + '</dd>';
-        html += '<dt>Chủ đề con</dt><dd>' + (assignment.topic || assignment.sub || '—') + '</dd>';
-        html += '<dt>Độ khó</dt><dd><span class="chip" style="font-size:11.5px">' + (typeof assignment.diff === 'number' ? ('Mức ' + assignment.diff) : assignment.diff) + '</span></dd>';
+        html += '<dt>Môn học</dt><dd>' + esc(assignment.courseName || '—') + '</dd>';
+        html += '<dt>Nhóm</dt><dd>' + esc(assignment.group || '—') + '</dd>';
+        html += '<dt>Chủ đề con</dt><dd>' + esc(assignment.topic || assignment.sub || '—') + '</dd>';
+        html += '<dt>Độ khó</dt><dd><span class="chip" style="font-size:11.5px">' + esc(typeof assignment.diff === 'number' ? ('Mức ' + assignment.diff) : assignment.diff) + '</span></dd>';
         html += '<dt>Điểm XP</dt><dd class="mono tnum" style="font-weight:500;color:var(--accent)">+' + (assignment.points || assignment.xp || 50) + ' XP</dd>';
-        if (assignment.attempts) {
-          html += '<dt>Số lượt nộp</dt><dd class="mono tnum">' + assignment.attempts + '</dd>';
-        }
+        html += '<dt>Số lượt nộp</dt><dd>' + renderAttemptsTicks(assignment.attempts) + '</dd>';
         html += '</dl>';
         html += '</section>';
 
-        // 2. Thẻ nộp bài tệp .lab
+        // 2. Thẻ nộp bài tệp .lab: nút Nộp bài là nút chính duy nhất của trang (.btn-primary)
+        var attInfo = getAssignmentAttempts(assignment);
+        var isExhausted = attInfo.used >= attInfo.max;
         var expectedFileName = 'B23DCCN135.' + assignment.code + '.lab';
         html += '<section class="card card-pad">';
         html += '<div class="row-between" style="margin-bottom:12px">';
         html += '<h2 style="font-size:15px;line-height:24px"><i data-lucide="upload" style="margin-right:6px"></i>Nộp bài thực hành</h2>';
+        if (isExhausted) {
+          html += '<span class="chip chip-err" style="font-size:11.5px">Hết lượt nộp</span>';
+        }
         html += '</div>';
 
-        html += '<p class="faint" style="font-size:12.5px;margin-bottom:12px;line-height:1.5">';
-        html += 'Duyệt file kết quả <span class="mono">.lab</span> được tạo sau khi chạy lệnh kết thúc lab trên máy ảo, tên tệp dạng <span class="mono">' + expectedFileName + '</span>.';
-        html += '</p>';
+        if (isExhausted) {
+          html += '<p class="faint" style="font-size:12.5px;margin-bottom:12px;line-height:1.5">';
+          html += 'Bạn đã dùng hết <b class="mono tnum" style="color:var(--err)">' + attInfo.used + '/' + attInfo.max + '</b> lượt nộp bài. Hệ thống đã khóa tính năng nộp của bài thực hành này.';
+          html += '</p>';
+        } else {
+          html += '<p class="faint" style="font-size:12.5px;margin-bottom:12px;line-height:1.5">';
+          html += 'Duyệt file kết quả <span class="mono">.lab</span> được tạo sau khi chạy lệnh kết thúc lab trên máy ảo, tên tệp dạng <span class="mono">' + esc(expectedFileName) + '</span>.';
+          html += '</p>';
+        }
 
-        // Dropzone bằng button có nhãn & file input có aria-label (Item 7)
-        html += '<input type="file" id="lab-file-picker" accept=".lab" style="display:none" aria-label="Chọn tệp nộp bài .lab">';
-        html += '<button type="button" class="dropzone" id="lab-dropzone" aria-label="Duyệt tệp nộp bài .lab">';
-        html += '<i data-lucide="file-up" style="width:28px;height:28px;color:var(--text-3)"></i>';
-        if (state.pickedFile) {
-          html += '<div class="mono" style="font-weight:500;color:var(--text);font-size:13px">' + escapeAttr(state.pickedFile.name) + '</div>';
+        // Dropzone bằng button có nhãn & file input có aria-label
+        html += '<input type="file" id="lab-file-picker" accept=".lab" style="display:none" aria-label="Chọn tệp nộp bài .lab"' + (isExhausted ? ' disabled' : '') + '>';
+        html += '<button type="button" class="dropzone" id="lab-dropzone" aria-label="' + (isExhausted ? 'Đã hết lượt nộp bài' : 'Duyệt tệp nộp bài .lab') + '"' + (isExhausted ? ' disabled style="cursor:not-allowed;opacity:0.6"' : '') + '>';
+        html += '<i data-lucide="' + (isExhausted ? 'lock' : 'file-up') + '" style="width:28px;height:28px;color:var(--text-3)"></i>';
+        if (isExhausted) {
+          html += '<div style="font-weight:500;font-size:13.5px;color:var(--text-2)">Đã hết lượt nộp bài (' + attInfo.used + '/' + attInfo.max + ')</div>';
+          html += '<div class="faint" style="font-size:12px">Không thể tải lên thêm tệp kết quả</div>';
+        } else if (state.pickedFile) {
+          html += '<div class="mono" style="font-weight:500;color:var(--text);font-size:13px">' + esc(state.pickedFile.name) + '</div>';
           html += '<div class="faint" style="font-size:12px">' + (Math.round(state.pickedFile.size / 1024) || 12) + ' KB · Nhấn để đổi tệp khác</div>';
         } else {
           html += '<div style="font-weight:500;font-size:13.5px">Nhấn để duyệt tệp .lab</div>';
@@ -1325,15 +1477,21 @@
         html += '</button>';
 
         // Nút chọn nhanh tệp mẫu cho kiểm thử
-        html += '<div style="margin-top:8px;text-align:right">';
-        html += '<button type="button" class="btn btn-ghost btn-sm" id="pick-sample-file-btn" style="font-size:11.5px">';
-        html += '<i data-lucide="file-code"></i>Dùng tệp mẫu ' + expectedFileName;
-        html += '</button>';
-        html += '</div>';
+        if (!isExhausted) {
+          html += '<div style="margin-top:8px;text-align:right">';
+          html += '<button type="button" class="btn btn-ghost btn-sm" id="pick-sample-file-btn" style="font-size:11.5px">';
+          html += '<i data-lucide="file-code"></i>Dùng tệp mẫu ' + esc(expectedFileName);
+          html += '</button>';
+          html += '</div>';
+        }
 
-        // Nút Nộp bài chính
+        // Nút Nộp bài chính: Nút chính DUY NHẤT của trang
         html += '<div style="margin-top:14px">';
-        html += '<button type="button" class="btn btn-primary" id="submit-lab-btn" style="width:100%"' + (!state.pickedFile ? ' disabled' : '') + '><i data-lucide="send"></i>Nộp bài</button>';
+        if (isExhausted) {
+          html += '<button type="button" class="btn btn-primary" id="submit-lab-btn" style="width:100%" disabled><i data-lucide="circle-slash"></i>Đã hết lượt nộp (' + attInfo.used + '/' + attInfo.max + ')</button>';
+        } else {
+          html += '<button type="button" class="btn btn-primary" id="submit-lab-btn" style="width:100%"' + (!state.pickedFile ? ' disabled' : '') + '><i data-lucide="send"></i>Nộp bài</button>';
+        }
         html += '</div>';
 
         html += '<div style="margin-top:12px;display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-3);line-height:1.5">';
@@ -1345,17 +1503,17 @@
         if (state.submitResult) {
           var res = state.submitResult;
           html += '<hr class="divider" style="margin:16px 0">';
-          html += '<div style="padding:16px;border-radius:var(--r-card);background:var(--surface-2);border:1px solid ' + (res.verdict === 'AC' ? 'var(--ok)' : 'var(--err)') + '">';
+          html += '<div style="padding:16px;border-radius:var(--r-card);background:var(--surface-2);border:1px solid var(--line-strong)">';
           html += '<div class="row-between" style="margin-bottom:8px">';
-          html += '<div class="row-gap"><span class="verdict v-' + res.verdict + '">' + res.verdict + '</span><b style="font-size:13.5px;font-weight:500">' + res.title + '</b></div>';
-          html += '<span class="mono tnum" style="font-weight:500;color:var(--' + (res.verdict === 'AC' ? 'ok' : 'err') + ')">' + res.scoreLabel + '</span>';
+          html += '<div class="row-gap">' + verdict(res.verdict) + '<b style="font-size:13.5px;font-weight:500">' + esc(res.title) + '</b></div>';
+          html += '<span class="mono tnum" style="font-weight:500;color:var(--' + (res.verdict === 'AC' ? 'ok' : 'err') + ')">' + esc(res.scoreLabel) + '</span>';
           html += '</div>';
-          html += '<div class="faint tnum" style="font-size:12px;margin-bottom:12px">' + res.attemptLabel + ' · ' + res.time + '</div>';
+          html += '<div class="faint tnum" style="font-size:12px;margin-bottom:12px">' + esc(res.attemptLabel) + ' · ' + esc(res.time) + '</div>';
 
           html += '<ul style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;list-style:none;padding:0;margin:0">';
           res.items.forEach(function (it) {
             html += '<li class="row-between">';
-            html += '<span>' + it.label + '</span>';
+            html += '<span>' + esc(it.label) + '</span>';
             html += '<span class="chip ' + (it.ok ? 'chip-ok' : 'chip-err') + '"><span class="dot"></span>' + (it.ok ? 'Đạt' : 'Chưa đạt') + '</span>';
             html += '</li>';
           });
@@ -1377,133 +1535,198 @@
         // Bắt sự kiện quay lại
         var backBtn = document.getElementById('back-from-detail');
         if (backBtn) {
-          backBtn.addEventListener('click', function () {
+          backBtn.addEventListener('click', function (e) {
+            e.preventDefault();
             navigate(backUrl);
           });
         }
 
-        // Bắt sự kiện phân trang lịch sử bài này
-        var histPrev = document.getElementById('hist-prev');
-        if (histPrev) {
-          histPrev.addEventListener('click', function () {
-            if (state.histPage > 1) {
-              state.histPage--;
-              render();
-            }
-          });
-        }
-        var histNext = document.getElementById('hist-next');
-        if (histNext) {
-          histNext.addEventListener('click', function () {
-            if (state.histPage < histTotalPages) {
-              state.histPage++;
-              render();
-            }
-          });
-        }
-        document.querySelectorAll('.hist-page-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            state.histPage = parseInt(btn.dataset.page, 10);
-            render();
-          });
+        // Khởi tạo phân trang lịch sử bài nộp bằng CLXUI.pager
+        var detailHistPager = pager(document.getElementById('detail-hist-pager'), {
+          total: currentLabHistory.length,
+          page: state.histPage,
+          size: state.histPageSize,
+          sizes: [1, 2, 5, 10],
+          onChange: function (p, s) {
+            state.histPage = p;
+            state.histPageSize = s;
+            updateDetailHistView();
+          }
         });
 
-        // Xây dựng cây bình luận đệ quy bằng DOM (Item 2 & 12, an toàn tuyệt đối chống XSS)
-        var commentsContainer = document.getElementById('comments-list');
-        if (commentsContainer) {
-          function buildCommentElement(c, depth) {
-            var card = document.createElement('div');
-            card.className = depth === 0 ? 'comment-card' : 'comment-reply';
-            if (depth > 1) {
-              card.style.marginLeft = '16px';
-            }
+        // Hàm vẽ bảng lịch sử nộp bài của bài này
+        function updateDetailHistView() {
+          var viewEl = document.getElementById('detail-hist-view');
+          if (!viewEl) return;
 
-            var header = document.createElement('div');
-            header.className = 'row-between';
-            header.style.marginBottom = depth === 0 ? '6px' : '4px';
-
-            var userGap = document.createElement('div');
-            userGap.className = 'row-gap';
-
-            var avatar = document.createElement('span');
-            avatar.className = 'avatar avatar-sm';
-            avatar.textContent = c.name ? c.name.slice(0, 2) : 'SV';
-
-            var nameSpan = document.createElement('span');
-            nameSpan.style.cssText = 'font-weight:500;font-size:13px';
-            nameSpan.textContent = c.name;
-
-            userGap.appendChild(avatar);
-            userGap.appendChild(nameSpan);
-
-            if (c.role) {
-              var roleChip = document.createElement('span');
-              roleChip.className = 'chip'; // Chip trung tính theo Item 25
-              roleChip.style.fontSize = '11px';
-              roleChip.textContent = c.role;
-              userGap.appendChild(roleChip);
-            }
-
-            var timeSpan = document.createElement('span');
-            timeSpan.className = 'faint tnum';
-            timeSpan.style.fontSize = '12px';
-            timeSpan.textContent = c.time;
-
-            header.appendChild(userGap);
-            header.appendChild(timeSpan);
-            card.appendChild(header);
-
-            // Nội dung bình luận — gán textContent an toàn tuyệt đối
-            var contentDiv = document.createElement('div');
-            contentDiv.style.cssText = depth === 0
-              ? 'font-size:13.5px;color:var(--text);line-height:1.5;margin-bottom:8px'
-              : 'font-size:13px;color:var(--text);line-height:1.5;margin-bottom:6px';
-            contentDiv.textContent = c.content;
-            card.appendChild(contentDiv);
-
-            // Nút trả lời
-            var actDiv = document.createElement('div');
-            var repBtn = document.createElement('button');
-            repBtn.type = 'button';
-            repBtn.className = 'btn btn-ghost btn-sm reply-btn';
-            repBtn.setAttribute('data-id', c.id);
-            repBtn.setAttribute('data-name', c.name);
-            repBtn.innerHTML = '<i data-lucide="message-square"></i>Trả lời';
-            repBtn.addEventListener('click', function () {
-              var ta = document.getElementById('comment-textarea');
-              if (ta) {
-                ta.value = '@' + c.name + ' ';
-                state.replyParentId = c.id;
-                ta.focus();
-              }
-            });
-            actDiv.appendChild(repBtn);
-            card.appendChild(actDiv);
-
-            // Đệ quy dựng toàn bộ luồng con theo parentId (Item 12, hiển thị đầy đủ SCM-003)
-            var children = state.comments.filter(function (child) {
-              return child.parentId === c.id;
-            });
-            children.forEach(function (child) {
-              card.appendChild(buildCommentElement(child, depth + 1));
-            });
-
-            return card;
+          var total = currentLabHistory.length;
+          if (total === 0) {
+            viewEl.innerHTML = '<div class="empty" style="padding:24px 16px">Bạn chưa nộp bài tập này lần nào.</div>';
+            detailHistPager.set({ total: 0, page: 1 });
+            return;
           }
 
-          var rootComments = state.comments.filter(function (c) { return !c.parentId; });
-          rootComments.forEach(function (rc) {
-            commentsContainer.appendChild(buildCommentElement(rc, 0));
+          var totalPages = Math.ceil(total / state.histPageSize) || 1;
+          if (state.histPage > totalPages) state.histPage = 1;
+          var startIdx = (state.histPage - 1) * state.histPageSize;
+          var pageItems = paginate(currentLabHistory, state.histPage, state.histPageSize);
+
+          var hHtml = '<div class="tbl ledger tbl-ledger-hist" role="table" aria-label="Lịch sử nộp bài của bài này">';
+          hHtml += '<div role="rowgroup">';
+          hHtml += '<div class="tbl-row tbl-head" role="row">';
+          hHtml += '<span role="columnheader" class="no">#</span>';
+          hHtml += '<span role="columnheader" class="col-id">ID</span>';
+          hHtml += '<span role="columnheader" class="col-time">Thời gian</span>';
+          hHtml += '<span role="columnheader" class="col-ex">Ghi chú nộp bài</span>';
+          hHtml += '<span role="columnheader" class="num col-score">Điểm</span>';
+          hHtml += '<span role="columnheader" class="num col-res">Kết quả</span>';
+          hHtml += '</div>';
+          hHtml += '</div>';
+          hHtml += '<div role="rowgroup">';
+
+          pageItems.forEach(function (item, idx) {
+            var stt = startIdx + idx + 1;
+            var sttStr = '#' + (stt < 10 ? '0' + stt : String(stt));
+            var scoreVal = item.score || (item.status === 'AC' ? ((assignment.points || 50) + '/' + (assignment.points || 50)) : ('0/' + (assignment.points || 50)));
+
+            hHtml += '<div class="tbl-row" role="row">';
+            hHtml += '<span role="cell" class="no">' + sttStr + '</span>';
+            hHtml += '<span role="cell" class="mono tnum faint col-id">' + item.id + '</span>';
+            hHtml += '<span role="cell" class="mono tnum faint col-time" style="font-size:12.5px">' + esc(item.time) + '</span>';
+            hHtml += '<div role="cell" class="col-ex" style="min-width:0">';
+            hHtml += '<div class="trunc" style="font-weight:500">' + esc(item.ex || item.title || assignment.title) + '</div>';
+            hHtml += '<div class="ledger-mobile-meta mobile-sub">';
+            hHtml += '<span class="mono">' + sttStr + '</span><span>·</span>';
+            hHtml += '<span class="tnum">' + esc(item.time) + '</span><span>·</span>';
+            hHtml += '<span class="tnum">' + esc(scoreVal) + '</span>';
+            hHtml += '</div>';
+            hHtml += '</div>';
+            hHtml += '<span role="cell" class="num mono tnum col-score">' + esc(scoreVal) + '</span>';
+            hHtml += '<span role="cell" class="num col-res">' + verdict(item.status) + '</span>';
+            hHtml += '</div>';
+          });
+
+          hHtml += '</div>';
+          hHtml += '</div>';
+
+          viewEl.innerHTML = hHtml;
+          detailHistPager.set({ total: total, page: state.histPage, size: state.histPageSize });
+        }
+
+        updateDetailHistView();
+
+        // Xây dựng cây bình luận đệ quy bằng DOM (an toàn tuyệt đối chống XSS, hiển thị SCM-003 dưới SCM-002)
+        var commentsContainer = document.getElementById('comments-list');
+        if (commentsContainer) {
+          commentsContainer.innerHTML = '';
+          if (currentLabComments.length === 0) {
+            commentsContainer.innerHTML = '<div class="empty" style="padding:28px 16px"><p style="font-size:13px;color:var(--text-3)">Chưa có bình luận nào cho bài tập này. Đặt câu hỏi đầu tiên để nhận hỗ trợ từ giảng viên và trợ giảng.</p></div>';
+          } else {
+            function buildCommentElement(c, depth) {
+              var card = document.createElement('div');
+              card.className = depth === 0 ? 'comment-card' : 'comment-reply';
+              if (depth > 1) {
+                card.style.marginLeft = '16px';
+              }
+
+              var header = document.createElement('div');
+              header.className = 'row-between';
+              header.style.marginBottom = depth === 0 ? '6px' : '4px';
+
+              var userGap = document.createElement('div');
+              userGap.className = 'row-gap';
+
+              var avatar = document.createElement('span');
+              avatar.className = 'avatar avatar-sm';
+              avatar.textContent = c.name ? c.name.slice(0, 2) : 'SV';
+
+              var nameSpan = document.createElement('span');
+              nameSpan.style.cssText = 'font-weight:500;font-size:13px';
+              nameSpan.textContent = c.name;
+
+              userGap.appendChild(avatar);
+              userGap.appendChild(nameSpan);
+
+              if (c.role) {
+                var roleChip = document.createElement('span');
+                roleChip.className = 'chip'; // Chip trung tính theo AUDIT mục 25
+                roleChip.style.fontSize = '11px';
+                roleChip.textContent = c.role;
+                userGap.appendChild(roleChip);
+              }
+
+              var timeSpan = document.createElement('span');
+              timeSpan.className = 'faint tnum';
+              timeSpan.style.fontSize = '12px';
+              timeSpan.textContent = c.time;
+
+              header.appendChild(userGap);
+              header.appendChild(timeSpan);
+              card.appendChild(header);
+
+              // Nội dung bình luận — gán textContent an toàn tuyệt đối
+              var contentDiv = document.createElement('div');
+              contentDiv.style.cssText = depth === 0
+                ? 'font-size:13.5px;color:var(--text);line-height:1.5;margin-bottom:8px'
+                : 'font-size:13px;color:var(--text);line-height:1.5;margin-bottom:6px';
+              contentDiv.textContent = c.content;
+              card.appendChild(contentDiv);
+
+              // Nút trả lời
+              var actDiv = document.createElement('div');
+              var repBtn = document.createElement('button');
+              repBtn.type = 'button';
+              repBtn.className = 'btn btn-ghost btn-sm reply-btn';
+              repBtn.setAttribute('data-id', c.id);
+              repBtn.setAttribute('data-name', c.name);
+              repBtn.innerHTML = '<i data-lucide="message-square"></i>Trả lời';
+              repBtn.addEventListener('click', function () {
+                var ta = document.getElementById('comment-textarea');
+                if (ta) {
+                  ta.value = '@' + c.name + ' ';
+                  state.replyParentId = c.id;
+                  ta.focus();
+                }
+              });
+              actDiv.appendChild(repBtn);
+              card.appendChild(actDiv);
+
+              // Đệ quy dựng toàn bộ luồng con theo parentId trong cùng bài (Item 17)
+              var children = currentLabComments.filter(function (child) {
+                return child.parentId === c.id;
+              });
+              children.forEach(function (child) {
+                card.appendChild(buildCommentElement(child, depth + 1));
+              });
+
+              return card;
+            }
+
+            var rootComments = currentLabComments.filter(function (c) { return !c.parentId; });
+            rootComments.forEach(function (rc) {
+              commentsContainer.appendChild(buildCommentElement(rc, 0));
+            });
+          }
+        }
+
+        // Bắt sự kiện hủy trả lời nếu có
+        var cancelReplyBtn = document.getElementById('cancel-reply-btn');
+        if (cancelReplyBtn) {
+          cancelReplyBtn.addEventListener('click', function () {
+            state.replyParentId = null;
+            var ta = document.getElementById('comment-textarea');
+            if (ta) ta.value = '';
+            render();
           });
         }
 
-        // Tương tác duyệt file .lab & kéo thả (Item 7)
+        // Tương tác duyệt file .lab & kéo thả
         var fileInput = document.getElementById('lab-file-picker');
         var dropzone = document.getElementById('lab-dropzone');
         var submitBtn = document.getElementById('submit-lab-btn');
         var pickSampleBtn = document.getElementById('pick-sample-file-btn');
 
-        if (dropzone && fileInput) {
+        if (dropzone && fileInput && !isExhausted) {
           dropzone.addEventListener('click', function () {
             fileInput.click();
           });
@@ -1534,7 +1757,7 @@
           });
         }
 
-        if (pickSampleBtn) {
+        if (pickSampleBtn && !isExhausted) {
           pickSampleBtn.addEventListener('click', function () {
             state.pickedFile = {
               name: expectedFileName,
@@ -1544,9 +1767,11 @@
           });
         }
 
-        // Bắt sự kiện Nộp bài (Item 11: điểm, lượt nộp, đồng hồ thực)
+        // Bắt sự kiện Nộp bài (lấy điểm, lượt nộp, đồng hồ thực)
         if (submitBtn) {
           submitBtn.addEventListener('click', function () {
+            var att = getAssignmentAttempts(assignment);
+            if (att.used >= att.max) return; // Chặn thao tác khi hết lượt (Item 4)
             if (!state.pickedFile) return;
 
             var fileName = state.pickedFile.name;
@@ -1554,52 +1779,46 @@
             var nowStr = getNowFormatted();
 
             var maxPoints = assignment.points || assignment.xp || 50;
-            var maxAttempts = 4;
-            if (assignment.attempts && assignment.attempts.indexOf('/') !== -1) {
-              var attParts = assignment.attempts.split('/');
-              maxAttempts = parseInt(attParts[1], 10) || 4;
-            }
-            var currentAttemptNum = Math.min(currentLabHistory.length + 1, maxAttempts);
-            var attemptLabel = 'Lần nộp ' + currentAttemptNum + '/' + maxAttempts;
+            var maxAttempts = att.max;
+            var newUsed = att.used + 1;
+            var newAttemptsStr = newUsed + '/' + maxAttempts;
+            var attemptLabel = 'Lần nộp ' + newUsed + '/' + maxAttempts;
 
-            if (!isCorrectName) {
-              state.submitResult = {
-                verdict: 'WFN',
-                title: 'Sai tên tệp (Wrong File Name)',
-                scoreLabel: '0/' + maxPoints + ' XP',
-                attemptLabel: attemptLabel,
-                time: nowStr,
-                items: [
-                  { label: 'Quy chuẩn tên tệp: ' + expectedFileName, ok: false }
-                ]
-              };
-            } else {
-              state.submitResult = {
-                verdict: 'AC',
-                title: 'Kết quả đúng (Accepted)',
-                scoreLabel: maxPoints + '/' + maxPoints + ' XP',
-                attemptLabel: attemptLabel,
-                time: nowStr,
-                items: steps.map(function (s) {
-                  return { label: s.t, ok: true };
-                })
-              };
+            var verdictCode = isCorrectName ? 'AC' : 'WFN';
+            var title = isCorrectName ? 'Kết quả đúng (Accepted)' : 'Sai tên tệp (Wrong File Name)';
+            var score = isCorrectName ? maxPoints : 0;
+            var scoreLabel = isCorrectName ? (maxPoints + '/' + maxPoints + ' XP') : ('0/' + maxPoints + ' XP');
 
-              // Thêm vào lịch sử nộp bài cục bộ theo mã bài
-              state.extraHistory.unshift({
-                id: 72200 + state.extraHistory.length,
-                code: assignment.code,
-                time: nowStr,
-                course: assignment.courseName || 'An toàn & Bảo mật HTTT',
-                title: assignment.title,
-                ex: assignment.title,
-                score: maxPoints + '/' + maxPoints + ' (AC)',
-                status: 'AC'
-              });
+            // Ghi MỌI kết quả nộp vào lịch sử cục bộ (Item 4)
+            state.extraHistory.unshift({
+              id: 72200 + state.extraHistory.length,
+              code: assignment.code,
+              time: nowStr,
+              course: assignment.courseName || 'An toàn & Bảo mật HTTT',
+              title: assignment.title,
+              ex: assignment.title,
+              score: score + '/' + maxPoints + ' (' + verdictCode + ')',
+              status: verdictCode
+            });
 
-              // Cập nhật trạng thái bài tập
-              assignment.status = 'AC';
-            }
+            // Xác định trạng thái mới: nếu đã AC thì giữ nguyên AC, chưa AC thì cập nhật theo verdict
+            var newStatus = (assignment.status === 'AC') ? 'AC' : verdictCode;
+
+            // Cập nhật nguồn dữ liệu & state dùng chung (Item 2 & Item 4)
+            updateAssignmentState(assignment.code, newStatus, newAttemptsStr);
+
+            state.submitResult = {
+              verdict: verdictCode,
+              title: title,
+              scoreLabel: scoreLabel,
+              attemptLabel: attemptLabel,
+              time: nowStr,
+              items: isCorrectName ? steps.map(function (s) {
+                return { label: s.t, ok: true };
+              }) : [
+                { label: 'Quy chuẩn tên tệp: ' + expectedFileName, ok: false }
+              ]
+            };
 
             render();
           });
@@ -1615,12 +1834,14 @@
 
             var newC = {
               id: 'SCM-' + (state.comments.length + 1).toString().padStart(3, '0'),
+              classCode: currentClassCode,
+              assignmentCode: assignment.code,
               userId: 7,
               parentId: state.replyParentId || null,
               account: D.student ? D.student.code : 'B23DCCN135',
               name: D.student ? D.student.name : 'Vũ Trung Đức',
               role: 'Sinh viên',
-              time: 'Hôm nay',
+              time: 'Vừa xong',
               content: val
             };
 
@@ -1645,6 +1866,14 @@
         var params = getParams();
 
         if (params.code) {
+          if (state.currentCode !== params.code) {
+            state.currentCode = params.code;
+            state.pickedFile = null;
+            state.submitResult = null;
+            state.replyParentId = null;
+            state.commentText = '';
+            state.histPage = 1;
+          }
           // Mode 3: Chi tiết bài tập
           var classObj = findClass(params.classCode);
           var assignObj = findAssignment(params.code, classObj);
@@ -1655,6 +1884,7 @@
             else renderOverview('class');
           }
         } else if (params.classCode) {
+          state.currentCode = null;
           // Mode 2: Danh sách bài của lớp
           var c = findClass(params.classCode);
           if (c) {
@@ -1663,6 +1893,7 @@
             renderOverview('class');
           }
         } else {
+          state.currentCode = null;
           // Mode 1: Tổng quan (Lớp học phần hoặc Bản đồ)
           renderOverview(params.tab || state.activeTab);
         }
