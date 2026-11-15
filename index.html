@@ -291,11 +291,7 @@
       <div class="card card-pad">
         <div style="display:flex;align-items:center;gap:10px">
           <span class="brand-mark-svg">
-            <svg viewBox="0 0 28 28" aria-hidden="true" width="28" height="28">
-              <rect width="28" height="28" rx="6" fill="currentColor"/>
-              <path d="M9 9l10 10M19 9L9 19" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-              <circle cx="21.5" cy="6.5" r="2.4" fill="var(--accent)"/>
-            </svg>
+            <svg viewBox="0 0 28 28" aria-hidden="true" width="28" height="28"><path d="M8 0h20v20l-8 8H0V8z" fill="var(--accent)"/><path d="M10 10l8 8M18 10l-8 8" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>
           </span>
           <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em">CyberLabX</span>
           <span class="chip chip-mono" style="margin-left:auto">v2.0</span>
@@ -330,7 +326,7 @@
         <ul style="display:flex;flex-direction:column;gap:8px;padding-left:0">
           <li style="display:flex;align-items:baseline;gap:8px">
             <span class="dot" style="margin-top:6px;background:var(--accent)"></span>
-            <span>Nền tối xám-đen thuần LeetCode (<span class="mono">#161616</span>)</span>
+            <span>Nền tối gần đen (<span class="mono">#08090b</span>), một màu nhấn cam hổ phách</span>
           </li>
           <li style="display:flex;align-items:baseline;gap:8px">
             <span class="dot" style="margin-top:6px;background:var(--accent)"></span>
@@ -755,12 +751,13 @@
   </div>
 
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="assets/icons.js"></script>
   <script>
     (function () {
       // 1. Khởi tạo icon Lucide
       function initIcons() {
         if (window.lucide) {
-          window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+          if (window.clxIcons) window.clxIcons();
         }
       }
       initIcons();

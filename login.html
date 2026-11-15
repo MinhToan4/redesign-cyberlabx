@@ -177,11 +177,7 @@
           <div class="login-brand-row">
             <span class="brand-mark">
               <!-- Khối MARK svg trích xuất từ assets/shell.js -->
-              <svg viewBox="0 0 28 28" aria-hidden="true">
-                <rect width="28" height="28" rx="6" fill="currentColor"/>
-                <path d="M9 9l10 10M19 9L9 19" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                <circle cx="21.5" cy="6.5" r="2.4" fill="var(--accent)"/>
-              </svg>
+              <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M8 0h20v20l-8 8H0V8z" fill="var(--accent)"/><path d="M10 10l8 8M18 10l-8 8" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>
             </span>
             <span class="brand-name">CyberLabX</span>
           </div>
@@ -324,12 +320,10 @@
   </div>
 
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="assets/icons.js"></script>
   <script>
     (function () {
-      // 1. Quản lý icon Lucide
-      window.clxIcons = function () {
-        if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
-      };
+            /* clxIcons do assets/icons.js cung cấp */
 
       // 2. Chuyển đổi giao diện sáng/tối
       var themeBtn = document.getElementById('theme-btn');
