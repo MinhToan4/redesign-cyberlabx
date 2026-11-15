@@ -5,7 +5,7 @@
 [data-skin='quest'] {
   --font: 'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Chakra Petch', 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
-  --sidebar-w: 264px;
+  --sidebar-w: 248px;
   --topbar-h: 68px;
   --content-max: 1880px;
 }
@@ -24,27 +24,27 @@
 /* ---------- Thanh bên ---------- */
 [data-skin='quest'] .sidebar { padding: 22px 14px 18px; }
 [data-skin='quest'] .brand { padding: 2px 10px 6px; gap: 12px; }
-[data-skin='quest'] .brand-mark, [data-skin='quest'] .brand-mark svg { width: 36px; height: 36px; }
-[data-skin='quest'] .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.01em; }
+[data-skin='quest'] .brand-mark, [data-skin='quest'] .brand-mark svg { width: 32px; height: 32px; }
+[data-skin='quest'] .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
 [data-skin='quest'] .brand-name::after { content: '.'; color: var(--accent); }
-[data-skin='quest'] .role-tag { margin: 0 10px 22px 58px; font-size: 11.5px; line-height: 16px; }
+[data-skin='quest'] .role-tag { margin: 0 10px 18px 54px; font-size: 11px; line-height: 16px; }
 [data-skin='quest'] .nav { gap: 4px; }
-[data-skin='quest'] .nav-label { margin: 26px 14px 8px; }
+[data-skin='quest'] .nav-label { margin: 22px 12px 6px; font-size: 11.5px; }
 [data-skin='quest'] .nav a, [data-skin='quest'] .nav .nav-off {
-  height: 48px; gap: 14px; padding: 0 14px; font-size: 16px; color: var(--text-2);
+  height: 42px; gap: 12px; padding: 0 12px; font-size: 14.5px; color: var(--text-2);
   border: 1px solid transparent; border-radius: var(--r-control);
 }
-[data-skin='quest'] .nav a svg, [data-skin='quest'] .nav .nav-off svg { width: 22px; height: 22px; stroke-width: 1.75; }
+[data-skin='quest'] .nav a svg, [data-skin='quest'] .nav .nav-off svg { width: 20px; height: 20px; stroke-width: 1.75; }
 [data-skin='quest'] .nav a:hover { background: var(--mute-soft); color: var(--text); }
 [data-skin='quest'] .nav a[aria-current='page'] { background: var(--surface-2); border-color: var(--line-strong); color: var(--text); font-weight: 500; }
 [data-skin='quest'] .nav a[aria-current='page']::before { display: none; }
 [data-skin='quest'] .nav a[aria-current='page'] svg { color: var(--accent); }
-[data-skin='quest'] .term-progress { padding: 14px 16px; border-radius: var(--r-card); }
-[data-skin='quest'] .term-progress .row { font-size: 14px; }
+[data-skin='quest'] .term-progress { padding: 12px 14px; border-radius: var(--r-card); }
+[data-skin='quest'] .term-progress .row { font-size: 13px; }
 [data-skin='quest'] .user { padding: 10px; border-radius: var(--r-control); }
-[data-skin='quest'] .user .who b { font-size: 15px; }
-[data-skin='quest'] .user .who span { font-size: 13px; }
-[data-skin='quest'] .avatar { width: 38px; height: 38px; font-size: 13px; background: var(--surface-3); }
+[data-skin='quest'] .user .who b { font-size: 14px; }
+[data-skin='quest'] .user .who span { font-size: 12px; }
+[data-skin='quest'] .avatar { width: 34px; height: 34px; font-size: 12px; background: var(--surface-3); }
 [data-skin='quest'] .progress { height: 6px; border-radius: var(--r-tag); }
 
 /* ---------- Thanh trên ---------- */

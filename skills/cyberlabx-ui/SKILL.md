@@ -253,7 +253,7 @@ Trang ngoài thư mục gốc dùng `../assets/...` cho CSS/JS. Mẫu đầu tra
 
 Trang Sinh viên (thư mục gốc, trừ `index.html`) tự đặt `<html data-skin="quest">` (xem `assets/theme.js`) và nạp `assets/skin-quest.css`, bám ngôn ngữ thiết kế của dự án aws-quest:
 - **Chữ lớn dễ đọc:** nội dung 16px; tiêu đề Chakra Petch 700 (h1 34px, h2 22px, h3 18px); nội dung Be Vietnam Pro; nhãn nhỏ dùng IBM Plex Mono viết hoa giãn chữ 12.5px (`.kicker`, `.nav-label`, `.stat .label`, tiêu đề cột).
-- **Thanh bên rộng 264px:** hàng nav cao 48px, chữ 16px, icon 22px; mục đang chọn có viền và nền `--surface-2`, icon đổi màu nhấn; tên thương hiệu "CyberLabX." có dấu chấm cam.
+- **Thanh bên rộng 248px:** hàng nav cao 42px, chữ 14.5px, icon 20px; mục đang chọn có viền và nền `--surface-2`, icon đổi màu nhấn; tên thương hiệu "CyberLabX." có dấu chấm cam.
 - **Thành phần cỡ lớn:** nút và ô nhập cao 46px, hàng bảng cao 60px, chip 26px, số liệu lớn 42px, thẻ padding 28px.
 - **Icon:** Lucide gốc, nét 1.75, đầu tròn (không dùng bộ `icons.js` vuông của skin mặc định); dấu hiệu nhận diện là khiên có dấu kiểm và tia sáng cam.
 - **Họa tiết nền:** lưới thoi rất mờ (SVG, độ trong suốt 3.5–4%), cố định khi cuộn.
