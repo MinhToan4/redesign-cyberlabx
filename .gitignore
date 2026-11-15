@@ -1,1 +1,13 @@
-huong-dan-chay/
+# Ảnh, báo cáo và kết quả đo tạm trong _audit/ (giữ lại khung chụp mobile)
+_audit/*
+!_audit/mobile.html
+
+# Sổ ghi tạm của agent khi làm việc
+NOTES.md
+
+# Hệ điều hành và trình soạn thảo
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
