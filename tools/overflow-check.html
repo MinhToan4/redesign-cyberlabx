@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>đang đo…</title>
+<!-- Đo tràn ngang của từng trang ở nhiều chiều rộng. Chạy qua Chrome headless với --allow-file-access-from-files (xem tools/README hoặc huong-dan-chay).
+     Kết quả được ghi vào document.title dạng JSON để script đọc bằng --dump-dom. -->
+<body>
+<script>
+  var pages = (new URLSearchParams(location.search).get('pages') || '').split(',').filter(Boolean);
+  var widths = [390, 1280, 1920];
+  var bad = [], jobs = [];
+  pages.forEach(function (p) { widths.forEach(function (w) { jobs.push([p, w]); }); });
+  function run(i) {
+    if (i >= jobs.length) { document.title = JSON.stringify(bad.length ? bad : 'OK'); return; }
+    var p = jobs[i][0], w = jobs[i][1];
+    var f = document.createElement('iframe');
+    f.style.cssText = 'position:absolute;left:0;top:0;border:0;width:' + w + 'px;height:900px';
+    f.onload = function () {
+      setTimeout(function () {
+        try {
+          var d = f.contentDocument.documentElement;
+          if (d.scrollWidth > w + 1) bad.push(p + '@' + w + ' scrollWidth=' + d.scrollWidth);
+        } catch (e) { bad.push(p + '@' + w + ' không đọc được: ' + e.message); }
+        f.remove(); run(i + 1);
+      }, 700);
+    };
+    f.src = '../' + p;
+    document.body.appendChild(f);
+  }
+  run(0);
+</script>
