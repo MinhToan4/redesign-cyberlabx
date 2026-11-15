@@ -10,3 +10,5 @@
 
 Luật ngắn: nền tối xám-đen thuần kiểu LeetCode (không xanh/tím); TUYỆT ĐỐI không glow/đổ bóng/blur quanh viền, nút, card, ô nhập (focus chỉ đổi màu viền); chỉ dùng token/class trong `assets/`; không hex, gradient, glow, emoji, dấu chấm than; không tiêu đề lớn lặp tên trang; một màu nhấn; bảng là CSS grid + phân trang; tiếng Việt có dấu; không bịa dữ liệu (lấy từ `assets/data.js`); không sửa `assets/*` khi chưa được giao, ghi nhu cầu vào `NOTES.md`.
 Làm xong phải tự chụp ảnh (cách chụp ở mục 12 của SKILL.md), xem lại sáng + tối, 1440px + 390px, và duyệt checklist mục 13.
+
+Vai trò khác Sinh viên nằm trong `teacher/`, `ta/`, `admin/` (xem mục 16 SKILL.md: `data-role`, `../assets/`, `assets/data-staff.js`). Chi tiết đặc trưng và quy tắc biểu đồ: mục 15 và 17. Phông chữ: IBM Plex Sans/Mono (không Inter).

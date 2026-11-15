@@ -13,7 +13,7 @@ Tất cả dùng class trong `assets/components.css`. Không thêm style nội t
   <title>Tên trang · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
@@ -161,3 +161,48 @@ Hàng của chính mình: thêm `is-me`. Hàng bấm được: thêm `is-link` (
 | Chuỗi ngày | `flame` | Danh hiệu | `award` |
 | Sao chép | `copy` | Đóng | `x` |
 | Trước / sau | `chevron-left` / `chevron-right` | Mở rộng / thu gọn | `chevron-down` / `chevron-up` |
+
+## Phân trang chuẩn (BẮT BUỘC dùng cho mọi danh sách nhiều dòng)
+
+Không tự viết HTML phân trang. Dùng `CLXUI.pager` (trong `assets/shell.js`): có khoảng hiển thị ("21–40 trên 58"), chọn số dòng mỗi trang, trang đầu/trước/số trang có dấu ba chấm/sau/cuối, trên mobile rút gọn còn "Trang x/y" + trước/sau. Nút nào cũng có nhãn tiếng Việt, dùng được bàn phím.
+
+```html
+<div class="card">
+  <div class="tbl" id="list"> … hàng được vẽ bằng JS … </div>
+  <div class="pager-host" id="pager"></div>   <!-- ngay dưới bảng, trong cùng .card -->
+</div>
+```
+```js
+var state = { rows: allRows, page: 1, size: 20 };
+var pg = CLXUI.pager(document.getElementById('pager'), {
+  total: state.rows.length, page: 1, size: 20, sizes: [20, 40, 60],
+  onChange: function (page, size) { state.page = page; state.size = size; draw(); }
+});
+function draw() {
+  var slice = CLXUI.paginate(state.rows, state.page, state.size);   // cắt đúng trang
+  /* vẽ slice vào #list; nếu rỗng thì vẽ .empty */
+  window.clxIcons();
+}
+// Khi lọc/tìm kiếm đổi: lọc lại rows rồi đưa về trang 1
+function onFilterChange() { state.rows = applyFilters(); state.page = 1; pg.set({ total: state.rows.length, page: 1 }); draw(); }
+```
+Quy tắc: kích thước mặc định 20 (bảng dày: 40); đổi bộ lọc/tìm kiếm/số dòng luôn về trang 1; `total = 0` thì thanh phân trang tự ẩn và trang hiện `.empty`; danh sách dưới 1 trang vẫn hiện thanh để thấy tổng số (trừ khi total = 0).
+
+
+## Hộp thoại (BẮT BUỘC dùng CLXUI.modal cho mọi hộp thoại tự dựng)
+
+```html
+<div class="dlg-scrim" id="dlg" hidden>          <!-- phủ toàn màn hình: nền var(--scrim) -->
+  <div class="card card-pad" role="dialog" aria-modal="true" aria-labelledby="dlg-title" style="width:min(440px,calc(100vw - 32px))">
+    <h2 id="dlg-title">Từ chối bài tập</h2>
+    <div class="field"><label for="reason">Lý do (bắt buộc)</label><textarea id="reason" class="textarea"></textarea></div>
+    <div class="row-gap" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-close>Hủy</button><button class="btn btn-primary" id="ok">Từ chối</button></div>
+  </div>
+</div>
+```
+```js
+var m = CLXUI.modal(document.getElementById('dlg'), { initialFocus: '#reason' });
+openBtn.addEventListener('click', m.open);
+dlg.querySelector('[data-close]').addEventListener('click', m.close);
+```
+Tự lo: nền ngoài hộp inert, Tab/Shift+Tab bị giữ trong hộp, Escape đóng, trả focus về nút đã mở hộp. Không tự viết bẫy focus riêng. CSS phủ: `position:fixed; inset:0; z-index:80; background:var(--scrim); display:grid; place-items:center` (`[hidden]` phải ẩn thật).

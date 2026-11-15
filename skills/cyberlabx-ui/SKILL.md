@@ -37,7 +37,7 @@ Nguồn thật của hệ thống: `assets/tokens.css`, `assets/base.css`, `asse
 | Trạng thái | `--ok` `--err` `--warn` `--info` (+ `-soft`) | chỉ kết quả bài nộp, báo lỗi/thành công/cảnh báo |
 | | `--mute-soft` | hover trên nền trơn, chip trung tính |
 | Heatmap | `--heat-0` … `--heat-4` | lưới hoạt động |
-| Hình khối | `--r-control` 8, `--r-card` 12, `--r-panel` 14 | bo góc |
+| Hình khối | `--r-tag` 4, `--r-control` 6, `--r-card` 10, `--r-panel` 12 | bo góc (chặt, có bậc rõ) |
 | Khác | `--shadow-pop` | popover/menu nổi, nút nổi: CHỈ là viền 1px, không đổ bóng |
 | Chữ | `--font`, `--mono` | họ chữ |
 | Chuyển động | `--dur` 140ms, `--ease` | mọi transition |
@@ -52,7 +52,7 @@ Quy tắc dùng màu:
 
 ## 3. Chữ
 
-- Font: Inter (400, 500; 600 chỉ cho `h1`, `h2`, tên thương hiệu). Mono: JetBrains Mono (400, 500), chỉ cho mã và số liệu kỹ thuật.
+- Font: IBM Plex Sans (400, 500; 600 chỉ cho `h1`, `h2`, tên thương hiệu), có sẵn dấu tiếng Việt. Mono: IBM Plex Mono (400, 500), CHỈ cho mã (mã lớp, mã bài, ID, dấu chấm bài, giờ trong nhật ký), không dùng mono làm "mùi kỹ thuật" cho chữ thường hay số liệu lớn.
 - Thang cỡ (px / line-height): 12/16 chú thích, chip; 13/20 nhãn, phụ; **14/20 nội dung mặc định**; 15/24 `h2`, tiêu đề topbar; 18/28 giá trị nhấn trong card; 20/28 `h1` (hiếm, chỉ trang không có topbar title như đăng nhập); 28/36 chỉ số lớn (`.stat .value`).
 - Cấm: weight 700–900, italic, chữ hoa toàn bộ (`text-transform: uppercase`), tracking dương lớn, tracking âm với chữ nhỏ, gạch chân trang trí.
 - Số: dùng `.tnum` (hoặc `font-variant-numeric: tabular-nums`) cho mọi cột số, điểm, thời gian, để thẳng hàng.
@@ -64,7 +64,7 @@ Quy tắc dùng màu:
 - Padding: card `20` (`.card-pad`), vùng nội dung `28 32` (16 trên mobile), hàng bảng `0 20` cao ≥ 48, nút cao 36 (`.btn-sm` 30), ô nhập cao 36, hàng nav cao 34.
 - Khoảng giữa các khối lớn trong một cột: `.stack` (24). Giữa tiêu đề mục và nội dung: `.section-head` (margin dưới 12). Giữa các phần tử nhỏ liên quan: 8 hoặc 12.
 - Khoảng cách phải **có nhịp**: cùng cấp thì cùng khoảng. Không có hai giá trị gần nhau (14 và 16) ở cùng một vai trò.
-- Bo góc lồng nhau: bo ngoài − padding ≥ 4 (card 14 chứa chip 6; card 12 chứa nút 8).
+- Bo góc lồng nhau: bo ngoài − padding ≥ 4 (panel 12 chứa nút 6 cách mép 20 là hợp lệ; không bo tròn viên thuốc).
 
 ## 5. Khung và bố cục
 
@@ -73,7 +73,7 @@ Quy tắc dùng màu:
 - Chiều rộng nội dung tối đa 1200px, căn giữa. Trang 2 cột dùng `.cols` (cột chính + cột phụ 340px), tự xếp 1 cột dưới 1080px.
 - Một trang có tối đa **3 mức** thị giác: (1) tiêu đề mục `h2`, (2) nội dung card, (3) chú thích `--text-3`. Nhiều hơn là rối.
 - Chỉ **một** thao tác chính trên mỗi vùng nhìn. Các thao tác phụ dùng `.btn` viền hoặc `.btn-ghost`.
-- Danh sách nhiều dòng luôn có phân trang (20–40 dòng/trang). Đổi bộ lọc/tìm kiếm thì về trang 1. Bảng dùng CSS grid (`.tbl`), **không dùng `<table>`**.
+- Danh sách nhiều dòng luôn có phân trang bằng `CLXUI.pager` (20–40 dòng/trang; mã mẫu ở `references/components.md`), không tự viết HTML phân trang. Đổi bộ lọc/tìm kiếm thì về trang 1. Bảng dùng CSS grid (`.tbl`), **không dùng `<table>`**.
 - Trang chi tiết mở ra ở đầu trang (scroll về 0). Hành động hủy/xóa luôn có hộp xác nhận.
 - Mobile (≤ 900px): sidebar thành ngăn kéo, `.cols` thành 1 cột, bảng nhiều cột chuyển thành danh sách thẻ hoặc ẩn bớt cột phụ. Không bao giờ để cuộn ngang cả trang.
 
@@ -136,7 +136,7 @@ Vùng bấm tối thiểu 32×32 (ưu tiên 36).
 - [ ] Không emoji, không dấu chấm than, không chữ hoa toàn bộ, không weight ≥ 700, không italic.
 - [ ] Không tiêu đề lớn lặp lại tên trang; không dòng mô tả thừa; không banner minh họa.
 - [ ] Chỉ 1 màu nhấn; màu trạng thái luôn kèm chữ/mã.
-- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc theo bậc 8/12/14.
+- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc theo bậc 4/6/10/12.
 - [ ] Mọi danh sách có phân trang; bảng là CSS grid; đổi bộ lọc về trang 1.
 - [ ] Hover, focus-visible, disabled, rỗng, lỗi đều có.
 - [ ] Sáng và tối đều đọc được; 390px không cuộn ngang; vùng bấm ≥ 32px.
@@ -161,3 +161,90 @@ Vùng bấm tối thiểu 32×32 (ưu tiên 36).
 | Icon to trong ô vuông tô màu | Icon 16–18px, không nền (hoặc `--surface-2` khi cần nhóm) |
 | Card lồng card lồng card | Phẳng: card → dòng, ngăn bằng hairline |
 | Chữ nhỏ tô màu để "nhấn" | `--text-2` / `--text-3`, nhấn bằng weight 500 |
+
+## 15. Ngôn ngữ thiết kế v2: chi tiết đặc trưng của CyberLabX
+
+Mục tiêu: nhìn là biết đây là hệ thống chấm bài lab, không phải mẫu dashboard chung. Mọi chi tiết dưới đây **lấy từ nghiệp vụ** (bước lab, lượt nộp, hạn nộp, phiếu chấm), không phải mốt giao diện. Dùng đúng chỗ, đừng rải khắp nơi.
+
+| Chi tiết | Class / hàm | Dùng khi | Không dùng khi |
+|---|---|---|---|
+| **Dấu chấm bài** | `.verdict.v-AC` … (viền mảnh, mã monospace, nền trong) | Mọi nơi hiện kết quả bài nộp | Làm nhãn trạng thái khác (dùng `.status`) |
+| **Thanh vạch** | `CLXUI.ticks(n, done, '')`, kind `is-error` / `is-ok` | Đại lượng đếm được và nhỏ (≤ 20): lượt nộp đã dùng / tối đa, bước lab, mức cấp bậc, mức tải máy (20 vạch) | Phần trăm liên tục lớn (dùng `.progress`) |
+| **Thước hạn nộp** | `.ruler` (xem `dashboard.html`) | Trục thời gian ngắn có các mốc thật (hạn nộp, ca thi trong tuần) | Trang trí |
+| **Bảng sổ cái** | `.ledger` + `.no` (cột số thứ tự mono, đường kẻ lề) | Nhật ký, lịch sử, danh sách dài có thứ tự | Bảng ngắn dưới 6 dòng |
+| **Hàng bấm được** | `a.tbl-row` / `.is-link` (vạch nhấn trái khi hover) | Hàng dẫn tới trang chi tiết | Hàng không bấm được |
+| **Phím tắt** | `.kbd`; bảng lệnh Ctrl K do `shell.js` dựng sẵn | Gợi ý thao tác bàn phím | Nhãn trang trí |
+| **Trạng thái chấm + chữ** | `.status.s-ok|s-err|s-warn|s-info` | Trạng thái của đối tượng (tài khoản, máy chủ, ca thi) | Kết quả bài nộp |
+| **Thanh so sánh** | `.bar-row` (xám, một hàng nổi bằng `is-hi`) | So sánh theo lớp/môn/ngày | Nhiều series nhiều màu |
+| **Khung xương** | `.skeleton` (tĩnh, không nhấp nháy) | Trạng thái đang tải | Trang đã có dữ liệu |
+
+Quy tắc nhịp: vào trang có một chuyển động duy nhất (mờ dần + trượt 8px, các khối cách nhau 40ms, đã có sẵn trong `base.css`). Hover đổi bậc nền hoặc hiện vạch nhấn, không phóng to. Nhấn nút co nhẹ 0.98.
+
+Nhận diện: ô vuông đặc chữ X + một chấm nhấn (do `shell.js` vẽ). Không tự vẽ lại logo.
+
+## 16. Vai trò, cấu trúc thư mục và cách dựng trang
+
+Tính cách chung: **một hệ thống, bốn vai trò**. Cùng token, cùng thành phần, cùng khung; khác nhau ở nội dung, mật độ và việc ưu tiên. Màu nhấn KHÔNG đổi theo vai trò.
+
+| Vai trò | Thư mục | `data-role` | Việc ưu tiên (đặt lên đầu trang) | Mật độ |
+|---|---|---|---|---|
+| Sinh viên | gốc `/` | `student` | Bài sắp đến hạn, lượt nộp còn lại, tiến độ | Thoáng vừa |
+| Giảng viên | `teacher/` | `teacher` | Việc cần xử lý: bài chờ duyệt, hỏi đáp chưa trả lời, ca thi sắp tới, SV dưới ngưỡng cảnh báo | Vừa, dày dần |
+| Trợ giảng | `ta/` | `ta` | Như Giảng viên nhưng KHÔNG có Hỏi đáp 1-1, không xóa bài, không sửa ngưỡng cảnh báo; có ca thi được phân công giám sát | Vừa, dày dần |
+| Admin | `admin/` | `admin` | Sức khỏe hệ thống (máy chủ, máy ảo), hàng đợi duyệt, bất thường trong nhật ký | Dày |
+
+Trang ngoài thư mục gốc dùng `../assets/...` cho CSS/JS. Mẫu đầu trang và thứ tự script (trang nhân viên):
+
+```html
+<body data-role="teacher" data-page="statistics" data-title="Thống kê">
+  <main class="content" id="content"> … </main>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script> /* script riêng của trang; cuối cùng gọi window.clxIcons() */ </script>
+</body>
+```
+
+- `data-page` là mã mục nav trong `shell.js` (`NAV[role]`); trang con (chi tiết lớp, theo dõi ca thi) dùng mã của mục cha và thêm `data-crumb`.
+- Dữ liệu chung nằm ở `window.CLX_STAFF` (`assets/data-staff.js`, KHÔNG sửa). Cần dữ liệu riêng của trang → tạo `assets/data-<tên-trang>.js` và gắn vào `window.CLX_<TÊN>`.
+- Trang dùng chung giữa Giảng viên và Trợ giảng viết MỘT lần, có kiểm `document.body.dataset.role` để ẩn hành động Trợ giảng không có. Bản `ta/` được sinh từ bản `teacher/` bằng script, nên đừng đặt đường dẫn tuyệt đối tới `teacher/` trong trang.
+- Mục điều hướng chưa có trang hiển thị mờ, không bấm được (đã xử lý ở `shell.js`).
+- Để tìm nhanh bằng Ctrl K, trang/dữ liệu có thể thêm `window.CLX_SEARCH = [{ role, group, label, hint, href }]` TRƯỚC khi nạp `shell.js`.
+
+## 17. Biểu đồ
+
+- Mỗi trang tối đa **một** biểu đồ chính, chiếm ≥ 2/3 chiều rộng, cao 240–320px; phần còn lại là danh sách hoặc bảng hẹp hơn.
+- Dải xám trung tính cho dữ liệu nền, **một** màu `--accent` cho điều cần nhìn nhất. Không cầu vồng, không nhiều series nhiều màu, không cột bo tròn, không đổ bóng.
+- Lưới mờ `--line`, nhãn trục 11–12px `--text-3`, số dùng `.tnum`. Không dựng sparkline trang trí trong thẻ chỉ số.
+- Vẽ bằng SVG/HTML thuần (xem `assets/charts.js`: `radar`, `heatmap`; được phép thêm hàm mới vào file riêng của trang). Luôn có `role="img"` + `aria-label` và bản tóm tắt chữ cho trình đọc màn hình.
+
+## 18. Trạng thái dữ liệu (làm cùng lúc với trạng thái "có dữ liệu")
+
+- **Rỗng:** `.empty` + một câu nêu việc kế tiếp + (nếu có) một nút hành động.
+- **Đang tải:** `.skeleton` đúng bố cục của nội dung thật (không spinner xoay).
+- **Lỗi:** khối `--err-soft` nêu nguyên nhân + nút "Tải lại".
+- **Không đủ quyền (vai trò):** ẩn hành động, không hiện nút rồi báo lỗi; nếu cần giải thích thì chú thích ngắn bằng `--text-3`.
+- Mỗi trang nhân viên có ít nhất một ví dụ trạng thái rỗng hoạt động thật (ví dụ lọc ra 0 kết quả).
+
+## 19. Mùi AI cần tránh thêm (đã gặp ở bản v1)
+
+- Nhãn đánh số "01 / 02 / 03" trước tiêu đề mục. Huy hiệu "Mới", "Pro", "Beta". Nhãn viên thuốc cho mọi thứ.
+- Hàng thẻ thống kê bằng nhau, mỗi thẻ một icon trong ô vuông tô màu. Thay bằng `.stat-strip` hoặc một bảng số liệu, độ rộng cột khác nhau theo nội dung.
+- Icon đặt trên tiêu đề trong mọi card. Card nào cũng có tiêu đề + mô tả + nút. Hãy để vài khối chỉ có nội dung.
+- Sparkline/thanh mini trong mọi thẻ. Biểu đồ không biểu thị số liệu thật.
+- Dữ liệu giả kiểu "John Doe", "Lorem ipsum", số tròn trịa (1,000 / 500 / 100%). Dùng tên Việt Nam thật hợp lý, số lẻ, mã đúng định dạng (`B23DCAT001`, `INT1449.01`).
+- Mọi cột bảng cùng độ rộng, mọi hàng cùng thông tin. Hãy cho cột số căn phải, cột mã hẹp, cột tên rộng, cột trạng thái cố định.
+- Mọi chuyển động đều "fade-in". Một kiểu vào trang duy nhất là đủ.
+- Lời tựa tiếng Việt kiểu khẩu hiệu ("Quản lý thông minh, hiệu quả vượt trội"). Nhãn phải nêu việc, không quảng cáo.
+
+## 20. Duyệt trước khi báo xong (bổ sung cho mục 13)
+
+- [ ] Có dùng ít nhất một chi tiết đặc trưng ở mục 15 ĐÚNG chỗ (không rải khắp nơi).
+- [ ] Trang nhân viên: việc ưu tiên của vai trò nằm ở đầu trang (mục 16).
+- [ ] Có trạng thái rỗng/tải/lỗi thật cho ít nhất một danh sách (mục 18).
+- [ ] Biểu đồ theo mục 17; không sparkline trang trí.
+- [ ] Dữ liệu lấy từ `CLX`/`CLX_STAFF`/file dữ liệu riêng; tên và số hợp lý, định dạng nhất quán.
+- [ ] Nội dung từ dữ liệu được chèn bằng `CLXUI.esc` hoặc `textContent`, không nối chuỗi người dùng vào `innerHTML`.
+- [ ] Chụp ảnh sáng + tối + mobile (khung 390px) và xem lại ảnh trước khi báo xong.
