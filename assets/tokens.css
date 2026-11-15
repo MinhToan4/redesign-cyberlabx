@@ -82,11 +82,11 @@
   --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-  /* Bo góc ĐỐI XỨNG: cả bốn góc cùng một bán kính, tăng dần theo kích thước thành phần. */
-  --r-tag: 4px;
-  --r-control: 8px;
-  --r-card: 14px;
-  --r-panel: 16px;
+  /* Bo góc GẦN VUÔNG (2-4px), đối xứng: vuông vức, chắc chắn, nghiêm túc. Không dùng hình tròn hay viên thuốc. */
+  --r-tag: 2px;
+  --r-control: 3px;
+  --r-card: 4px;
+  --r-panel: 4px;
 
   --sidebar-w: 240px;
   --topbar-h: 56px;

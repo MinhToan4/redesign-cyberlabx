@@ -214,6 +214,9 @@
   /* Dấu hiệu nhận diện: ô vuông đặc, chữ X tạo bởi hai nét, một chấm nhấn ở góc */
   var MARK = '<svg viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="var(--accent)"/><path d="M9.5 9.5l9 9M18.5 9.5l-9 9" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>';
 
+  var QUEST_MARK = '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M17 7l10 4v8c0 6-4.2 10-10 13C11.2 29 7 25 7 19v-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 18.5l3.2 3.2 6-6.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M29 2.5l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1z" fill="var(--accent)"/></svg>';
+  if (document.documentElement.getAttribute('data-skin') === 'quest') MARK = QUEST_MARK;
+
   var navHtml = nav.map(function (n) {
     if (n[0] === null) return '<div class="nav-label">' + esc(n[1]) + '</div>';
     var current = n[0] === page ? ' aria-current="page"' : '';

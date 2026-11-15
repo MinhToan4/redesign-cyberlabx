@@ -57,7 +57,9 @@
 
   /* Thay mọi <i data-lucide="..."> có trong bộ này bằng svg riêng; phần còn lại để Lucide xử lý (cùng kiểu nét). */
   function render(root) {
+    var quest = document.documentElement.getAttribute('data-skin') === 'quest';
     (root || document).querySelectorAll('i[data-lucide]').forEach(function (el) {
+      if (quest) return; /* skin quest: dùng Lucide gốc */
       var name = el.getAttribute('data-lucide');
       var key = I[name] ? name : A[name];
       if (!key) return;
@@ -71,7 +73,7 @@
       });
       el.replaceWith(svg);
     });
-    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.75, 'stroke-linecap': 'square', 'stroke-linejoin': 'miter' } });
+    if (window.lucide) window.lucide.createIcons({ attrs: quest ? { 'stroke-width': 1.75 } : { 'stroke-width': 1.75, 'stroke-linecap': 'square', 'stroke-linejoin': 'miter' } });
   }
 
   window.CLX_ICONS = { set: I, alias: A, render: render };

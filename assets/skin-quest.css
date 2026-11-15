@@ -1,0 +1,129 @@
+/* Giao diện "quest" cho vai trò SINH VIÊN: bám sát ngôn ngữ thiết kế của dự án aws-quest
+   (chữ lớn dễ đọc, tiêu đề Chakra Petch, nhãn mono viết hoa giãn chữ, thanh bên rộng, thẻ góc vuông vức, nút cam đậm, họa tiết lưới mờ).
+   Chỉ có tác dụng khi <html data-skin="quest"> (theme.js tự đặt cho các trang Sinh viên). Màu vẫn lấy từ tokens.css. */
+
+[data-skin='quest'] {
+  --font: 'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Chakra Petch', 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --sidebar-w: 264px;
+  --topbar-h: 68px;
+  --content-max: 1240px;
+}
+
+/* ---------- Chữ ---------- */
+[data-skin='quest'] body { font-size: 16px; line-height: 1.6; }
+[data-skin='quest'] h1 { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.15; letter-spacing: -0.005em; }
+[data-skin='quest'] h2 { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.3; }
+[data-skin='quest'] h3 { font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.4; }
+[data-skin='quest'] .kicker,
+[data-skin='quest'] .nav-label,
+[data-skin='quest'] .role-tag,
+[data-skin='quest'] .stat .label,
+[data-skin='quest'] .tbl-head { font-family: var(--mono); font-weight: 500; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+
+/* ---------- Thanh bên ---------- */
+[data-skin='quest'] .sidebar { padding: 22px 14px 18px; }
+[data-skin='quest'] .brand { padding: 2px 10px 6px; gap: 12px; }
+[data-skin='quest'] .brand-mark, [data-skin='quest'] .brand-mark svg { width: 36px; height: 36px; }
+[data-skin='quest'] .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.01em; }
+[data-skin='quest'] .brand-name::after { content: '.'; color: var(--accent); }
+[data-skin='quest'] .role-tag { margin: 0 10px 22px 58px; font-size: 11.5px; line-height: 16px; }
+[data-skin='quest'] .nav { gap: 4px; }
+[data-skin='quest'] .nav-label { margin: 26px 14px 8px; }
+[data-skin='quest'] .nav a, [data-skin='quest'] .nav .nav-off {
+  height: 48px; gap: 14px; padding: 0 14px; font-size: 16px; color: var(--text-2);
+  border: 1px solid transparent; border-radius: var(--r-control);
+}
+[data-skin='quest'] .nav a svg, [data-skin='quest'] .nav .nav-off svg { width: 22px; height: 22px; stroke-width: 1.75; }
+[data-skin='quest'] .nav a:hover { background: var(--mute-soft); color: var(--text); }
+[data-skin='quest'] .nav a[aria-current='page'] { background: var(--surface-2); border-color: var(--line-strong); color: var(--text); font-weight: 500; }
+[data-skin='quest'] .nav a[aria-current='page']::before { display: none; }
+[data-skin='quest'] .nav a[aria-current='page'] svg { color: var(--accent); }
+[data-skin='quest'] .term-progress { padding: 14px 16px; border-radius: var(--r-card); }
+[data-skin='quest'] .term-progress .row { font-size: 14px; }
+[data-skin='quest'] .user { padding: 10px; border-radius: var(--r-control); }
+[data-skin='quest'] .user .who b { font-size: 15px; }
+[data-skin='quest'] .user .who span { font-size: 13px; }
+[data-skin='quest'] .avatar { width: 38px; height: 38px; font-size: 13px; background: var(--surface-3); }
+[data-skin='quest'] .progress { height: 6px; border-radius: var(--r-tag); }
+
+/* ---------- Thanh trên ---------- */
+[data-skin='quest'] .topbar { height: var(--topbar-h); padding: 0 40px; gap: 14px; }
+[data-skin='quest'] .topbar .page-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+[data-skin='quest'] .search-btn { height: 46px; padding: 0 10px 0 16px; border-radius: var(--r-control); gap: 10px; }
+[data-skin='quest'] .search-btn span { min-width: 190px; font-size: 15px; }
+[data-skin='quest'] .icon-btn { width: 46px; height: 46px; border-radius: var(--r-control); }
+[data-skin='quest'] .icon-btn svg { width: 22px; height: 22px; }
+[data-skin='quest'] .kbd { height: 24px; min-width: 24px; font-size: 12px; }
+[data-skin='quest'] .content { padding: 36px 40px 88px; }
+[data-skin='quest'] .stack { gap: 28px; }
+[data-skin='quest'] .cols { grid-template-columns: minmax(0, 1fr) 352px; gap: 28px; }
+
+/* ---------- Thành phần ---------- */
+[data-skin='quest'] .btn { height: 46px; padding: 0 22px; font-size: 15px; font-weight: 500; border-radius: var(--r-control); border-color: var(--line-strong); }
+[data-skin='quest'] .btn svg { width: 18px; height: 18px; }
+[data-skin='quest'] .btn-sm { height: 38px; padding: 0 16px; font-size: 14px; border-radius: var(--r-control); }
+[data-skin='quest'] .btn-primary { font-weight: 600; border-color: var(--accent); }
+[data-skin='quest'] .input, [data-skin='quest'] .select { height: 46px; padding: 0 16px; font-size: 16px; border-radius: var(--r-control); }
+[data-skin='quest'] .textarea { font-size: 16px; padding: 12px 16px; border-radius: var(--r-control); }
+[data-skin='quest'] .field label { font-size: 14px; }
+[data-skin='quest'] .chip { height: 26px; padding: 0 11px; font-size: 13px; border-radius: var(--r-tag); }
+[data-skin='quest'] .verdict { height: 26px; padding: 0 9px; font-size: 13px; border-radius: var(--r-tag); }
+[data-skin='quest'] .card, [data-skin='quest'] .popover, [data-skin='quest'] .cmdk { border-radius: var(--r-card); }
+[data-skin='quest'] .card-pad { padding: 28px; }
+[data-skin='quest'] .card-head { padding: 20px 28px; }
+[data-skin='quest'] .section-head { margin-bottom: 16px; }
+[data-skin='quest'] .section-head h2 { font-size: 22px; }
+[data-skin='quest'] .section-head .meta { font-size: 15px; }
+[data-skin='quest'] .stat-strip > div { padding: 24px 28px; }
+[data-skin='quest'] .stat .value { font-family: var(--font-display); font-weight: 700; font-size: 42px; line-height: 1.15; }
+[data-skin='quest'] .stat .hint { font-size: 14px; }
+[data-skin='quest'] .tbl { font-size: 15.5px; }
+[data-skin='quest'] .tbl-row { min-height: 60px; padding: 0 24px; gap: 18px; }
+[data-skin='quest'] .tbl-head { min-height: 46px; }
+[data-skin='quest'] .tabs { gap: 28px; }
+[data-skin='quest'] .tabs button, [data-skin='quest'] .tabs a { font-size: 16px; padding: 14px 0; }
+[data-skin='quest'] .segmented { padding: 4px; border-radius: var(--r-card); }
+[data-skin='quest'] .segmented button { height: 38px; padding: 0 18px; font-size: 15px; border-radius: var(--r-control); }
+[data-skin='quest'] .pager { font-size: 14.5px; padding: 14px 24px; }
+[data-skin='quest'] .pager button { min-width: 38px; height: 38px; border-radius: var(--r-control); }
+[data-skin='quest'] .popover .item, [data-skin='quest'] .cmdk li a { font-size: 15px; border-radius: var(--r-control); }
+[data-skin='quest'] .cmdk input { height: 56px; font-size: 17px; }
+[data-skin='quest'] .empty { font-size: 16px; padding: 56px 24px; }
+[data-skin='quest'] .fab { width: 56px; height: 56px; right: 28px; bottom: 28px; }
+[data-skin='quest'] .fab svg { width: 24px; height: 24px; }
+[data-skin='quest'] .ticks i { height: 12px; }
+
+/* ---------- Icon: nét 1.75, đầu nét tròn như Lucide gốc ---------- */
+[data-skin='quest'] svg.lucide { stroke-linecap: round; stroke-linejoin: round; width: 20px; height: 20px; }
+[data-skin='quest'] .chip svg.lucide, [data-skin='quest'] .btn-sm svg.lucide { width: 16px; height: 16px; }
+
+/* ---------- Họa tiết nền: lưới thoi mờ (rất nhạt) ---------- */
+[data-skin='quest'][data-theme='dark'] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='70' viewBox='0 0 120 70'%3E%3Cpath d='M0 35L60 0l60 35-60 35z' fill='none' stroke='%23ffffff' stroke-opacity='.035'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+[data-skin='quest'][data-theme='light'] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='70' viewBox='0 0 120 70'%3E%3Cpath d='M0 35L60 0l60 35-60 35z' fill='none' stroke='%23000000' stroke-opacity='.04'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+[data-skin='quest'] .sidebar, [data-skin='quest'] .topbar { background: var(--bg); }
+
+@media (max-width: 900px) {
+  [data-skin='quest'] .topbar { padding: 0 16px; }
+  [data-skin='quest'] .content { padding: 24px 16px 64px; }
+  [data-skin='quest'] h1 { font-size: 28px; }
+  [data-skin='quest'] .card-pad { padding: 22px; }
+}
+@media (max-width: 1080px) { [data-skin='quest'] .cols { grid-template-columns: minmax(0, 1fr); } }
+
+/* Ô tìm kiếm có icon: chừa chỗ cho icon 20px */
+[data-skin='quest'] .search svg { left: 15px; top: 13px; width: 20px; height: 20px; }
+[data-skin='quest'] .search .input { padding-left: 46px; }
+
+@media (max-width: 640px) {
+  [data-skin='quest'] .stat-strip > div { padding: 16px 14px; }
+  [data-skin='quest'] .stat .value { font-size: 30px; }
+  [data-skin='quest'] .stat .label { font-size: 11px; letter-spacing: 0.06em; }
+  [data-skin='quest'] .tbl-row { padding: 0 16px; }
+}

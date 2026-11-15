@@ -27,7 +27,7 @@
 .icon-btn:hover:not(:disabled) { background: var(--mute-soft); color: var(--text); }
 .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .icon-btn svg { width: 18px; height: 18px; stroke-width: 1.75; }
-.icon-btn .badge-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--err); box-shadow: 0 0 0 2px var(--bg); }
+.icon-btn .badge-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: var(--r-tag); background: var(--err); box-shadow: 0 0 0 2px var(--bg); }
 
 /* ---------- Card & mục ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); }
@@ -52,7 +52,7 @@
 .chip-warn { background: var(--warn-soft); color: var(--warn); }
 .chip-info { background: var(--info-soft); color: var(--info); }
 .chip-accent { background: var(--accent-soft); color: var(--accent); }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.dot { width: 6px; height: 6px; border-radius: var(--r-tag); background: currentColor; }
 
 /* Mã kết quả bài nộp: AC / WA / WF / WFN / CPY */
 .v-AC { background: var(--ok-soft); color: var(--ok); }
@@ -65,13 +65,13 @@
 .v-AC, .v-WA, .v-WF, .v-WFN, .v-CPY { background: transparent; }
 
 /* ---------- Thanh tiến độ ---------- */
-.progress { height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.progress { height: 4px; border-radius: 0; background: var(--surface-3); overflow: hidden; }
 .progress > i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 
 /* ---------- Avatar ---------- */
 .avatar {
   display: inline-grid; place-items: center; flex: none;
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: var(--r-tag);
   background: var(--surface-3); color: var(--text);
   font-size: 12px; font-weight: 500;
 }
@@ -108,8 +108,8 @@ a.tbl-row:hover, .tbl-row.is-link:hover { background: var(--mute-soft); }
 .tabs [aria-selected='true']::after, .tabs [aria-current='true']::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); border-radius: 2px;
 }
-.segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); }
-.segmented button { height: 32px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: var(--text-2); font-weight: 500; font-size: 13px; }
+.segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-control); background: var(--surface-2); border: 1px solid var(--line); }
+.segmented button { height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-tag); background: transparent; color: var(--text-2); font-weight: 500; font-size: 13px; }
 .segmented button[aria-pressed='true'] { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); }
 
 /* ---------- Form ---------- */
@@ -168,7 +168,7 @@ a.tbl-row:hover, .tbl-row.is-link:hover { background: var(--mute-soft); }
 /* Nút nổi ChatBot: một nút tròn đơn sắc, không phát sáng */
 .fab {
   position: fixed; right: 24px; bottom: 24px; z-index: 30;
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: var(--r-tag);
   display: grid; place-items: center;
   background: var(--surface); border: 1px solid var(--line-strong); color: var(--text);
   box-shadow: var(--shadow-pop);
@@ -238,7 +238,7 @@ a.tbl-row:hover::after, .tbl-row.is-link:hover::after { content: ''; position: a
 
 /* Trạng thái = chấm + chữ */
 .status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
-.status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
+.status::before { content: ''; width: 6px; height: 6px; border-radius: var(--r-tag); background: var(--text-3); }
 .status.s-ok::before { background: var(--ok); } .status.s-err::before { background: var(--err); }
 .status.s-warn::before { background: var(--warn); } .status.s-info::before { background: var(--info); }
 
