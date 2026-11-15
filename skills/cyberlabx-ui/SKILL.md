@@ -14,7 +14,7 @@ Nguồn thật của hệ thống: `assets/tokens.css`, `assets/base.css`, `asse
 - **Sản phẩm:** công cụ làm việc hằng ngày của sinh viên và giảng viên. Người dùng đến để làm bài, nộp bài, xem kết quả, chấm bài. Giao diện phải biến mất khi họ đang làm việc.
 - **Tính cách:** sổ tay phòng lab. Yên tĩnh, chính xác, nhiều dữ liệu, ít trang trí. Không cyberpunk, không neon, không "game hóa" phô trương.
 - **Thế giới:** bàn làm việc ban đêm, dòng lệnh, nhật ký chấm bài. Chỉ chữ monospace mới "mang mùi terminal", và chỉ dành cho mã (mã lớp, mã bài, ID, điểm, kết quả chấm).
-- **Một điểm nhấn:** `--accent` (xanh mực). Màu khác chỉ để báo trạng thái. Nếu đang cân nhắc thêm màu thứ hai để "cho đẹp", dừng lại: dùng độ đậm chữ, khoảng cách, hoặc viền thay thế.
+- **Một điểm nhấn:** `--accent` (cam hổ phách, tham khảo bảng màu aws-quest). Màu khác chỉ để báo trạng thái. Nếu đang cân nhắc thêm màu thứ hai để "cho đẹp", dừng lại: dùng độ đậm chữ, khoảng cách, hoặc viền thay thế.
 - **Chi tiết đặc trưng:** chip kết quả `AC / WA / WF / WFN / CPY` (monospace, đúng một kiểu ở mọi nơi). Đây là thứ duy nhất được phép "riêng" của CyberLabX.
 - Khi phân vân giữa "thêm" và "bớt": bớt. Khi phân vân giữa "đẹp" và "dễ đọc/dễ quét": dễ quét.
 
@@ -37,7 +37,7 @@ Nguồn thật của hệ thống: `assets/tokens.css`, `assets/base.css`, `asse
 | Trạng thái | `--ok` `--err` `--warn` `--info` (+ `-soft`) | chỉ kết quả bài nộp, báo lỗi/thành công/cảnh báo |
 | | `--mute-soft` | hover trên nền trơn, chip trung tính |
 | Heatmap | `--heat-0` … `--heat-4` | lưới hoạt động |
-| Hình khối | `--r-tag` 4, `--r-control` 6, `--r-card` 10, `--r-panel` 12 | bo góc (chặt, có bậc rõ) |
+| Hình khối | `--r-tag` 4/2, `--r-control` 10/6, `--r-card` 16/9, `--r-panel` 18/10, `--corner` | bo góc bất đối xứng (lớn ở trên-trái và dưới-phải), hai góc lớn được VÁT 45° |
 | Khác | `--shadow-pop` | popover/menu nổi, nút nổi: CHỈ là viền 1px, không đổ bóng |
 | Chữ | `--font`, `--mono` | họ chữ |
 | Chuyển động | `--dur` 140ms, `--ease` | mọi transition |
@@ -47,7 +47,7 @@ Quy tắc dùng màu:
 2. Màu trạng thái luôn đi kèm **chữ hoặc mã** (AC, "Hạn hôm nay"), không bao giờ chỉ có màu (người mù màu).
 3. Nền `*-soft` dùng cho chip/badge; không dùng làm nền cả card.
 4. **Không glow, không đổ bóng, không gradient, không kính mờ (`backdrop-filter`/`blur`), không `filter: drop-shadow`, không `text-shadow`.** Không `box-shadow` có độ mờ (blur) khác 0 ở bất kỳ thành phần nào, kể cả focus: focus dùng viền `--accent` (ô nhập) hoặc `outline` 2px (nút/liên kết). Chỉ cho phép vòng 1px `0 0 0 1px` (là viền, không phải bóng). Không viền màu dày > 1px (trừ vạch nhấn 2px của nav/tab đang chọn).
-5. **Nền tối là xám-đen THUẦN (không ngả xanh, tím, lam), cùng họ với LeetCode:** `--bg` #161616, `--surface` #202020, `--surface-2` #282828, `--surface-3` #323232. Nền sáng cũng trung tính (#f5f5f5 / #fff). Tuyệt đối không thay bằng navy/xanh đêm/tím, không thêm sắc nhiễm vào xám, không dựng lớp nền màu để "tạo chiều sâu". Chiều sâu chỉ đến từ bậc nền (`--bg` → `--surface` → `--surface-2`) và viền hairline.
+5. **Màu theo aws-quest, hình khối riêng.** Nền tối gần đen trung tính: `--bg` #08090b, `--surface` #101113, `--surface-2` #181a1e, `--surface-3` #22252a; nền sáng #f7f7f5 / #ffffff; điểm nhấn cam hổ phách (tối #e9a33b, sáng #a6530b; chữ đặt trên nền nhấn dùng `--accent-ink`). Tuyệt đối không ngả xanh/tím, không dựng lớp nền màu để "tạo chiều sâu": chiều sâu chỉ đến từ bậc nền và viền hairline. **Góc vát:** card, nút, ô nhập, chip, hộp thoại dùng token bo góc bất đối xứng cùng `corner-shape: var(--corner)` (đã áp sẵn trong `tokens.css`); phần tử tròn (avatar, chấm trạng thái) giữ tròn; không tự đặt `border-radius` ngoài token.
 6. Sáng và tối đều phải đúng: đổi `data-theme` trên `<html>`, không bao giờ kiểm tra theme bằng JS để chọn màu.
 
 ## 3. Chữ
@@ -83,13 +83,13 @@ Nút `.btn` (`.btn-primary`, `.btn-ghost`, `.btn-sm`), `.icon-btn`; card `.card`
 
 Quy tắc chung:
 - **Tái dùng trước, viết mới sau.** Nếu cần kiểu mới ở ≥ 2 trang, báo người điều phối (ghi `NOTES.md`) để đưa vào `components.css`; một trang riêng lẻ thì đặt `<style>` trong trang, vẫn bằng token.
-- Nút: động từ cụ thể ("Nộp bài", "Lưu thay đổi"), không "OK"/"Submit". Icon (nếu có) đứng trước chữ, 16px, nét 1.5.
+- Nút: động từ cụ thể ("Nộp bài", "Lưu thay đổi"), không "OK"/"Submit". Icon (nếu có) đứng trước chữ, 16px, nét 1.75.
 - Chip trạng thái: tối đa 1–2 từ. Không dùng chip để trang trí.
 - Điểm nhấn thứ bậc bằng **độ đậm chữ và màu chữ** (`--text` / `--text-2` / `--text-3`), không bằng cỡ chữ lớn.
 
 ## 7. Icon và hình ảnh
 
-- Icon: Lucide, nét 1.5, 16 hoặc 18px, màu kế thừa `currentColor`. Một nghĩa một icon, dùng nhất quán ở mọi trang (bảng ánh xạ ở `references/components.md`).
+- Icon: bộ riêng `assets/icons.js` (phong cách bảo mật: lưới 24px, nét 1.75, đầu nét vuông, góc nhọn, góc lớn vát 45°). Dùng `<i data-lucide="tên"></i>` + `window.clxIcons()`; tên chưa có trong bộ tự lùi về Lucide và được vẽ cùng kiểu nét. Muốn thêm icon: vẽ trong `icons.js` theo đúng ngôn ngữ trên, không dùng icon bo tròn mềm. Một nghĩa một icon, dùng nhất quán ở mọi trang (bảng ánh xạ ở `references/components.md`).
 - Không emoji, không icon 3D/PNG, không ảnh minh họa trang trí, không logo phát sáng. Hình ảnh duy nhất cho phép: ảnh người dùng thật (avatar), ảnh chụp sản phẩm thật, biểu đồ.
 - Trạng thái trống/đầu tiên dùng chữ + một hành động, không minh họa.
 
@@ -136,11 +136,11 @@ Vùng bấm tối thiểu 32×32 (ưu tiên 36).
 - [ ] Không emoji, không dấu chấm than, không chữ hoa toàn bộ, không weight ≥ 700, không italic.
 - [ ] Không tiêu đề lớn lặp lại tên trang; không dòng mô tả thừa; không banner minh họa.
 - [ ] Chỉ 1 màu nhấn; màu trạng thái luôn kèm chữ/mã.
-- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc theo bậc 4/6/10/12.
+- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc/góc vát theo token.
 - [ ] Mọi danh sách có phân trang; bảng là CSS grid; đổi bộ lọc về trang 1.
 - [ ] Hover, focus-visible, disabled, rỗng, lỗi đều có.
 - [ ] Sáng và tối đều đọc được; 390px không cuộn ngang; vùng bấm ≥ 32px.
-- [ ] Icon Lucide nét 1.5, nhất quán nghĩa; icon-only có `aria-label`.
+- [ ] Icon thuộc bộ `assets/icons.js` (nét 1.75, đầu vuông, góc vát), nhất quán nghĩa; icon-only có `aria-label`.
 - [ ] Chữ tiếng Việt có dấu, nhất quán thuật ngữ; số dùng `.tnum`; không số bịa.
 - [ ] Không `transition: all`, không animate kích thước/vị trí.
 - [ ] Mỗi màn hình có đúng 1 thao tác chính nổi bật.

@@ -36,7 +36,7 @@ Hoặc bấm đúp `index.html`. Hướng dẫn đầy đủ (xem trên điện 
 | Bảng sổ cái | Nhật ký và lịch sử: cột số thứ tự monospace, đường kẻ lề |
 | Bảng lệnh `Ctrl K` | Tìm nhanh bằng bàn phím, không dấu cũng tìm được |
 
-Nguyên tắc: nền xám-đen thuần (không ngả xanh hay tím), một màu nhấn xanh mực, màu còn lại chỉ để báo trạng thái; không glow, không đổ bóng, không gradient, không kính mờ; chữ IBM Plex (có đủ dấu tiếng Việt); bo góc chặt có bậc (4, 6, 10, 12); chuyển động ngắn, một đường cong, chỉ `opacity` và `transform`.
+Nguyên tắc: bề mặt trung tính gần đen và một màu nhấn cam hổ phách (bảng màu tham khảo dự án aws-quest), màu còn lại chỉ để báo trạng thái; không glow, không đổ bóng, không gradient, không kính mờ; chữ IBM Plex (có đủ dấu tiếng Việt); **góc vát 45°** ở hai góc đối diện như thẻ truy cập, hai góc còn lại bo nhẹ (trình duyệt chưa hỗ trợ `corner-shape` tự lùi về bo góc bất đối xứng); **bộ icon riêng** nét 1.75, đầu vuông, góc nhọn, chủ đề bảo mật (`assets/icons.js`); chuyển động ngắn, một đường cong, chỉ `opacity` và `transform`.
 
 ## Vai trò và màn hình
 
@@ -56,7 +56,8 @@ index.html              cổng duyệt thiết kế: chọn vai trò, xem mọi 
 *.html                  màn hình Sinh viên
 teacher/  ta/  admin/   màn hình theo vai trò
 assets/
-  tokens.css            màu, bo góc, chữ (sáng và tối)
+  tokens.css            màu, bo góc, góc vát, chữ (sáng và tối)
+  icons.js              bộ icon bảo mật (nét vuông, góc vát); tên chưa có lùi về Lucide
   base.css              reset, khung ứng dụng, sidebar, topbar
   components.css        nút, thẻ, chip, bảng, tab, form, phân trang, bảng lệnh
   shell.js              dựng sidebar, topbar, Ctrl K; tiện ích CLXUI
