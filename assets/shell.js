@@ -153,7 +153,7 @@
       ['history', 'history.html', 'history', 'Lịch sử', 1],
       ['leaderboard', 'leaderboard.html', 'trophy', 'Bảng xếp hạng', 1],
       ['guide', 'guide.html', 'book-open', 'Hướng dẫn', 1],
-      ['chatbot', 'chatbot.html', 'message-square', 'ChatBot', 1],
+      ['chatbot', 'chatbot.html', 'bot', 'ChatBot', 1],
     ],
     teacher: [
       [null, 'Giảng dạy'],
@@ -212,7 +212,7 @@
   function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
 
   /* Dấu hiệu nhận diện: ô vuông đặc, chữ X tạo bởi hai nét, một chấm nhấn ở góc */
-  var MARK = '<svg viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="6" fill="currentColor"/><path d="M9 9l10 10M19 9L9 19" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="21.5" cy="6.5" r="2.4" fill="var(--accent)"/></svg>';
+  var MARK = '<svg viewBox="0 0 28 28" aria-hidden="true"><path d="M8 0h20v20l-8 8H0V8z" fill="var(--accent)"/><path d="M10 10l8 8M18 10l-8 8" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>';
 
   var navHtml = nav.map(function (n) {
     if (n[0] === null) return '<div class="nav-label">' + esc(n[1]) + '</div>';
@@ -273,7 +273,7 @@
   main.appendChild(content);
 
   if (role === 'student' && page !== 'chatbot') {
-    body.appendChild(el('<a class="fab" href="chatbot.html" aria-label="Mở ChatBot"><i data-lucide="message-square"></i></a>'));
+    body.appendChild(el('<a class="fab" href="chatbot.html" aria-label="Mở ChatBot"><i data-lucide="bot"></i></a>'));
   }
 
   /* ---------- Popover ---------- */
@@ -381,6 +381,6 @@
     else if (body.classList.contains('nav-open')) closeDrawer(true);
   });
 
-  window.clxIcons = function () { if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); };
+  if (!window.CLX_ICONS) window.clxIcons = function () { if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.75, 'stroke-linecap': 'square', 'stroke-linejoin': 'miter' } }); };
   window.clxIcons();
 })();

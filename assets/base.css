@@ -68,7 +68,7 @@ svg { flex: none; }
   color: var(--text-2);
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.nav a svg { width: 18px; height: 18px; stroke-width: 1.5; }
+.nav a svg { width: 18px; height: 18px; stroke-width: 1.75; }
 .nav a:hover { background: var(--mute-soft); color: var(--text); }
 .nav a[aria-current='page'] { background: var(--surface-2); color: var(--text); font-weight: 500; }
 .nav a[aria-current='page']::before {
@@ -130,7 +130,7 @@ svg { flex: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 /* Icon Lucide mặc định 16px, nét 1.5; thành phần cụ thể (nav, icon-btn, fab) đặt cỡ riêng ở components.css. */
-svg.lucide { width: 16px; height: 16px; stroke-width: 1.5; }
+svg.lucide { width: 16px; height: 16px; stroke-width: 1.75; }
 
 /* Vào trang: một chuyển động ngắn (mờ dần + trượt lên 8px), các khối cách nhau 40ms, tối đa 6 khối. */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -139,4 +139,8 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.5; }
 .stack > *:nth-child(4) { animation-delay: 120ms; } .stack > *:nth-child(5) { animation-delay: 160ms; } .stack > *:nth-child(6) { animation-delay: 200ms; }
 
 .nav .nav-off { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; color: var(--text-3); cursor: default; }
-.nav .nav-off svg { width: 18px; height: 18px; stroke-width: 1.5; }
+.nav .nav-off svg { width: 18px; height: 18px; stroke-width: 1.75; }
+
+/* Icon: đầu nét vuông, góc nhọn (phong cách bảo mật) */
+svg.lucide { stroke-linecap: square; stroke-linejoin: miter; }
+.brand-mark { color: var(--accent); }
