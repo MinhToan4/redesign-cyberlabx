@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nhật ký hoạt động · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bố cục trang Nhật ký hoạt động */
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+    .date-field { display: flex; flex-direction: column; gap: 4px; }
+    .date-field label { font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+    .date-input-wrap { position: relative; }
+    .date-input-wrap input[type='date'] { width: 100%; height: 36px; padding: 0 10px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-control); font-family: var(--mono); font-size: 13px; }
+
+    /* Bảng sổ cái nhật ký */
+    .tbl-scroll { overflow-x: hidden; }
+    .tbl.ledger { --cols: 40px 64px 156px minmax(130px, 1.1fr) 115px minmax(130px, 1.2fr) 115px 48px; }
+    .tbl-row { padding: 0 14px; gap: 10px; }
+    
+    /* Bảng so sánh thay đổi Trước / Sau trong Modal */
+    .diff-table { width: 100%; border: 1px solid var(--line); border-radius: var(--r-control); overflow: hidden; font-size: 13px; }
+    .diff-row { display: grid; grid-template-columns: 140px 1fr 1fr; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+    .diff-row:last-child { border-bottom: 0; }
+    .diff-head { background: var(--surface-2); font-weight: 500; color: var(--text-3); font-size: 12px; }
+    .diff-old { color: var(--text-3); font-family: var(--mono); font-size: 12.5px; text-decoration: line-through; }
+    .diff-new { color: var(--ok); font-family: var(--mono); font-size: 12.5px; font-weight: 500; }
+
+    /* Hộp thoại chi tiết */
+    .modal-scrim { position: fixed; inset: 0; z-index: 100; background: var(--scrim); display: grid; place-items: center; padding: 20px; }
+    .modal-scrim[hidden] { display: none; }
+    .modal-box { width: min(600px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-panel); box-shadow: var(--shadow-pop); }
+    .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+    .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: flex-end; gap: 10px; background: var(--surface-2); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 95; padding: 10px 16px; border-radius: var(--r-control); background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-pop); transform: translateY(20px); opacity: 0; transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease); pointer-events: none; }
+    .toast.is-show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      .tbl.ledger { --cols: 40px 56px 140px 120px 105px 115px 95px 36px; }
+    }
+    @media (max-width: 760px) {
+      .col-hide-mobile { display: none !important; }
+      .tbl.ledger { --cols: 56px minmax(0, 1.2fr) 95px minmax(0, 1.2fr); }
+      .diff-row { grid-template-columns: 100px 1fr 1fr; font-size: 12px; }
+      .filter-grid { grid-template-columns: 1fr; }
+      .ledger .tbl-row::before { display: none; }
+    }
+  </style>
+</head>
+<body data-role="admin" data-page="audit-logs" data-title="Nhật ký hoạt động">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- Bộ lọc nhật ký (Bắt buộc khoảng ngày theo API) -->
+      <section class="card card-pad stack-sm" aria-label="Bộ lọc nhật ký">
+        <div class="filter-grid">
+          <!-- Khoảng ngày (Mặc định 7 ngày gần nhất) -->
+          <div class="date-field">
+            <label for="date-from">Từ ngày</label>
+            <div class="date-input-wrap">
+              <input type="date" id="date-from" class="input" aria-label="Từ ngày">
+            </div>
+          </div>
+          <div class="date-field">
+            <label for="date-to">Đến ngày</label>
+            <div class="date-input-wrap">
+              <input type="date" id="date-to" class="input" aria-label="Đến ngày">
+            </div>
+          </div>
+
+          <!-- Lọc người thao tác -->
+          <div class="field">
+            <label for="filter-actor">Người thao tác</label>
+            <select class="select" id="filter-actor" aria-label="Người thao tác">
+              <option value="">Tất cả người thao tác</option>
+            </select>
+          </div>
+
+          <!-- Lọc hành động -->
+          <div class="field">
+            <label for="filter-action">Hành động</label>
+            <select class="select" id="filter-action" aria-label="Hành động">
+              <option value="">Tất cả hành động</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dòng tìm kiếm và nút đặt lại -->
+        <div class="toolbar" style="margin-top:4px">
+          <div class="search" style="min-width:260px;flex:1">
+            <i data-lucide="search"></i>
+            <input class="input" id="search-input" placeholder="Tìm theo ID, người thao tác, đối tượng, IP..." aria-label="Tìm kiếm nhật ký">
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-reset-filters">
+            <i data-lucide="rotate-ccw"></i>Đặt lại bộ lọc
+          </button>
+        </div>
+      </section>
+
+      <!-- Bảng sổ cái nhật ký -->
+      <section class="card" aria-label="Bảng nhật ký hoạt động">
+        <div class="card-head" style="flex-wrap:wrap;gap:10px">
+          <div class="row-gap" style="flex-wrap:wrap">
+            <h2 style="font-size:14px">Danh sách bản ghi</h2>
+            <span class="chip chip-mono" id="log-total-badge">0 bản ghi</span>
+            <span class="faint col-hide-mobile" style="font-size:12px" id="log-range-hint">Khoảng 7 ngày gần nhất</span>
+          </div>
+          <!-- Nút phụ Xuất CSV -->
+          <button class="btn btn-sm" id="btn-export-csv" title="Xuất toàn bộ bản ghi khớp bộ lọc ra tệp CSV">
+            <i data-lucide="download"></i>Xuất CSV
+          </button>
+        </div>
+
+        <div class="tbl-scroll">
+          <div class="tbl ledger" id="audit-tbl" role="table" aria-label="Nhật ký hoạt động">
+            <!-- Render qua JavaScript -->
+          </div>
+        </div>
+
+        <!-- Phân trang chuẩn CLXUI.pager -->
+        <div class="pager-host" id="pager"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Hộp thoại Chi tiết dòng nhật ký (Xem trước / sau) -->
+  <div class="modal-scrim" id="modal-audit-detail" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-detail-title">
+      <div class="modal-head">
+        <h3 id="modal-detail-title">Chi tiết bản ghi nhật ký</h3>
+        <button class="icon-btn" id="btn-modal-close" aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Thông tin tổng quan -->
+        <dl class="kv" style="grid-template-columns:120px 1fr" id="modal-meta-list">
+          <!-- Render bằng JS -->
+        </dl>
+
+        <!-- Bảng thay đổi dữ liệu (Trước / Sau) -->
+        <div class="stack-sm">
+          <div class="section-head" style="margin-bottom:4px">
+            <b style="font-size:13px">Thay đổi dữ liệu chi tiết</b>
+            <span class="meta">Trước / Sau khi thực hiện</span>
+          </div>
+          <div class="diff-table" id="modal-diff-content">
+            <!-- Render bằng JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" id="btn-modal-done">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i data-lucide="check-circle" style="color:var(--ok)"></i>
+    <span id="toast-text">Thông báo</span>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var U = window.CLXUI, esc = U.esc;
+      var STAFF = window.CLX_STAFF;
+      var logs = STAFF.audit || [];
+
+      /* Tên hiển thị người dùng và thông tin chi tiết */
+      var ACTORS = {
+        admin: { name: 'Lương Minh Quân', role: 'Quản trị hệ thống' },
+        gv01: { name: 'ThS. Nguyễn Văn An', role: 'Giảng viên' },
+        gv02: { name: 'TS. Trần Thị Bích', role: 'Giảng viên' },
+        ta02: { name: 'Đinh Quang Huy', role: 'Trợ giảng' },
+        system: { name: 'Hệ thống tự động', role: 'Dịch vụ nền' }
+      };
+
+      /* Định dạng chip hành động theo ngữ cảnh */
+      function actionChip(action) {
+        if (action === 'Duyệt bài tập') return '<span class="chip chip-ok"><span class="dot"></span>' + esc(action) + '</span>';
+        if (action === 'Từ chối bài tập') return '<span class="chip chip-err"><span class="dot"></span>' + esc(action) + '</span>';
+        if (action === 'Ngừng tài khoản' || action === 'Cấp lại mật khẩu') return '<span class="chip chip-warn"><span class="dot"></span>' + esc(action) + '</span>';
+        if (action === 'Sửa cấu hình' || action === 'Gán bài vào lớp') return '<span class="chip chip-info"><span class="dot"></span>' + esc(action) + '</span>';
+        if (action === 'Tạo ca thi') return '<span class="chip chip-accent"><span class="dot"></span>' + esc(action) + '</span>';
+        return '<span class="chip">' + esc(action) + '</span>';
+      }
+
+      /* Tìm khoảng ngày mặc định: 7 ngày gần nhất trong tập dữ liệu */
+      var dates = logs.map(function (l) { return l.time.slice(0, 10); }).sort();
+      var maxDate = dates[dates.length - 1] || '2026-09-18';
+      var minDateObj = new Date(maxDate + 'T00:00:00');
+      minDateObj.setDate(minDateObj.getDate() - 6);
+      var defaultFrom = minDateObj.toISOString().slice(0, 10);
+      var defaultTo = maxDate;
+
+      var state = {
+        dateFrom: defaultFrom,
+        dateTo: defaultTo,
+        actor: '',
+        action: '',
+        search: '',
+        page: 1,
+        size: 10, /* 10 dòng / trang => 60 bản ghi = 6 trang, hiển thị đầy đủ dấu ba chấm và trang đầu/cuối */
+        selectedLog: null
+      };
+
+      document.getElementById('date-from').value = state.dateFrom;
+      document.getElementById('date-to').value = state.dateTo;
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pg = U.pager(document.getElementById('pager'), {
+        total: 0,
+        page: 1,
+        size: 10,
+        sizes: [10, 20, 50],
+        onChange: function (page, size) {
+          state.page = page;
+          state.size = size;
+          renderTable();
+        }
+      });
+
+      /* Nạp danh sách actor và action vào dropdown */
+      var actorsList = [];
+      var actionsList = [];
+      logs.forEach(function (l) {
+        if (l.actor && actorsList.indexOf(l.actor) === -1) actorsList.push(l.actor);
+        if (l.action && actionsList.indexOf(l.action) === -1) actionsList.push(l.action);
+      });
+      actorsList.sort();
+      actionsList.sort();
+
+      var actorSelect = document.getElementById('filter-actor');
+      actorsList.forEach(function (ac) {
+        var info = ACTORS[ac];
+        var text = ac + (info ? ' (' + info.name + ')' : '');
+        actorSelect.innerHTML += '<option value="' + esc(ac) + '">' + esc(text) + '</option>';
+      });
+
+      var actionSelect = document.getElementById('filter-action');
+      actionsList.forEach(function (act) {
+        actionSelect.innerHTML += '<option value="' + esc(act) + '">' + esc(act) + '</option>';
+      });
+
+      function showToast(msg) {
+        var t = document.getElementById('toast');
+        document.getElementById('toast-text').textContent = msg;
+        t.classList.add('is-show');
+        setTimeout(function () { t.classList.remove('is-show'); }, 3000);
+      }
+
+      function getFiltered() {
+        return logs.filter(function (l) {
+          var d = l.time.slice(0, 10);
+          if (state.dateFrom && d < state.dateFrom) return false;
+          if (state.dateTo && d > state.dateTo) return false;
+          if (state.actor && l.actor !== state.actor) return false;
+          if (state.action && l.action !== state.action) return false;
+          if (state.search) {
+            var q = state.search.toLowerCase();
+            var matchId = String(l.id).indexOf(q) !== -1;
+            var matchActor = l.actor.toLowerCase().indexOf(q) !== -1;
+            var actorInfo = ACTORS[l.actor];
+            var matchActorName = actorInfo ? actorInfo.name.toLowerCase().indexOf(q) !== -1 : false;
+            var matchTarget = l.target ? l.target.toLowerCase().indexOf(q) !== -1 : false;
+            var matchIp = l.ip ? l.ip.indexOf(q) !== -1 : false;
+            var matchAction = l.action.toLowerCase().indexOf(q) !== -1;
+            if (!matchId && !matchActor && !matchActorName && !matchTarget && !matchIp && !matchAction) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderTable() {
+        var filtered = getFiltered();
+        var total = filtered.length;
+        var rows = U.paginate(filtered, state.page, state.size);
+        var start = (state.page - 1) * state.size;
+        var isMobile = window.innerWidth <= 760;
+
+        document.getElementById('log-total-badge').textContent = total + ' bản ghi';
+        document.getElementById('log-range-hint').textContent = state.dateFrom && state.dateTo
+          ? state.dateFrom.slice(8, 10) + '/' + state.dateFrom.slice(5, 7) + ' → ' + state.dateTo.slice(8, 10) + '/' + state.dateTo.slice(5, 7)
+          : 'Tất cả thời gian';
+
+        var tbl = document.getElementById('audit-tbl');
+        var html = '<div class="tbl-row tbl-head" role="row">' +
+          '<span class="no col-hide-mobile" role="columnheader">STT</span>' +
+          '<span role="columnheader">ID</span>' +
+          '<span role="columnheader">Thời gian</span>' +
+          '<span role="columnheader">Hành động</span>' +
+          '<span role="columnheader">Chi tiết đối tượng</span>' +
+          '<span role="columnheader" class="col-hide-mobile">Địa chỉ IP</span>' +
+          '<span role="columnheader" class="col-hide-mobile" style="text-align:right">Xem</span>' +
+          '</div>';
+
+        if (rows.length === 0) {
+          html += '<div class="empty" style="grid-column:1/-1">' +
+            'Không có thao tác nào trong khoảng ngày hoặc điều kiện lọc đã chọn.<br>' +
+            '<button class="btn btn-sm btn-ghost" id="empty-reset-btn" style="margin-top:12px"><i data-lucide="rotate-ccw"></i>Đặt lại bộ lọc</button>' +
+            '</div>';
+        } else {
+          rows.forEach(function (l, idx) {
+            var stt = start + idx + 1;
+            var actorInfo = ACTORS[l.actor];
+            var actorName = actorInfo ? actorInfo.name : l.actor;
+            var timeShort = isMobile ? l.time.slice(5, 16) : l.time;
+
+            html += '<div class="tbl-row is-link" role="row" tabindex="0" data-id="' + l.id + '" aria-label="Bản ghi ' + l.id + ': ' + esc(l.action) + '">' +
+              '<span class="no col-hide-mobile">' + stt + '</span>' +
+              '<span class="mono tnum faint">' + l.id + '</span>' +
+              '<span class="mono tnum" style="font-size:12px">' + esc(timeShort) + '</span>' +
+              '<span>' + actionChip(l.action) + '</span>' +
+              '<div style="min-width:0">' +
+                '<div class="trunc" style="font-weight:500" title="' + esc(actorName) + ' (' + esc(l.actor) + ')">' + esc(actorName) + '</div>' +
+                '<div class="mono faint trunc" style="font-size:11.5px" title="' + esc(l.target) + '">' + esc(l.target) + '</div>' +
+              '</div>' +
+              '<span class="mono tnum faint col-hide-mobile" style="font-size:12px">' + esc(l.ip) + '</span>' +
+              '<span class="col-hide-mobile" style="text-align:right"><button type="button" class="icon-btn btn-view-log" data-id="' + l.id + '" aria-label="Xem chi tiết bản ghi ' + l.id + '"><i data-lucide="eye"></i></button></span>' +
+              '</div>';
+          });
+        }
+
+        tbl.innerHTML = html;
+
+        var emptyReset = document.getElementById('empty-reset-btn');
+        if (emptyReset) {
+          emptyReset.addEventListener('click', resetFilters);
+        }
+
+        /* Bấm hàng hoặc bấm nút để mở modal chi tiết; hỗ trợ bàn phím Enter / Space */
+        var rowEls = tbl.querySelectorAll('.tbl-row[data-id]');
+        rowEls.forEach(function (r) {
+          r.addEventListener('click', function () {
+            var id = +this.dataset.id;
+            var item = logs.filter(function (x) { return x.id === id; })[0];
+            if (item) openDetailModal(item);
+          });
+          r.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              var id = +this.dataset.id;
+              var item = logs.filter(function (x) { return x.id === id; })[0];
+              if (item) openDetailModal(item);
+            }
+          });
+        });
+
+        var viewBtns = tbl.querySelectorAll('.btn-view-log');
+        viewBtns.forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var id = +this.dataset.id;
+            var item = logs.filter(function (x) { return x.id === id; })[0];
+            if (item) openDetailModal(item);
+          });
+        });
+
+        window.clxIcons();
+      }
+
+      /* Tạo bảng trước / sau dữ liệu hợp lý theo nghiệp vụ */
+      function getDiffDetails(l) {
+        var act = l.action;
+        var diffs = [];
+        if (act === 'Duyệt bài tập') {
+          diffs.push({ field: 'status', label: 'Trạng thái xét duyệt', before: '0 (Chờ duyệt)', after: '1 (Đã duyệt)' });
+          diffs.push({ field: 'approved_by', label: 'Người phê duyệt', before: 'null', after: l.actor });
+          diffs.push({ field: 'approved_at', label: 'Thời điểm duyệt', before: 'null', after: l.time });
+          diffs.push({ field: 'is_public', label: 'Mở bài tập cho SV', before: 'false', after: 'true' });
+        } else if (act === 'Từ chối bài tập') {
+          diffs.push({ field: 'status', label: 'Trạng thái xét duyệt', before: '0 (Chờ duyệt)', after: '2 (Từ chối)' });
+          diffs.push({ field: 'rejection_reason', label: 'Lý do từ chối', before: 'null', after: 'Thiếu kịch bản kiểm tra bước 3 và chưa có flag mẫu kiểm thử.' });
+          diffs.push({ field: 'reviewed_by', label: 'Quản trị viên xử lý', before: 'null', after: l.actor });
+        } else if (act === 'Sửa cấu hình') {
+          diffs.push({ field: l.target || 'setting.value', label: 'Giá trị cấu hình', before: '100', after: '120' });
+          diffs.push({ field: 'modified_by', label: 'Tài khoản cập nhật', before: 'system', after: l.actor });
+          diffs.push({ field: 'updated_at', label: 'Thời điểm lưu', before: '2026-09-10 08:00:00', after: l.time });
+        } else if (act === 'Ngừng tài khoản') {
+          diffs.push({ field: 'account_status', label: 'Trạng thái tài khoản', before: 'active (Hoạt động)', after: 'inactive (Tạm ngừng)' });
+          diffs.push({ field: 'locked_reason', label: 'Lý do tạm ngừng', before: 'null', after: 'Phát hiện truy cập bất thường từ nhiều địa chỉ IP.' });
+          diffs.push({ field: 'lock_expires', label: 'Thời hạn khóa', before: 'null', after: 'Vô thời hạn (Chờ Admin mở)' });
+        } else if (act === 'Tạo ca thi') {
+          diffs.push({ field: 'exam_code', label: 'Mã ca thi mới', before: 'null', after: l.target });
+          diffs.push({ field: 'status', label: 'Trạng thái ca thi', before: 'null', after: 'upcoming (Sắp diễn ra)' });
+          diffs.push({ field: 'duration', label: 'Thời lượng làm bài', before: 'null', after: '120 phút' });
+        } else if (act === 'Cấp lại mật khẩu') {
+          diffs.push({ field: 'password_hash', label: 'Mật khẩu bảo vệ', before: 'hash_sha256_old', after: 'hash_sha256_generated' });
+          diffs.push({ field: 'force_reset', label: 'Yêu cầu đổi khi đăng nhập', before: 'false', after: 'true' });
+          diffs.push({ field: 'reset_channel', label: 'Phương thức gửi', before: 'null', after: 'Email SV & SMS xác thực' });
+        } else if (act === 'Sao lưu') {
+          diffs.push({ field: 'backup_id', label: 'Mã bản sao lưu', before: 'null', after: l.target });
+          diffs.push({ field: 'backup_type', label: 'Kiểu sao lưu', before: 'null', after: 'Full Snapshot (CSDL + Tệp lab)' });
+          diffs.push({ field: 'checksum', label: 'Mã toàn vẹn SHA256', before: 'null', after: 'e3b0c44298fc1c149afbf4c8996fb924...' });
+        } else if (act === 'Gán bài vào lớp') {
+          diffs.push({ field: 'class_code', label: 'Lớp học phần', before: 'null', after: l.target });
+          diffs.push({ field: 'assigned_count', label: 'Số bài gán bổ sung', before: '0', after: '1 bài tập' });
+          diffs.push({ field: 'deadline', label: 'Hạn nộp áp dụng', before: 'null', after: '2026-10-15 23:59' });
+        } else if (act === 'Đăng nhập') {
+          diffs.push({ field: 'session_id', label: 'Phiên đăng nhập', before: 'null', after: 'sess_9f81a7b63c20' });
+          diffs.push({ field: 'auth_result', label: 'Kết quả xác thực', before: 'null', after: 'Thành công (2FA OK)' });
+          diffs.push({ field: 'client_ip', label: 'Địa chỉ mạng', before: 'null', after: l.ip });
+        } else {
+          diffs.push({ field: 'operation', label: 'Chi tiết thao tác', before: 'null', after: l.action });
+          diffs.push({ field: 'target', label: 'Đối tượng tác động', before: 'null', after: l.target });
+        }
+        return diffs;
+      }
+
+      /* Khởi tạo CLXUI.modal cho hộp thoại Chi tiết bản ghi */
+      var modalAuditDetailEl = document.getElementById('modal-audit-detail');
+      var detailModal = U.modal(modalAuditDetailEl, {
+        initialFocus: '#btn-modal-done',
+        onClose: function () {
+          state.selectedLog = null;
+        }
+      });
+
+      /* Modal Chi tiết */
+      function openDetailModal(l) {
+        state.selectedLog = l;
+        document.getElementById('modal-detail-title').textContent = 'Bản ghi nhật ký #' + l.id;
+
+        var actorInfo = ACTORS[l.actor];
+        var metaHtml = '<dt>Thời gian</dt><dd class="mono tnum">' + esc(l.time) + '</dd>' +
+          '<dt>Người thao tác</dt><dd><span style="font-weight:500">' + (actorInfo ? esc(actorInfo.name) : esc(l.actor)) + '</span> <span class="mono faint">(' + esc(l.actor) + (actorInfo ? ' · ' + esc(actorInfo.role) : '') + ')</span></dd>' +
+          '<dt>Hành động</dt><dd>' + actionChip(l.action) + '</dd>' +
+          '<dt>Đối tượng</dt><dd class="mono">' + esc(l.target) + '</dd>' +
+          '<dt>Địa chỉ IP</dt><dd class="mono tnum">' + esc(l.ip) + '</dd>';
+        document.getElementById('modal-meta-list').innerHTML = metaHtml;
+
+        var diffs = getDiffDetails(l);
+        var diffHtml = '<div class="diff-row diff-head">' +
+          '<span>Thuộc tính</span><span>Giá trị trước</span><span>Giá trị sau</span>' +
+          '</div>';
+        diffs.forEach(function (d) {
+          diffHtml += '<div class="diff-row">' +
+            '<div><div style="font-weight:500">' + esc(d.label) + '</div><div class="mono faint" style="font-size:11.5px">' + esc(d.field) + '</div></div>' +
+            '<div class="diff-old trunc" title="' + esc(d.before) + '">' + esc(d.before) + '</div>' +
+            '<div class="diff-new trunc" title="' + esc(d.after) + '">' + esc(d.after) + '</div>' +
+            '</div>';
+        });
+        document.getElementById('modal-diff-content').innerHTML = diffHtml;
+
+        detailModal.open();
+        window.clxIcons();
+      }
+
+      document.getElementById('btn-modal-close').addEventListener('click', detailModal.close);
+      document.getElementById('btn-modal-done').addEventListener('click', detailModal.close);
+
+      /* Xuất CSV (Nút phụ) */
+      document.getElementById('btn-export-csv').addEventListener('click', function () {
+        var filtered = getFiltered();
+        if (filtered.length === 0) {
+          showToast('Không có bản ghi nào để xuất CSV.');
+          return;
+        }
+
+        /* Thêm BOM UTF-8 để Excel hiển thị đúng dấu tiếng Việt */
+        var csv = '\uFEFF';
+        csv += 'STT,Mã ID,Thời gian,Người thao tác,Tên người thao tác,Hành động,Đối tượng,Địa chỉ IP\n';
+        filtered.forEach(function (l, idx) {
+          var actorInfo = ACTORS[l.actor];
+          var actorName = actorInfo ? actorInfo.name : l.actor;
+          var row = [
+            idx + 1,
+            l.id,
+            '"' + l.time + '"',
+            '"' + l.actor + '"',
+            '"' + actorName.replace(/"/g, '""') + '"',
+            '"' + l.action.replace(/"/g, '""') + '"',
+            '"' + (l.target || '').replace(/"/g, '""') + '"',
+            '"' + l.ip + '"'
+          ];
+          csv += row.join(',') + '\n';
+        });
+
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'nhat-ky-hoat-dong-' + (state.dateFrom || 'all') + '-den-' + (state.dateTo || 'all') + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast('Đã xuất ' + filtered.length + ' bản ghi nhật ký ra tệp CSV.');
+      });
+
+      /* Sự kiện Bộ lọc */
+      function onFilterChange() {
+        state.dateFrom = document.getElementById('date-from').value;
+        state.dateTo = document.getElementById('date-to').value;
+        state.actor = document.getElementById('filter-actor').value;
+        state.action = document.getElementById('filter-action').value;
+        state.search = document.getElementById('search-input').value.trim();
+        state.page = 1;
+        var f = getFiltered();
+        var actual = pg.set({ total: f.length, page: 1 });
+        state.page = actual.page;
+        state.size = actual.size;
+        renderTable();
+      }
+
+      function resetFilters() {
+        document.getElementById('date-from').value = defaultFrom;
+        document.getElementById('date-to').value = defaultTo;
+        document.getElementById('filter-actor').value = '';
+        document.getElementById('filter-action').value = '';
+        document.getElementById('search-input').value = '';
+        onFilterChange();
+      }
+
+      document.getElementById('date-from').addEventListener('change', onFilterChange);
+      document.getElementById('date-to').addEventListener('change', onFilterChange);
+      document.getElementById('filter-actor').addEventListener('change', onFilterChange);
+      document.getElementById('filter-action').addEventListener('change', onFilterChange);
+      document.getElementById('search-input').addEventListener('input', onFilterChange);
+      document.getElementById('btn-reset-filters').addEventListener('click', resetFilters);
+
+      window.addEventListener('resize', function () {
+        renderTable();
+      });
+
+      /* Khởi chạy lần đầu */
+      var initialFiltered = getFiltered();
+      var actualInit = pg.set({ total: initialFiltered.length, page: 1 });
+      state.page = actualInit.page;
+      state.size = actualInit.size;
+      renderTable();
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

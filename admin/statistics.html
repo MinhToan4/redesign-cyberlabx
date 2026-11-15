@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thống kê hệ thống · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bố cục dải 4 chỉ số */
+    .stat-strip-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .stat-strip-4 > div { padding: 18px 20px; }
+    .stat-strip-4 > div + div { border-left: 1px solid var(--line); }
+
+    /* Hàng cảnh báo Cần chú ý */
+    .alert-banner { display: flex; flex-direction: column; gap: 8px; }
+    .alert-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+    .alert-item:first-of-type { border-top: 0; padding-top: 4px; }
+
+    /* Biểu đồ cột SVG */
+    .chart-card { display: flex; flex-direction: column; min-height: 330px; }
+    .chart-svg-wrap { flex: 1; position: relative; width: 100%; min-height: 250px; }
+    .chart-svg-wrap svg { display: block; width: 100%; height: 100%; }
+    .bar-rect { transition: fill var(--dur) var(--ease), opacity var(--dur) var(--ease); cursor: pointer; }
+    .bar-rect:hover { opacity: 0.82; }
+
+    /* Hàng sức khỏe node máy chủ */
+    .node-grid { --cols: 90px minmax(130px, 1fr) 150px 220px 100px auto; }
+
+    @media (max-width: 1080px) {
+      .stat-strip-4 { grid-template-columns: repeat(2, 1fr); }
+      .stat-strip-4 > div:nth-child(2n+1) { border-left: 0; }
+      .stat-strip-4 > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+    }
+    @media (max-width: 760px) {
+      .stat-strip-4 { grid-template-columns: 1fr; }
+      .stat-strip-4 > div + div { border-left: 0; border-top: 1px solid var(--line); }
+      .alert-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .node-grid { --cols: 80px minmax(0, 1fr) 110px auto; }
+      .node-hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body data-role="admin" data-page="statistics" data-title="Thống kê hệ thống">
+  <main class="content" id="content">
+    <div class="stack">
+
+      <!-- Dải 4 số liệu thực từ CLX_STAFF.system -->
+      <section class="card stat-strip-4" aria-label="Chỉ số tổng quan hệ thống" id="system-stats"></section>
+
+      <!-- Hàng Cần chú ý rút ra từ dữ liệu thực tế -->
+      <section class="card card-pad alert-banner" aria-label="Vấn đề cần chú ý">
+        <div class="section-head" style="margin-bottom:4px">
+          <h2>Cần chú ý</h2>
+          <span class="meta tnum" id="attention-count">3 vấn đề phát hiện từ hệ thống</span>
+        </div>
+        <div id="attention-list"></div>
+      </section>
+
+      <!-- Bố cục 2 cột: Biểu đồ chính >= 2/3 và Danh sách lớp nổi bật 340px -->
+      <div class="cols">
+        <div class="stack">
+          <section class="card card-pad chart-card">
+            <div class="row-between" style="margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h2>Lượt nộp bài</h2>
+                <div class="meta tnum faint" id="chart-meta" style="font-size:12.5px; margin-top:2px"></div>
+              </div>
+              <div class="segmented" role="group" aria-label="Khung thời gian biểu đồ">
+                <button type="button" id="btn-hour" aria-pressed="true">24 giờ qua</button>
+                <button type="button" id="btn-day" aria-pressed="false">14 ngày gần nhất</button>
+              </div>
+            </div>
+
+            <!-- Vùng vẽ biểu đồ SVG tự dựng -->
+            <div class="chart-svg-wrap" id="chart-wrap">
+              <svg id="sub-chart" viewBox="0 0 680 250" preserveAspectRatio="none" role="img" aria-label="Biểu đồ lượt nộp bài"></svg>
+            </div>
+          </section>
+        </div>
+
+        <aside class="stack">
+          <section class="card card-pad">
+            <div class="section-head">
+              <h2>Lượt nộp 7 ngày theo lớp</h2>
+              <span class="meta">Xếp theo lượt nộp</span>
+            </div>
+            <div id="class-bars" class="stack" style="gap: 10px; margin-top: 8px;"></div>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Tóm tắt sức khỏe cụm máy chủ lab -->
+      <section>
+        <div class="section-head">
+          <h2>Sức khỏe máy chủ phòng lab</h2>
+          <div class="row-gap">
+            <span class="meta tnum" id="node-summary-meta">5 node cấu hình · 1 node cảnh báo · 1 node ngắt</span>
+            <a class="link" href="resources.html" style="font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">Giám sát chi tiết<i data-lucide="arrow-right"></i></a>
+          </div>
+        </div>
+
+        <div class="card">
+          <!-- Thanh công cụ tìm kiếm và lọc trạng thái -->
+          <div class="card-head" style="gap: 12px; flex-wrap: wrap;">
+            <div class="toolbar" style="flex: 1;">
+              <div class="search" style="min-width: 220px;">
+                <i data-lucide="search"></i>
+                <input id="node-search" class="input" placeholder="Tìm theo mã hoặc tên máy chủ" aria-label="Tìm kiếm máy chủ">
+              </div>
+              <div class="segmented" id="node-filter-seg" role="group" aria-label="Lọc trạng thái máy chủ">
+                <button type="button" class="node-seg-btn" data-filter="all" aria-pressed="true">Tất cả (5)</button>
+                <button type="button" class="node-seg-btn" data-filter="active" aria-pressed="false">Hoạt động (3)</button>
+                <button type="button" class="node-seg-btn" data-filter="issue" aria-pressed="false">Sự cố & bảo trì (2)</button>
+              </div>
+            </div>
+            <span class="faint tnum" id="node-filter-count" style="font-size: 12.5px;">5 / 5 máy chủ</span>
+          </div>
+
+          <!-- Bảng CSS Grid -->
+          <div class="tbl node-grid" role="table" aria-label="Danh sách máy chủ phòng lab">
+            <div class="tbl-row tbl-head" role="row">
+              <span role="columnheader">Mã node</span>
+              <span role="columnheader">Máy chủ host</span>
+              <span role="columnheader">Trạng thái</span>
+              <span role="columnheader" class="node-hide-mobile">Tải CPU (20 vạch)</span>
+              <span role="columnheader" class="node-hide-mobile">Máy ảo</span>
+              <span role="columnheader" class="num">Thao tác</span>
+            </div>
+            <div id="node-rows"></div>
+          </div>
+
+          <!-- Trạng thái rỗng khi tìm kiếm lọc không ra kết quả -->
+          <div id="node-empty" class="empty" style="display:none">
+            Không tìm thấy máy chủ nào khớp với điều kiện tìm kiếm.
+            <div style="margin-top: 10px;">
+              <button type="button" class="btn btn-sm" id="btn-reset-node-filter">Đặt lại bộ lọc</button>
+            </div>
+          </div>
+
+          <!-- Chân card tóm tắt: thông tin số lượng và liên kết nhanh sang Giám sát tài nguyên -->
+          <div class="card-head" style="border-top: 1px solid var(--line); border-bottom: 0; padding: 12px 20px; font-size: 13px;">
+            <span class="faint tnum" id="node-foot-meta">Đang hiển thị 5 máy chủ phòng lab</span>
+            <a class="link" href="resources.html" style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px;">
+              Quản lý chi tiết toàn bộ node máy chủ<i data-lucide="arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var staff = window.CLX_STAFF;
+      var sys = staff.system;
+      var UI = window.CLXUI;
+      var esc = UI.esc;
+      var nf = function (n) { return Number(n || 0).toLocaleString('en-US'); };
+
+      /* =====================================================================
+         1. DẢI 4 CHỈ SỐ THẬT (CLX_STAFF.system)
+         ===================================================================== */
+      var statsWrap = document.getElementById('system-stats');
+      var totalStaff = sys.teachers + sys.assistants;
+      var vmTicks = UI.ticks(20, Math.round((sys.activeLabs / sys.maxLabs) * 20), '');
+
+      statsWrap.innerHTML =
+        '<div class="stat">' +
+          '<div class="label">Sinh viên</div>' +
+          '<div class="value tnum">' + nf(sys.students) + '</div>' +
+          '<div class="hint">Đang học tập trên hệ thống</div>' +
+        '</div>' +
+        '<div class="stat">' +
+          '<div class="label">Giảng viên & trợ giảng</div>' +
+          '<div class="value tnum">' + totalStaff + '</div>' +
+          '<div class="hint">' + sys.teachers + ' giảng viên · ' + sys.assistants + ' trợ giảng</div>' +
+        '</div>' +
+        '<div class="stat">' +
+          '<div class="label">Lớp học phần</div>' +
+          '<div class="value tnum">' + sys.classes + '</div>' +
+          '<div class="hint">Học kỳ 1 · 2026–2027</div>' +
+        '</div>' +
+        '<div class="stat">' +
+          '<div class="label">Máy ảo đang chạy</div>' +
+          '<div class="value tnum">' + sys.activeLabs + ' <span class="faint" style="font-size:16px;font-weight:400">/ ' + sys.maxLabs + '</span></div>' +
+          '<div style="margin-top:6px">' + vmTicks + '</div>' +
+          '<div class="hint" style="margin-top:4px">' + Math.round((sys.activeLabs / sys.maxLabs) * 100) + '% công suất tổng cụm</div>' +
+        '</div>';
+
+      /* =====================================================================
+         2. HÀNG "CẦN CHÚ Ý" TỰ RÚT RA TỪ DỮ LIỆU
+         ===================================================================== */
+      var attentionList = [];
+      // 1. Node > 90% CPU
+      staff.nodes.forEach(function (node) {
+        if (node.status === 'active' && node.cpu >= 90) {
+          attentionList.push({
+            type: 'warn',
+            title: node.code + ' chạm ngưỡng tải cao (' + node.cpu + '% CPU, ' + node.ram + '% RAM)',
+            desc: 'Đang chạy ' + node.instances + '/' + node.max + ' máy ảo. Khuyến nghị giám sát hoặc điều phối phiên mới sang node khác.',
+            actionText: 'Xem node',
+            href: 'resources.html?node=' + encodeURIComponent(node.code)
+          });
+        }
+      });
+      // 2. Node mất kết nối
+      staff.nodes.forEach(function (node) {
+        if (node.status === 'down') {
+          attentionList.push({
+            type: 'err',
+            title: node.code + ' mất kết nối điều phối (' + esc(node.host) + ')',
+            desc: 'Daemon kiểm soát không phản hồi nhịp tim từ 08:15. Hiện có 0 máy ảo đang cấp phát.',
+            actionText: 'Kiểm tra tài nguyên',
+            href: 'resources.html?node=' + encodeURIComponent(node.code)
+          });
+        }
+      });
+      // 3. Bài tập chờ duyệt
+      var pendingReviews = staff.review.filter(function (r) { return r.status === 0; });
+      if (pendingReviews.length > 0) {
+        attentionList.push({
+          type: 'info',
+          title: pendingReviews.length + ' bài tập đang chờ quản trị viên phê duyệt',
+          desc: 'Gồm các bài thực hành từ giảng viên và trợ giảng bộ môn An toàn hệ thống.',
+          actionText: 'Duyệt bài tập',
+          href: 'assignment-review.html'
+        });
+      }
+
+      document.getElementById('attention-count').textContent = attentionList.length + ' vấn đề phát hiện từ hệ thống';
+      var attHtml = attentionList.map(function (item) {
+        var statusClass = item.type === 'err' ? 's-err' : item.type === 'warn' ? 's-warn' : 's-info';
+        return '<div class="alert-item">' +
+          '<div>' +
+            '<div class="status ' + statusClass + '" style="font-weight:500">' + esc(item.title) + '</div>' +
+            '<div class="faint" style="font-size:12.5px; margin-top:2px; margin-left:14px">' + esc(item.desc) + '</div>' +
+          '</div>' +
+          '<a class="btn btn-sm" href="' + esc(item.href) + '">' + esc(item.actionText) + '<i data-lucide="arrow-right"></i></a>' +
+        '</div>';
+      }).join('');
+      document.getElementById('attention-list').innerHTML = attHtml;
+
+      /* =====================================================================
+         3. BIỂU ĐỒ CHÍNH (LƯỢT NỘP 24H HOẶC 14 NGÀY) - TỰ VẼ SVG
+         ===================================================================== */
+      var chartMode = 'hour'; // 'hour' hoặc 'day'
+      var btnHour = document.getElementById('btn-hour');
+      var btnDay = document.getElementById('btn-day');
+      var chartSvg = document.getElementById('sub-chart');
+      var chartMeta = document.getElementById('chart-meta');
+
+      function renderChart() {
+        var isHour = chartMode === 'hour';
+        var data = isHour ? sys.perHour : sys.perDay;
+        var total = data.reduce(function (a, b) { return a + b; }, 0);
+        var maxVal = Math.max.apply(null, data);
+        var peakIdx = 0;
+        for (var i = 1; i < data.length; i++) {
+          if (data[i] > data[peakIdx]) peakIdx = i;
+        }
+
+        // Cập nhật meta
+        if (isHour) {
+          chartMeta.textContent = 'Tổng ' + nf(total) + ' lượt nộp trong 24 giờ qua · Cao điểm: ' + String(peakIdx).padStart(2, '0') + ':00 (' + nf(data[peakIdx]) + ' lượt)';
+        } else {
+          var peakDayText = (peakIdx + 5) + '/09';
+          chartMeta.textContent = 'Tổng ' + nf(total) + ' lượt nộp trong 14 ngày gần nhất · Ngày cao nhất: ' + peakDayText + ' (' + nf(data[peakIdx]) + ' lượt)';
+        }
+
+        // Thông số lưới vẽ SVG
+        var width = 680;
+        var height = 250;
+        var padLeft = 46;
+        var padRight = 16;
+        var padTop = 26;
+        var padBottom = 34;
+        var plotW = width - padLeft - padRight;
+        var plotH = height - padTop - padBottom;
+
+        // Làm tròn mốc cao nhất của trục Y
+        var yCeil = Math.ceil((maxVal * 1.15) / 50) * 50;
+        if (yCeil < 100) yCeil = 100;
+        var ySteps = 4;
+
+        var svg = '';
+
+        // Đường kẻ ngang và nhãn trục Y
+        for (var s = 0; s <= ySteps; s++) {
+          var yVal = Math.round((yCeil / ySteps) * s);
+          var yPos = padTop + plotH - (s / ySteps) * plotH;
+          svg += '<line x1="' + padLeft + '" y1="' + yPos + '" x2="' + (width - padRight) + '" y2="' + yPos + '" stroke="var(--line)" stroke-width="1"/>';
+          svg += '<text x="' + (padLeft - 8) + '" y="' + (yPos + 4) + '" text-anchor="end" font-size="11" font-family="var(--mono)" fill="var(--text-3)">' + yVal + '</text>';
+        }
+
+        // Cột biểu đồ
+        var count = data.length;
+        var slotW = plotW / count;
+        var barW = Math.max(8, Math.min(24, slotW - (isHour ? 6 : 14)));
+
+        for (var j = 0; j < count; j++) {
+          var val = data[j];
+          var barH = (val / yCeil) * plotH;
+          var x = padLeft + j * slotW + (slotW - barW) / 2;
+          var y = padTop + plotH - barH;
+          var isPeak = j === peakIdx;
+          var barFill = isPeak ? 'var(--accent)' : 'var(--surface-3)';
+
+          // Cột
+          svg += '<rect class="bar-rect" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(2, barH).toFixed(1) + '" rx="2" fill="' + barFill + '">' +
+                 '<title>' + (isHour ? j + ':00' : 'Ngày ' + (j + 5) + '/09') + ': ' + nf(val) + ' lượt nộp' + (isPeak ? ' (Cao điểm)' : '') + '</title>' +
+                 '</rect>';
+
+          // Nhãn giá trị đỉnh cao điểm
+          if (isPeak) {
+            svg += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="500" font-family="var(--mono)" fill="var(--accent)">' + nf(val) + '</text>';
+          }
+
+          // Nhãn trục X
+          var showLabel = false;
+          var xLabelText = '';
+          if (isHour) {
+            if (j === 0 || j === 4 || j === 8 || j === 12 || j === 16 || j === 20 || j === 23) {
+              showLabel = true;
+              xLabelText = String(j).padStart(2, '0') + 'h';
+            }
+          } else {
+            if (j === 0 || j === 3 || j === 6 || j === 9 || j === 13) {
+              showLabel = true;
+              xLabelText = (j + 5) + '/09';
+            }
+          }
+
+          if (showLabel) {
+            svg += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (height - 12) + '" text-anchor="middle" font-size="11" font-family="var(--mono)" fill="var(--text-3)">' + xLabelText + '</text>';
+          }
+        }
+
+        chartSvg.innerHTML = svg;
+      }
+
+      btnHour.addEventListener('click', function () {
+        if (chartMode === 'hour') return;
+        chartMode = 'hour';
+        btnHour.setAttribute('aria-pressed', 'true');
+        btnDay.setAttribute('aria-pressed', 'false');
+        renderChart();
+      });
+
+      btnDay.addEventListener('click', function () {
+        if (chartMode === 'day') return;
+        chartMode = 'day';
+        btnHour.setAttribute('aria-pressed', 'false');
+        btnDay.setAttribute('aria-pressed', 'true');
+        renderChart();
+      });
+
+      renderChart();
+
+      /* =====================================================================
+         4. CỘT PHỤ: BAR-ROW CÁC LỚP NHIỀU LƯỢT NỘP NHẤT 7 NGÀY
+         ===================================================================== */
+      var sortedClasses = staff.classes.slice().sort(function (a, b) {
+        return b.submissions7d - a.submissions7d;
+      });
+      var maxClassSubmits = sortedClasses[0] ? sortedClasses[0].submissions7d : 1;
+
+      var classBarsWrap = document.getElementById('class-bars');
+      var classBarsHtml = sortedClasses.map(function (c, idx) {
+        var isHi = idx === 0;
+        var pct = Math.round((c.submissions7d / maxClassSubmits) * 100);
+        return '<div class="bar-row' + (isHi ? ' is-hi' : '') + '">' +
+          '<div style="min-width:0">' +
+            '<div class="mono trunc" style="font-weight:500" title="' + esc(c.code) + ' · ' + esc(c.name) + '">' + esc(c.code) + '</div>' +
+            '<div class="faint trunc" style="font-size:11.5px">' + esc(c.group) + ' · ' + c.students + ' SV</div>' +
+          '</div>' +
+          '<div class="track"><i style="width:' + pct + '%"></i></div>' +
+          '<span class="val mono tnum">' + nf(c.submissions7d) + '</span>' +
+        '</div>';
+      }).join('');
+      classBarsWrap.innerHTML = classBarsHtml;
+
+      /* =====================================================================
+         5. TÓM TẮT SỨC KHỎE MÁY CHỦ (CLX_STAFF.nodes)
+         ===================================================================== */
+      var nodeRowsWrap = document.getElementById('node-rows');
+      var nodeEmptyWrap = document.getElementById('node-empty');
+      var nodeSearchInput = document.getElementById('node-search');
+      var nodeFilterSeg = document.getElementById('node-filter-seg');
+      var nodeFilterCount = document.getElementById('node-filter-count');
+      var btnResetFilter = document.getElementById('btn-reset-node-filter');
+
+      var currentFilter = 'all'; // 'all' | 'active' | 'issue'
+      var currentQuery = '';
+      var nodeFootMeta = document.getElementById('node-foot-meta');
+
+      function getFilteredNodes() {
+        return staff.nodes.filter(function (node) {
+          if (currentFilter === 'active' && node.status !== 'active') return false;
+          if (currentFilter === 'issue' && node.status === 'active') return false;
+          if (currentQuery) {
+            var q = currentQuery.toLowerCase();
+            var mCode = node.code.toLowerCase().indexOf(q) !== -1;
+            var mHost = node.host.toLowerCase().indexOf(q) !== -1;
+            if (!mCode && !mHost) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderNodes() {
+        var filtered = getFilteredNodes();
+        nodeFilterCount.textContent = filtered.length + ' / ' + staff.nodes.length + ' máy chủ';
+        if (nodeFootMeta) {
+          nodeFootMeta.textContent = currentFilter !== 'all' || currentQuery
+            ? 'Đang hiển thị ' + filtered.length + ' máy chủ khớp điều kiện lọc'
+            : 'Đang hiển thị ' + filtered.length + ' máy chủ phòng lab';
+        }
+
+        if (filtered.length === 0) {
+          nodeRowsWrap.innerHTML = '';
+          nodeEmptyWrap.style.display = 'block';
+          return;
+        }
+
+        nodeEmptyWrap.style.display = 'none';
+
+        var rowsHtml = filtered.map(function (node) {
+          var isDown = node.status === 'down';
+          var isMaint = node.status === 'maintenance';
+          var isHighCpu = node.status === 'active' && node.cpu >= 90;
+
+          // Trạng thái
+          var statusHtml = '';
+          if (isDown) {
+            statusHtml = '<span class="status s-err">Mất kết nối</span>';
+          } else if (isMaint) {
+            statusHtml = '<span class="status s-warn">Bảo trì</span>';
+          } else {
+            statusHtml = '<span class="status s-ok">Hoạt động' + (isHighCpu ? ' (Tải cao)' : '') + '</span>';
+          }
+
+          // CPU ticks 20 vạch
+          var cpuTicksHtml = '';
+          if (isDown) {
+            cpuTicksHtml = '<span class="faint">—</span>';
+          } else {
+            var doneVach = Math.round((node.cpu / 100) * 20);
+            var kind = isHighCpu ? 'is-error' : '';
+            cpuTicksHtml = '<div style="display:flex;align-items:center;gap:10px">' +
+              UI.ticks(20, doneVach, kind) +
+              '<span class="mono tnum ' + (isHighCpu ? 'chip-err' : 'faint') + '" style="font-size:12px;padding:1px 4px;border-radius:3px">' + node.cpu + '%</span>' +
+            '</div>';
+          }
+
+          // Máy ảo
+          var vmHtml = '';
+          if (isDown) {
+            vmHtml = '<span class="mono tnum faint">0 / ' + node.max + '</span>';
+          } else {
+            vmHtml = '<span class="mono tnum">' + node.instances + ' / ' + node.max + '</span>';
+          }
+
+          return '<a class="tbl-row is-link" href="resources.html?node=' + encodeURIComponent(node.code) + '" role="row">' +
+            '<span class="mono" style="font-weight:500">' + esc(node.code) + '</span>' +
+            '<span class="mono faint trunc" style="font-size:12.5px">' + esc(node.host) + '</span>' +
+            '<span>' + statusHtml + '</span>' +
+            '<span class="node-hide-mobile">' + cpuTicksHtml + '</span>' +
+            '<span class="node-hide-mobile">' + vmHtml + '</span>' +
+            '<span class="num"><span class="btn btn-sm btn-ghost">Chi tiết<i data-lucide="chevron-right"></i></span></span>' +
+          '</a>';
+        }).join('');
+
+        nodeRowsWrap.innerHTML = rowsHtml;
+        if (window.clxIcons) window.clxIcons();
+      }
+
+      // Lắng nghe sự kiện bộ lọc
+      nodeSearchInput.addEventListener('input', function (e) {
+        currentQuery = (e.target.value || '').trim();
+        renderNodes();
+      });
+
+      nodeFilterSeg.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          nodeFilterSeg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+          btn.setAttribute('aria-pressed', 'true');
+          currentFilter = btn.dataset.filter;
+          renderNodes();
+        });
+      });
+
+      btnResetFilter.addEventListener('click', function () {
+        currentQuery = '';
+        currentFilter = 'all';
+        nodeSearchInput.value = '';
+        nodeFilterSeg.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', b.dataset.filter === 'all' ? 'true' : 'false');
+        });
+        renderNodes();
+      });
+
+      renderNodes();
+      if (window.clxIcons) window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

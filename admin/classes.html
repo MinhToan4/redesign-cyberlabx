@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lớp học phần · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bổ trợ riêng trang Quản lý lớp học phần */
+    .stat-strip-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .stat-strip-4 > div { padding: 16px 20px; }
+    .stat-strip-4 > div + div { border-left: 1px solid var(--line); }
+
+    .bulk-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+      animation: rise 160ms var(--ease);
+    }
+    .bulk-bar[hidden] { display: none; }
+
+    /* Lưới bảng lớp học phần cho desktop rộng (> 1360px, 9 cột) */
+    .tbl-classes .tbl-row { padding: 0 16px; gap: 12px; }
+    .tbl-classes {
+      --cols: 32px 36px 96px minmax(0, 1.4fr) minmax(120px, 1fr) 130px 100px 88px 68px;
+    }
+
+    .col-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    .col-actions .icon-btn { width: 32px; height: 32px; }
+    .mobile-class-meta { display: none; }
+    .sub-sem { display: none; }
+
+    /* Thanh đo lấp đầy sĩ số */
+    .capacity-bar {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .capacity-track {
+      height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; width: 100%;
+    }
+    .capacity-track > i {
+      display: block; height: 100%; border-radius: inherit; background: var(--accent);
+    }
+    .capacity-track.is-full > i {
+      background: var(--warn);
+    }
+
+    /* Màn hình laptop / viewport <= 1360px (bao gồm 1280px): ẩn cột Học kỳ (8 cột), gộp học kỳ vào dòng phụ dưới tên */
+    @media (max-width: 1360px) {
+      .tbl-classes {
+        --cols: 32px 36px 92px minmax(0, 1.4fr) minmax(120px, 1fr) 96px 88px 68px;
+      }
+      .col-hide-md { display: none !important; }
+      .sub-sem { display: inline; }
+    }
+
+    /* Tablet (<= 1040px): ẩn thêm cột Mã lớp (7 cột) vì mã đã hiện trên mobile/tablet */
+    @media (max-width: 1040px) {
+      .tbl-classes {
+        --cols: 32px 36px minmax(0, 1.4fr) minmax(110px, 1fr) 92px 84px 68px;
+      }
+      .col-hide-tablet { display: none !important; }
+    }
+
+    /* Mobile (<= 760px): gọn 5 cột, vừa vặn 390px không cuộn ngang */
+    @media (max-width: 760px) {
+      .stat-strip-4 { grid-template-columns: repeat(2, 1fr); }
+      .stat-strip-4 > div:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .stat-strip-4 > div:nth-child(4) { border-top: 1px solid var(--line); }
+      .tbl-classes .tbl-row { padding: 0 10px; gap: 8px; }
+      .tbl-classes {
+        --cols: 28px minmax(0, 1fr) 56px 68px 52px;
+      }
+      .col-hide-sm { display: none !important; }
+      .sub-sem { display: none !important; }
+      .mobile-class-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; }
+      .toolbar { gap: 6px; }
+      .search { min-width: 100% !important; }
+    }
+
+    /* Modal / Hộp thoại theo chuẩn CLXUI.modal */
+    .modal-box {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-card);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0;
+      box-shadow: var(--shadow-pop);
+      width: min(540px, calc(100vw - 32px));
+      margin: auto;
+    }
+    .modal-body { padding: 20px; }
+    .modal-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 20px; border-top: 1px solid var(--line); background: var(--surface-2);
+    }
+
+    .row-cb {
+      width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; margin: 0;
+    }
+
+    /* Toast */
+    .toast-box {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 18px; border-radius: var(--r-control);
+      background: var(--surface); border: 1px solid var(--line-strong); box-shadow: var(--shadow-pop);
+      font-size: 13.5px; color: var(--text);
+      animation: rise 200ms var(--ease);
+    }
+    .toast-box[hidden] { display: none; }
+  </style>
+</head>
+<body data-role="admin" data-page="classes" data-title="Lớp học phần">
+  <main class="content" id="content">
+    <div class="stack">
+
+      <!-- Chỉ số tổng quan lớp học phần -->
+      <section class="card stat-strip-4" aria-label="Tổng quan lớp học phần">
+        <div class="stat">
+          <div class="label">Tổng số lớp học phần</div>
+          <div class="value tnum" id="stat-total">—</div>
+          <div class="hint">Toàn bộ các học kỳ</div>
+        </div>
+        <div class="stat">
+          <div class="label">Đang mở / Hoạt động</div>
+          <div class="value tnum" id="stat-active">—</div>
+          <div class="hint">Học kỳ hiện tại</div>
+        </div>
+        <div class="stat">
+          <div class="label">Không hoạt động</div>
+          <div class="value tnum" id="stat-inactive">—</div>
+          <div class="hint">Đã đóng hoặc lưu trữ</div>
+        </div>
+        <div class="stat">
+          <div class="label">Sinh viên ghi danh</div>
+          <div class="value tnum" id="stat-students">—</div>
+          <div class="hint">Lượt tham gia học phần</div>
+        </div>
+      </section>
+
+      <!-- Bộ lọc và nút thao tác -->
+      <section>
+        <div class="card card-pad" style="margin-bottom:12px">
+          <div class="row-between" style="flex-wrap:wrap;gap:12px">
+            <!-- Khu vực tìm kiếm & lọc -->
+            <div class="toolbar" style="flex:1;min-width:280px">
+              <div class="search" style="min-width:240px;flex:1">
+                <i data-lucide="search"></i>
+                <input class="input" id="search-input" placeholder="Tìm theo mã lớp, môn học hoặc giảng viên..." aria-label="Tìm kiếm lớp học phần">
+              </div>
+              <select class="select" id="filter-course" style="width:auto" aria-label="Lọc theo môn học">
+                <option value="">Mọi môn học</option>
+                <option value="INT1449">INT1449 · An toàn & Bảo mật HTTT</option>
+                <option value="WEB3021">WEB3021 · Kiểm thử xâm nhập</option>
+                <option value="CRY2010">CRY2010 · Mật mã học ứng dụng</option>
+                <option value="NET1010">NET1010 · Mạng máy tính căn bản</option>
+                <option value="SEC3010">SEC3010 · Phân tích mã độc</option>
+                <option value="SYS2020">SYS2020 · Quản trị hệ thống Linux</option>
+                <option value="FOR4010">FOR4010 · Điều tra số</option>
+              </select>
+              <select class="select" id="filter-semester" style="width:auto" aria-label="Lọc theo học kỳ">
+                <option value="">Mọi học kỳ</option>
+                <option value="Học kỳ 1 (2026-2027)">Học kỳ 1 (2026-2027)</option>
+                <option value="Học kỳ 2 (2025-2026)">Học kỳ 2 (2025-2026)</option>
+                <option value="Học kỳ 1 (2025-2026)">Học kỳ 1 (2025-2026)</option>
+              </select>
+              <div class="segmented" id="filter-status" role="group" aria-label="Lọc theo trạng thái">
+                <button type="button" class="btn-seg" data-status="" aria-pressed="true">Tất cả</button>
+                <button type="button" class="btn-seg" data-status="active" aria-pressed="false">Đang mở</button>
+                <button type="button" class="btn-seg" data-status="inactive" aria-pressed="false">Không HĐ</button>
+              </div>
+            </div>
+
+            <!-- NÚT CHÍNH DUY NHẤT: Thêm lớp học phần -->
+            <button type="button" class="btn btn-primary btn-sm" id="btn-open-create">
+              <i data-lucide="plus"></i>Thêm lớp học phần
+            </button>
+          </div>
+        </div>
+
+        <!-- Bảng danh sách lớp học phần -->
+        <div class="card" id="table-card">
+          <!-- Thanh thao tác hàng loạt -->
+          <div class="bulk-bar" id="bulk-bar" hidden>
+            <div class="row-gap">
+              <span class="faint" style="font-size:13px"><i data-lucide="check-square" style="vertical-align:-2px"></i></span>
+              <strong id="bulk-selected-count" style="font-weight:500;font-size:13.5px">Đã chọn 0 lớp học phần</strong>
+            </div>
+            <div class="row-gap">
+              <button type="button" class="btn btn-sm" id="btn-bulk-deact" style="color:var(--warn)">
+                <i data-lucide="pause-circle"></i>Chuyển Không hoạt động
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm faint" id="btn-bulk-clear">Bỏ chọn</button>
+            </div>
+          </div>
+
+          <!-- Lưới dữ liệu -->
+          <div class="tbl tbl-classes" role="table" aria-label="Danh sách lớp học phần">
+            <div class="tbl-row tbl-head" role="row">
+              <span role="columnheader" style="display:flex;align-items:center;justify-content:center">
+                <input type="checkbox" class="row-cb" id="cb-all" aria-label="Chọn tất cả lớp học phần trên trang hiện tại">
+              </span>
+              <span role="columnheader" class="col-hide-sm" style="font-family:var(--mono);color:var(--text-3);text-align:right">STT</span>
+              <span role="columnheader" class="col-hide-tablet col-hide-sm">Mã lớp</span>
+              <span role="columnheader">Môn học</span>
+              <span role="columnheader" class="col-hide-sm">Giảng viên / Trợ giảng</span>
+              <span role="columnheader" class="col-hide-md col-hide-sm">Học kỳ</span>
+              <span role="columnheader">Sĩ số<span class="col-hide-sm"> / Tối đa</span></span>
+              <span role="columnheader">Trạng thái</span>
+              <span role="columnheader" style="text-align:right">Thao tác</span>
+            </div>
+
+            <!-- Dòng dữ liệu động -->
+            <div id="classes-rows"></div>
+          </div>
+
+          <!-- Trạng thái rỗng khi không có kết quả -->
+          <div class="empty" id="empty-state" hidden>
+            <div style="font-size:14px;margin-bottom:8px">Không tìm thấy lớp học phần nào phù hợp.</div>
+            <div class="faint" style="font-size:12.5px;margin-bottom:16px">Hãy thử đổi từ khóa tìm kiếm hoặc chọn học kỳ / môn học khác.</div>
+            <button type="button" class="btn btn-sm" id="btn-reset-filters">Đặt lại bộ lọc</button>
+          </div>
+
+          <!-- Phân trang chuẩn CLXUI.pager -->
+          <div class="pager-host" id="pager"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== HỘP THOẠI (MODAL) ==================== -->
+
+  <!-- ==================== HỘP THOẠI (MODAL DÙNG CLXUI.modal) ==================== -->
+
+  <!-- 1. Hộp thoại Thêm lớp học phần mới (Nút chính duy nhất) -->
+  <div class="dlg-scrim" id="modal-create-class" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-create-title">
+      <div class="card-head">
+        <h2 id="modal-create-title">Thêm lớp học phần mới</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-create-class">
+        <div class="modal-body stack-sm">
+          <div class="field">
+            <label for="create-course">Môn học đào tạo <span style="color:var(--err)">*</span></label>
+            <select id="create-course" class="select" required>
+              <option value="INT1449">INT1449 · An toàn & Bảo mật HTTT</option>
+              <option value="WEB3021">WEB3021 · Kiểm thử xâm nhập</option>
+              <option value="CRY2010">CRY2010 · Mật mã học ứng dụng</option>
+              <option value="NET1010">NET1010 · Mạng máy tính căn bản</option>
+              <option value="SEC3010">SEC3010 · Phân tích mã độc</option>
+              <option value="SYS2020">SYS2020 · Quản trị hệ thống Linux</option>
+              <option value="FOR4010">FOR4010 · Điều tra số (Digital Forensics)</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="create-code">Mã lớp học phần <span style="color:var(--err)">*</span></label>
+              <input id="create-code" class="input mono" placeholder="vd: INT1449.03" required>
+              <div class="field-error" id="create-code-err" style="color:var(--err);font-size:12px;margin-top:4px" hidden></div>
+            </div>
+            <div class="field">
+              <label for="create-group">Nhóm học phần <span style="color:var(--err)">*</span></label>
+              <input id="create-group" class="input" placeholder="vd: Nhóm 03" required>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="create-teacher">Giảng viên phụ trách <span style="color:var(--err)">*</span></label>
+              <select id="create-teacher" class="select" required>
+                <option value="ThS. Nguyễn Văn An">ThS. Nguyễn Văn An</option>
+                <option value="TS. Trần Thị Bích">TS. Trần Thị Bích</option>
+                <option value="PGS.TS. Lê Hoàng Cường">PGS.TS. Lê Hoàng Cường</option>
+                <option value="TS. Hoàng Tuấn Anh">TS. Hoàng Tuấn Anh</option>
+                <option value="ThS. Đỗ Thùy Trang">ThS. Đỗ Thùy Trang</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="create-tas">Số trợ giảng</label>
+              <select id="create-tas" class="select">
+                <option value="0">0 trợ giảng</option>
+                <option value="1" selected>1 trợ giảng</option>
+                <option value="2">2 trợ giảng</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:12px">
+            <div class="field">
+              <label for="create-semester">Học kỳ đào tạo <span style="color:var(--err)">*</span></label>
+              <select id="create-semester" class="select" required>
+                <option value="Học kỳ 1 (2026-2027)">Học kỳ 1 (2026-2027)</option>
+                <option value="Học kỳ 2 (2025-2026)">Học kỳ 2 (2025-2026)</option>
+                <option value="Học kỳ 1 (2025-2026)">Học kỳ 1 (2025-2026)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="create-max">Sĩ số tối đa <span style="color:var(--err)">*</span></label>
+              <input id="create-max" type="number" class="input tnum" value="60" min="10" max="150" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Lớp mới sẽ ở trạng thái Đang mở</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Thêm lớp học phần</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Hộp thoại Chỉnh sĩ số tối đa -->
+  <div class="dlg-scrim" id="modal-max-students" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-max-title">
+      <div class="card-head">
+        <h2 id="modal-max-title">Chỉnh sĩ số tối đa</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-max-students">
+        <input type="hidden" id="max-class-id">
+        <div class="modal-body stack-sm">
+          <div>
+            <div style="font-weight:500;font-size:14px" id="max-display-name">Lớp INT1449.01</div>
+            <div class="faint" style="font-size:12.5px;margin-top:2px" id="max-display-sub">An toàn & Bảo mật HTTT · Nhóm 01</div>
+          </div>
+
+          <div class="card card-pad" style="background:var(--surface-2);border-radius:var(--r-control);font-size:13px">
+            <div class="row-between">
+              <span class="dim">Sĩ số hiện tại:</span>
+              <span class="mono tnum" style="font-weight:600;font-size:15px" id="max-current-students">58 sinh viên</span>
+            </div>
+            <div class="row-between" style="margin-top:8px">
+              <span class="dim">Tài nguyên máy ảo giới hạn:</span>
+              <span class="faint">Tối đa 120 SV đồng thời/node</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="input-new-max">Sĩ số tối đa mới <span style="color:var(--err)">*</span></label>
+            <input id="input-new-max" type="number" class="input tnum" min="1" max="150" required>
+            <div class="faint" style="font-size:12px;margin-top:4px" id="max-limit-hint">
+              Không thể đặt sĩ số tối đa nhỏ hơn số sinh viên đã ghi danh.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Cập nhật áp dụng ngay cho đợt đăng ký</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Lưu thay đổi</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Hộp thoại Chuyển Không hoạt động hàng loạt (Tất cả hoặc không) -->
+  <div class="dlg-scrim" id="modal-bulk-inactive" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-bulk-title">
+      <div class="card-head">
+        <h2 id="modal-bulk-title">Chuyển trạng thái Không hoạt động</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-bulk-inactive">
+        <div class="modal-body stack-sm">
+          <p style="font-size:13.5px;line-height:1.6">
+            Bạn đang chọn chuyển <strong id="bulk-class-count" class="mono tnum" style="color:var(--warn)">0</strong> lớp học phần sang trạng thái <strong>Không hoạt động</strong>.
+          </p>
+
+          <!-- Thông báo nguyên tắc Tất cả hoặc Không -->
+          <div class="card card-pad" style="background:var(--surface-2);border-radius:var(--r-control);font-size:12.5px;line-height:1.5">
+            <div style="font-weight:500;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px">
+              <i data-lucide="shield-alert" style="width:14px;height:14px;color:var(--warn)"></i>
+              Quy tắc Tất cả hoặc Không (All-or-Nothing)
+            </div>
+            Hệ thống sẽ kiểm tra toàn bộ danh sách lớp được chọn. Nếu có bất kỳ lớp nào đang có ca thi diễn ra hoặc liên kết chưa giải quyết, thao tác sẽ dừng lại toàn bộ và không có lớp nào bị chuyển đổi. Không hỗ trợ xóa cứng để đảm bảo tính toàn vẹn dữ liệu điểm lab.
+          </div>
+
+          <div class="field">
+            <label for="bulk-inactive-reason">Lý do đóng / ngừng hoạt động lớp <span style="color:var(--err)">*</span></label>
+            <textarea id="bulk-inactive-reason" class="textarea" rows="3" required placeholder="Ghi rõ lý do hành chính (kết thúc học kỳ, gộp nhóm, hủy lớp do thiếu sĩ số...)" style="min-height:76px"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Không có xóa cứng dữ liệu</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Xác nhận chuyển</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-box" id="toast" hidden role="status" aria-live="polite">
+    <i data-lucide="check-circle" style="color:var(--ok)"></i>
+    <span id="toast-text"></span>
+  </div>
+
+  <!-- Nạp script chuẩn -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/data-admin-classes.js"></script>
+  <script src="../assets/shell.js"></script>
+
+  <script>
+    (function () {
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      /* Nguồn dữ liệu mở rộng từ data-admin-classes.js hoặc fallback data-staff.js */
+      var srcClasses = (window.CLX_ADMIN_CLASSES && window.CLX_ADMIN_CLASSES.classes) ? window.CLX_ADMIN_CLASSES.classes : (window.CLX_CLASSES_DATA && window.CLX_CLASSES_DATA.classes ? window.CLX_CLASSES_DATA.classes : (window.CLX_STAFF && window.CLX_STAFF.classes ? window.CLX_STAFF.classes : []));
+
+      /* Bản sao dữ liệu thao tác trong phiên */
+      var classesList = srcClasses.map(function (c) {
+        return Object.assign({
+          maxStudents: c.maxStudents || 60,
+          tas: c.tas != null ? c.tas : 1,
+          status: c.status || 'active',
+          semester: c.semester || 'Học kỳ 1 (2026-2027)'
+        }, c);
+      });
+
+      /* Trạng thái bộ lọc & phân trang */
+      var state = {
+        search: '',
+        course: '',
+        semester: '',
+        status: '',
+        page: 1,
+        pageSize: 20,
+        selected: new Set()
+      };
+
+      /* DOM Elements */
+      var elTotal = document.getElementById('stat-total');
+      var elActive = document.getElementById('stat-active');
+      var elInactive = document.getElementById('stat-inactive');
+      var elStudents = document.getElementById('stat-students');
+
+      var searchInput = document.getElementById('search-input');
+      var filterCourse = document.getElementById('filter-course');
+      var filterSemester = document.getElementById('filter-semester');
+      var filterStatus = document.getElementById('filter-status');
+
+      var rowsContainer = document.getElementById('classes-rows');
+      var emptyState = document.getElementById('empty-state');
+      var pagerHost = document.getElementById('pager');
+
+      var cbAll = document.getElementById('cb-all');
+      var bulkBar = document.getElementById('bulk-bar');
+      var bulkCountEl = document.getElementById('bulk-selected-count');
+
+      var toast = document.getElementById('toast');
+      var toastText = document.getElementById('toast-text');
+      var toastTimer = null;
+
+      function showToast(msg) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastText.textContent = msg;
+        toast.hidden = false;
+        if (window.clxIcons) window.clxIcons();
+        toastTimer = setTimeout(function () {
+          toast.hidden = true;
+        }, 3200);
+      }
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pg = U.pager(pagerHost, {
+        total: classesList.length,
+        page: 1,
+        size: 20,
+        sizes: [10, 20, 40],
+        onChange: function (page, size) {
+          state.page = page;
+          state.pageSize = size;
+          renderTable();
+        }
+      });
+
+      /* Cập nhật các chỉ số thẻ đầu trang */
+      function updateStats() {
+        var total = classesList.length;
+        var act = 0, inact = 0, totalStu = 0;
+        classesList.forEach(function (c) {
+          if (c.status === 'active') act++; else inact++;
+          totalStu += (c.students || 0);
+        });
+
+        elTotal.textContent = total;
+        elActive.textContent = act;
+        elInactive.textContent = inact;
+        elStudents.textContent = totalStu.toLocaleString('en-US');
+      }
+
+      /* Lọc danh sách */
+      function getFiltered() {
+        var q = state.search.trim().toLowerCase();
+        return classesList.filter(function (c) {
+          if (state.course && c.course !== state.course) return false;
+          if (state.semester && c.semester !== state.semester) return false;
+          if (state.status && c.status !== state.status) return false;
+          if (q) {
+            var matchCode = c.code && c.code.toLowerCase().indexOf(q) !== -1;
+            var matchName = c.name && c.name.toLowerCase().indexOf(q) !== -1;
+            var matchTeacher = c.teacher && c.teacher.toLowerCase().indexOf(q) !== -1;
+            var matchCourse = c.course && c.course.toLowerCase().indexOf(q) !== -1;
+            if (!matchCode && !matchName && !matchTeacher && !matchCourse) return false;
+          }
+          return true;
+        });
+      }
+
+      /* Cập nhật thanh thao tác hàng loạt */
+      function updateBulkBar() {
+        var count = state.selected.size;
+        if (count > 0) {
+          bulkBar.hidden = false;
+          bulkCountEl.textContent = 'Đã chọn ' + count + ' lớp học phần';
+        } else {
+          bulkBar.hidden = true;
+        }
+      }
+
+      /* Render bảng dữ liệu */
+      function renderTable() {
+        var filtered = getFiltered();
+        var total = filtered.length;
+
+        if (total === 0) {
+          rowsContainer.innerHTML = '';
+          emptyState.hidden = false;
+          cbAll.checked = false;
+          updateBulkBar();
+          pg.set({ total: 0, page: 1 });
+          if (window.clxIcons) window.clxIcons();
+          return;
+        }
+
+        emptyState.hidden = true;
+
+        var pageItems = U.paginate(filtered, state.page, state.pageSize);
+        var start = (state.page - 1) * state.pageSize;
+
+        var allPageChecked = pageItems.length > 0 && pageItems.every(function (item) {
+          return state.selected.has(item.id);
+        });
+        cbAll.checked = allPageChecked;
+
+        var html = '';
+        pageItems.forEach(function (c, idx) {
+          var isChecked = state.selected.has(c.id);
+          var stt = start + idx + 1;
+          var statusClass = c.status === 'active' ? 's-ok' : 's-err';
+          var statusText = c.status === 'active' ? 'Đang mở' : 'Không HĐ';
+          var pct = Math.min(100, Math.round((c.students / (c.maxStudents || 60)) * 100));
+          var isFull = c.students >= (c.maxStudents || 60);
+
+          html += '<div class="tbl-row" role="row" style="' + (isChecked ? 'background:var(--accent-soft)' : '') + '">' +
+            '<span role="cell" style="display:flex;align-items:center;justify-content:center">' +
+              '<input type="checkbox" class="row-cb item-cb" data-id="' + esc(c.id) + '" aria-label="Chọn lớp ' + esc(c.code) + '" ' + (isChecked ? 'checked' : '') + '>' +
+            '</span>' +
+            '<span role="cell" class="col-hide-sm" style="font-family:var(--mono);color:var(--text-3);text-align:right">' + stt + '</span>' +
+            '<span role="cell" class="col-hide-tablet col-hide-sm"><span class="chip chip-mono" style="font-size:12px">' + esc(c.code) + '</span></span>' +
+            '<span role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500" title="' + esc(c.name) + '">' + esc(c.name) + '</div>' +
+              '<div class="faint col-hide-sm" style="font-size:12px">' + esc(c.group) + ' · ' + esc(c.course) + '<span class="sub-sem"> · ' + esc(c.semester) + '</span></div>' +
+              '<div class="mobile-class-meta">' +
+                '<span class="chip chip-mono" style="font-size:10.5px;padding:0 4px;height:18px">' + esc(c.code) + '</span>' +
+                '<span class="faint trunc" style="max-width:110px">' + esc(c.teacher) + '</span>' +
+              '</div>' +
+            '</span>' +
+            '<span role="cell" class="col-hide-sm" style="min-width:0">' +
+              '<div class="trunc" style="font-size:13px">' + esc(c.teacher) + '</div>' +
+              '<div class="faint" style="font-size:11.5px">' + (c.tas ? c.tas + ' trợ giảng' : 'Chưa gán trợ giảng') + '</div>' +
+            '</span>' +
+            '<span role="cell" class="col-hide-md col-hide-sm"><span class="dim" style="font-size:12.5px">' + esc(c.semester) + '</span></span>' +
+            '<span role="cell">' +
+              '<div class="capacity-bar">' +
+                '<div class="row-between" style="font-size:12px">' +
+                  '<span class="mono tnum" style="font-weight:500">' + c.students + '/' + c.maxStudents + '</span>' +
+                  '<span class="faint tnum col-hide-sm" style="font-size:11px">' + pct + '%</span>' +
+                '</div>' +
+                '<div class="capacity-track' + (isFull ? ' is-full' : '') + '"><i style="width:' + pct + '%"></i></div>' +
+              '</div>' +
+            '</span>' +
+            '<span role="cell"><span class="status ' + statusClass + '">' + statusText + '</span></span>' +
+            '<span role="cell" class="col-actions">' +
+              '<button type="button" class="icon-btn btn-edit-max" data-id="' + esc(c.id) + '" aria-label="Chỉnh sĩ số tối đa cho ' + esc(c.code) + '" title="Chỉnh sĩ số tối đa"><i data-lucide="sliders-horizontal"></i></button>' +
+              '<a class="icon-btn" href="classes.html?class=' + encodeURIComponent(c.code) + '" aria-label="Xem thành viên lớp ' + esc(c.code) + '" title="Vào lớp / Danh sách sinh viên"><i data-lucide="chevron-right"></i></a>' +
+            '</span>' +
+          '</div>';
+        });
+
+        rowsContainer.innerHTML = html;
+        updateBulkBar();
+        if (window.clxIcons) window.clxIcons();
+      }
+
+      /* Sự kiện tìm kiếm & lọc: đổi bộ lọc về trang 1 */
+      function onFilterChange() {
+        state.page = 1;
+        var filtered = getFiltered();
+        pg.set({ total: filtered.length, page: 1 });
+        renderTable();
+      }
+
+      searchInput.addEventListener('input', function () {
+        state.search = this.value;
+        onFilterChange();
+      });
+
+      filterCourse.addEventListener('change', function () {
+        state.course = this.value;
+        onFilterChange();
+      });
+
+      filterSemester.addEventListener('change', function () {
+        state.semester = this.value;
+        onFilterChange();
+      });
+
+      var segButtons = filterStatus.querySelectorAll('.btn-seg');
+      segButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          segButtons.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+          this.setAttribute('aria-pressed', 'true');
+          state.status = this.dataset.status;
+          onFilterChange();
+        });
+      });
+
+      document.getElementById('btn-reset-filters').addEventListener('click', function () {
+        searchInput.value = '';
+        state.search = '';
+        filterCourse.value = '';
+        state.course = '';
+        filterSemester.value = '';
+        state.semester = '';
+        segButtons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.status === '' ? 'true' : 'false'); });
+        state.status = '';
+        onFilterChange();
+      });
+
+      /* Chọn hàng & chọn tất cả qua ID */
+      cbAll.addEventListener('change', function () {
+        var filtered = getFiltered();
+        var pageItems = U.paginate(filtered, state.page, state.pageSize);
+
+        if (this.checked) {
+          pageItems.forEach(function (it) { state.selected.add(it.id); });
+        } else {
+          pageItems.forEach(function (it) { state.selected.delete(it.id); });
+        }
+        renderTable();
+      });
+
+      rowsContainer.addEventListener('change', function (e) {
+        if (e.target.classList.contains('item-cb')) {
+          var id = e.target.dataset.id;
+          if (e.target.checked) state.selected.add(id);
+          else state.selected.delete(id);
+          renderTable();
+        }
+      });
+
+      document.getElementById('btn-bulk-clear').addEventListener('click', function () {
+        state.selected.clear();
+        renderTable();
+      });
+
+      /* ==================== HỘP THOẠI MODALS (CLXUI.modal) ==================== */
+
+      /* 1. Thêm lớp học phần (Nút chính duy nhất) */
+      var dlgCreate = document.getElementById('modal-create-class');
+      var mCreate = U.modal(dlgCreate, { initialFocus: '#create-course' });
+      var btnOpenCreate = document.getElementById('btn-open-create');
+      var formCreate = document.getElementById('form-create-class');
+      var inputCreateCode = document.getElementById('create-code');
+      var errCreateCode = document.getElementById('create-code-err');
+
+      dlgCreate.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mCreate.close);
+      });
+
+      inputCreateCode.addEventListener('input', function () {
+        errCreateCode.hidden = true;
+      });
+
+      btnOpenCreate.addEventListener('click', function () {
+        formCreate.reset();
+        errCreateCode.hidden = true;
+        document.getElementById('create-max').value = '60';
+        mCreate.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formCreate.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var courseSelect = document.getElementById('create-course');
+        var course = courseSelect.value;
+        var courseName = courseSelect.options[courseSelect.selectedIndex].text.split('·')[1].trim();
+        var code = inputCreateCode.value.trim();
+        var group = document.getElementById('create-group').value.trim();
+        var teacher = document.getElementById('create-teacher').value;
+        var tas = parseInt(document.getElementById('create-tas').value, 10);
+        var semester = document.getElementById('create-semester').value;
+        var maxStudents = parseInt(document.getElementById('create-max').value, 10) || 60;
+
+        if (!code || !group) return;
+
+        /* Kiểm tra mã lớp trùng lặp */
+        var normCode = code.toUpperCase();
+        var exists = classesList.some(function (c) {
+          return c.code.toUpperCase().trim() === normCode;
+        });
+
+        if (exists) {
+          errCreateCode.textContent = 'Mã lớp ' + normCode + ' đã tồn tại trong hệ thống.';
+          errCreateCode.hidden = false;
+          inputCreateCode.focus();
+          return;
+        }
+
+        var newClass = {
+          id: 'cls-' + (classesList.length + 1) + '-' + Date.now(),
+          code: normCode,
+          course: course,
+          name: courseName,
+          group: group,
+          teacher: teacher,
+          tas: tas,
+          students: 0,
+          maxStudents: maxStudents,
+          semester: semester,
+          status: 'active',
+          progress: 0,
+          atRisk: 0,
+          submissions7d: 0,
+          threshold: 25
+        };
+
+        classesList.unshift(newClass);
+        updateStats();
+        onFilterChange();
+        mCreate.close();
+        showToast('Đã thêm lớp học phần ' + normCode + ' thành công.');
+      });
+
+      /* 2. Chỉnh sĩ số tối đa */
+      var dlgMax = document.getElementById('modal-max-students');
+      var mMax = U.modal(dlgMax, { initialFocus: '#input-new-max' });
+      var formMax = document.getElementById('form-max-students');
+      var maxClassId = document.getElementById('max-class-id');
+      var maxDisplayName = document.getElementById('max-display-name');
+      var maxDisplaySub = document.getElementById('max-display-sub');
+      var maxCurrentStudents = document.getElementById('max-current-students');
+      var inputNewMax = document.getElementById('input-new-max');
+      var maxLimitHint = document.getElementById('max-limit-hint');
+
+      dlgMax.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mMax.close);
+      });
+
+      rowsContainer.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-edit-max');
+        if (!btn) return;
+        var id = btn.dataset.id;
+        var c = classesList.find(function (it) { return it.id === id; });
+        if (!c) return;
+
+        maxClassId.value = c.id;
+        maxDisplayName.textContent = 'Lớp ' + c.code;
+        maxDisplaySub.textContent = c.name + ' · ' + c.group + ' · ' + c.semester;
+        maxCurrentStudents.textContent = c.students + ' sinh viên đang ghi danh';
+        inputNewMax.value = c.maxStudents;
+        inputNewMax.min = c.students;
+        maxLimitHint.textContent = 'Sĩ số tối đa phải tối thiểu bằng số sinh viên hiện có (' + c.students + ').';
+
+        mMax.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formMax.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var id = maxClassId.value;
+        var c = classesList.find(function (it) { return it.id === id; });
+        if (!c) return;
+
+        var newMax = parseInt(inputNewMax.value, 10);
+        if (newMax < c.students) {
+          inputNewMax.focus();
+          return;
+        }
+
+        c.maxStudents = newMax;
+        renderTable();
+        mMax.close();
+        showToast('Đã cập nhật sĩ số tối đa của lớp ' + c.code + ' thành ' + newMax + '.');
+      });
+
+      /* 3. Thao tác hàng loạt: Chuyển Không hoạt động (Tất cả hoặc không) */
+      var dlgBulkInactive = document.getElementById('modal-bulk-inactive');
+      var mBulkInactive = U.modal(dlgBulkInactive, { initialFocus: '#bulk-inactive-reason' });
+      var formBulkInactive = document.getElementById('form-bulk-inactive');
+      var bulkClassCount = document.getElementById('bulk-class-count');
+      var bulkInactiveReason = document.getElementById('bulk-inactive-reason');
+
+      dlgBulkInactive.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mBulkInactive.close);
+      });
+
+      document.getElementById('btn-bulk-deact').addEventListener('click', function () {
+        if (state.selected.size === 0) return;
+        bulkClassCount.textContent = state.selected.size;
+        bulkInactiveReason.value = '';
+        mBulkInactive.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formBulkInactive.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var reason = bulkInactiveReason.value.trim();
+        if (!reason) {
+          bulkInactiveReason.focus();
+          return;
+        }
+
+        var count = state.selected.size;
+
+        /* Kiểm tra quy tắc tất cả hoặc không: kiểm tra toàn bộ lớp được chọn với các ca live */
+        var liveExams = (window.CLX_STAFF && window.CLX_STAFF.exams) ? window.CLX_STAFF.exams.filter(function (ex) {
+          return ex.status === 'live';
+        }) : [];
+
+        var conflictingClasses = [];
+        classesList.forEach(function (c) {
+          if (state.selected.has(c.id)) {
+            var hasLive = liveExams.some(function (ex) {
+              return ex.classCode === c.code;
+            });
+            if (hasLive) {
+              conflictingClasses.push(c.code);
+            }
+          }
+        });
+
+        if (conflictingClasses.length > 0) {
+          showToast('Hủy toàn bộ thao tác: lớp ' + conflictingClasses.join(', ') + ' đang có ca thi diễn ra.');
+          mBulkInactive.close();
+          return;
+        }
+
+        classesList.forEach(function (c) {
+          if (state.selected.has(c.id)) {
+            c.status = 'inactive';
+          }
+        });
+
+        state.selected.clear();
+        updateStats();
+        renderTable();
+        mBulkInactive.close();
+        showToast('Đã chuyển ' + count + ' lớp học phần sang trạng thái Không hoạt động (tất cả hoặc không).');
+      });
+
+      /* Khởi tạo */
+      updateStats();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cấu hình hệ thống · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bố cục cấu hình từng hàng */
+    .config-card { margin-bottom: 0; }
+    
+    .config-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      padding: 18px 20px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      transition: background var(--dur) var(--ease);
+    }
+    .config-row:last-child { border-bottom: 0; }
+    .config-row.is-dirty { background: var(--surface-2); }
+    .config-row.has-error { background: var(--err-soft); }
+
+    .config-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .config-label { font-weight: 500; font-size: 13.5px; color: var(--text); }
+    .config-hint { font-size: 12.5px; color: var(--text-3); line-height: 18px; }
+
+    .config-ctrl { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    
+    /* Ô nhập kèm đơn vị */
+    .input-unit-wrap { display: flex; align-items: center; gap: 8px; }
+    .input-unit-wrap input.input { width: 110px; text-align: right; }
+    .input-unit-wrap input.input-wide { width: 170px; text-align: left; }
+    .input-unit-wrap input.is-invalid { border-color: var(--err); outline: 1px solid var(--err); }
+    .input-unit-wrap .unit { font-size: 12.5px; color: var(--text-3); min-width: 50px; }
+
+    /* Công tắc On / Off */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle-switch {
+      position: relative; width: 44px; height: 24px; padding: 2px;
+      background: var(--surface-3); border: 1px solid var(--line-strong); border-radius: 12px;
+      cursor: pointer; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+      display: inline-block;
+    }
+    .toggle-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .toggle-switch[aria-checked='true'] { background: var(--accent); border-color: var(--accent); }
+    .toggle-thumb {
+      display: block; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--text); transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+    .toggle-switch[aria-checked='true'] .toggle-thumb { transform: translateX(20px); background: var(--accent-ink); }
+    .toggle-text { font-size: 13px; font-weight: 500; min-width: 32px; color: var(--text-2); }
+    .toggle-switch[aria-checked='true'] + .toggle-text { color: var(--text); }
+
+    /* Hộp cảnh báo lỗi nhập liệu */
+    .config-err {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: var(--r-control);
+      background: var(--err-soft); color: var(--err);
+      font-size: 12.5px; border: 1px solid color-mix(in srgb, var(--err) 30%, transparent);
+      margin-top: 6px;
+    }
+
+    /* Thanh cố định bên dưới khi có thay đổi chưa lưu */
+    .save-bar {
+      position: fixed; left: var(--sidebar-w); right: 0; bottom: 0; z-index: 60;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px 32px; background: var(--surface); border-top: 1px solid var(--line-strong);
+      transform: translateY(100%); transition: transform var(--dur) var(--ease);
+    }
+    .save-bar.is-visible { transform: translateY(0); }
+    .save-bar .info { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+    .save-bar .actions { display: flex; align-items: center; gap: 10px; }
+
+    /* Hộp thoại xác nhận */
+    .modal-scrim { position: fixed; inset: 0; z-index: 100; background: var(--scrim); display: grid; place-items: center; padding: 20px; }
+    .modal-scrim[hidden] { display: none; }
+    .modal-box { width: min(480px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-panel); box-shadow: var(--shadow-pop); }
+    .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; }
+    .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: flex-end; gap: 10px; background: var(--surface-2); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 95; padding: 10px 16px; border-radius: var(--r-control); background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-pop); transform: translateY(20px); opacity: 0; transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease); pointer-events: none; }
+    .toast.is-show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      .save-bar { left: 0; padding: 12px 16px; }
+    }
+    @media (max-width: 760px) {
+      .config-row { grid-template-columns: 1fr; gap: 12px; }
+      .config-ctrl { justify-content: space-between; width: 100%; }
+    }
+  </style>
+</head>
+<body data-role="admin" data-page="config-system" data-title="Cấu hình hệ thống">
+  <main class="content" id="content">
+    <!-- Danh sách nhóm cấu hình -->
+    <div class="stack" id="settings-container" style="padding-bottom:60px">
+      <!-- Render các nhóm bằng JavaScript -->
+    </div>
+  </main>
+
+  <!-- Thanh cố định ở dưới khi có thay đổi chưa lưu -->
+  <div class="save-bar" id="save-bar" role="region" aria-label="Thanh xác nhận lưu thay đổi">
+    <div class="info">
+      <i data-lucide="info" style="color:var(--warn)"></i>
+      <span>Có <b id="unsaved-count" class="tnum">0</b> thay đổi chưa lưu</span>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-sm" id="btn-cancel-all">
+        Hủy thay đổi
+      </button>
+      <button type="button" class="btn btn-sm btn-primary" id="btn-save-all">
+        <i data-lucide="save"></i>Lưu thay đổi
+      </button>
+    </div>
+  </div>
+
+  <!-- Hộp thoại xác nhận khôi phục mặc định -->
+  <div class="modal-scrim" id="modal-reset" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title">
+      <div class="modal-head">
+        <h3 id="modal-reset-title">Khôi phục cấu hình mặc định</h3>
+        <button class="icon-btn" id="btn-modal-reset-close" aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          Bạn có chắc chắn muốn khôi phục tham số <code class="chip chip-mono" id="modal-reset-key"></code> về giá trị mặc định?
+        </div>
+        <dl class="kv" style="grid-template-columns:120px 1fr">
+          <dt>Giá trị hiện tại</dt>
+          <dd class="mono tnum" id="modal-reset-current"></dd>
+          <dt>Giá trị mặc định</dt>
+          <dd class="mono tnum" style="color:var(--accent)" id="modal-reset-default"></dd>
+        </dl>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="btn-modal-reset-cancel">Hủy</button>
+        <button class="btn" id="btn-modal-reset-confirm" style="color:var(--warn);border-color:color-mix(in srgb, var(--warn) 40%, transparent)">
+          <i data-lucide="rotate-ccw"></i>Xác nhận khôi phục
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i data-lucide="check-circle" style="color:var(--ok)"></i>
+    <span id="toast-text">Thông báo</span>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var U = window.CLXUI, esc = U.esc;
+      var STAFF = window.CLX_STAFF;
+      var groups = STAFF.settings || [];
+
+      /* Lưu giá trị mặc định gốc (bất biến), giá trị đã lưu và giá trị đang chỉnh sửa */
+      var factoryDefaults = {};
+      var savedValues = {};
+      var currentValues = {};
+      var errors = {};
+      var pendingResetKey = null;
+
+      groups.forEach(function (g) {
+        g.items.forEach(function (it) {
+          factoryDefaults[it.key] = it.value;
+          savedValues[it.key] = it.value;
+          currentValues[it.key] = it.value;
+        });
+      });
+
+      /* Quy tắc kiểm tra tính hợp lệ của tham số */
+      function validateField(key, val) {
+        if (key === 'auth.maxLoginAttempts') {
+          var n = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n) || n < 1 || n > 20) {
+            return 'Số lần đăng nhập sai phải là số nguyên từ 1 đến 20 lần.';
+          }
+        } else if (key === 'auth.lockMinutes') {
+          var n2 = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n2) || n2 < 1 || n2 > 1440) {
+            return 'Thời gian khóa tạm phải là số nguyên từ 1 đến 1,440 phút (tối đa 24 giờ).';
+          }
+        } else if (key === 'exam.maxConcurrentStudents') {
+          var n3 = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n3) || n3 < 10 || n3 > 1000) {
+            return 'Số thí sinh đồng thời phải từ 10 đến 1,000 sinh viên để đảm bảo tài nguyên máy ảo.';
+          }
+        } else if (key === 'exam.heartbeatSeconds') {
+          var n4 = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n4) || n4 < 3 || n4 > 60) {
+            return 'Chu kỳ nhịp tim phải từ 3 đến 60 giây để tránh nghẽn kết nối phòng thi.';
+          }
+        } else if (key === 'leaderboard.defaultLimit') {
+          var n5 = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n5) || n5 < 5 || n5 > 100) {
+            return 'Số dòng hiển thị phải là số nguyên từ 5 đến 100 dòng.';
+          }
+        } else if (key === 'backup.schedule') {
+          if (!/^([01]\d|2[0-3]):[0-5]\d hằng ngày$/.test(val.trim())) {
+            return 'Định dạng lịch sao lưu phải là HH:mm hằng ngày (ví dụ: 02:00 hằng ngày).';
+          }
+        } else if (key === 'backup.keepCount') {
+          var n6 = Number(val);
+          if (!/^\d+$/.test(val) || isNaN(n6) || n6 < 1 || n6 > 90) {
+            return 'Số bản sao lưu giữ lại phải là số nguyên từ 1 đến 90 bản.';
+          }
+        }
+        return null;
+      }
+
+      function getDirtyKeys() {
+        var dirty = [];
+        Object.keys(currentValues).forEach(function (k) {
+          if (currentValues[k] !== savedValues[k]) {
+            dirty.push(k);
+          }
+        });
+        return dirty;
+      }
+
+      function hasErrors() {
+        var keys = Object.keys(errors);
+        for (var i = 0; i < keys.length; i++) {
+          if (errors[keys[i]]) return true;
+        }
+        return false;
+      }
+
+      function showToast(msg) {
+        var t = document.getElementById('toast');
+        document.getElementById('toast-text').textContent = msg;
+        t.classList.add('is-show');
+        setTimeout(function () { t.classList.remove('is-show'); }, 3000);
+      }
+
+      /* Cập nhật thanh cố định lưu thay đổi và cảnh báo beforeunload */
+      function updateSaveBar() {
+        var dirty = getDirtyKeys();
+        var bar = document.getElementById('save-bar');
+        var countEl = document.getElementById('unsaved-count');
+        var saveBtn = document.getElementById('btn-save-all');
+
+        if (dirty.length > 0) {
+          bar.classList.add('is-visible');
+          countEl.textContent = dirty.length;
+          /* Nếu còn lỗi thì vô hiệu hóa nút Lưu thay đổi */
+          saveBtn.disabled = hasErrors();
+        } else {
+          bar.classList.remove('is-visible');
+        }
+      }
+
+      /* Cảnh báo khi người dùng rời trang mà còn thay đổi chưa lưu */
+      window.addEventListener('beforeunload', function (e) {
+        if (getDirtyKeys().length > 0) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+
+      /* Dựng giao diện danh sách cấu hình */
+      function renderSettings() {
+        var container = document.getElementById('settings-container');
+        var html = '';
+
+        groups.forEach(function (g, gIdx) {
+          var icon = gIdx === 0 ? 'shield' : (gIdx === 1 ? 'timer' : (gIdx === 2 ? 'trophy' : 'database'));
+          html += '<section class="card config-card" aria-label="Nhóm cấu hình ' + esc(g.group) + '">' +
+            '<div class="card-head">' +
+              '<div class="row-gap">' +
+                '<i data-lucide="' + icon + '" style="color:var(--text-2)"></i>' +
+                '<h2 style="font-size:14px">' + esc(g.group) + '</h2>' +
+              '</div>' +
+              '<span class="meta tnum">' + g.items.length + ' mục</span>' +
+            '</div>';
+
+          g.items.forEach(function (it) {
+            var curr = currentValues[it.key];
+            var saved = savedValues[it.key];
+            var factory = factoryDefaults[it.key];
+            var isUnsaved = curr !== saved;
+            var canReset = curr !== factory;
+            var isToggle = it.value === 'on' || it.value === 'off';
+            var err = errors[it.key];
+
+            html += '<div class="config-row' + (isUnsaved ? ' is-dirty' : '') + (err ? ' has-error' : '') + '" data-key="' + esc(it.key) + '">' +
+              '<div class="config-info">' +
+                '<div class="row-gap">' +
+                  '<label class="config-label" for="ctrl-' + esc(it.key) + '">' + esc(it.label) + '</label>' +
+                  '<code class="chip chip-mono">' + esc(it.key) + '</code>' +
+                  (isUnsaved ? '<span class="chip chip-warn"><span class="dot"></span>Chưa lưu</span>' : '') +
+                '</div>' +
+                (it.hint ? '<div class="config-hint">' + esc(it.hint) + '</div>' : '') +
+                '<div class="config-err" id="err-box-' + esc(it.key) + '" style="display:' + (err ? 'flex' : 'none') + '">' +
+                  '<i data-lucide="circle-alert" style="width:14px;height:14px"></i>' +
+                  '<span id="err-text-' + esc(it.key) + '">' + esc(err || '') + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="config-ctrl">';
+
+            if (isToggle) {
+              var isOn = curr === 'on';
+              html += '<div class="toggle-wrap">' +
+                '<button type="button" role="switch" aria-checked="' + isOn + '" class="toggle-switch" id="ctrl-' + esc(it.key) + '" data-key="' + esc(it.key) + '" aria-label="' + esc(it.label) + '">' +
+                  '<span class="toggle-thumb"></span>' +
+                '</button>' +
+                '<span class="toggle-text" id="toggle-lbl-' + esc(it.key) + '">' + (isOn ? 'Bật' : 'Tắt') + '</span>' +
+              '</div>';
+            } else {
+              var isWide = it.key === 'backup.schedule';
+              html += '<div class="input-unit-wrap">' +
+                '<input type="text" class="input tnum config-input' + (isWide ? ' input-wide' : '') + (err ? ' is-invalid' : '') + '" id="ctrl-' + esc(it.key) + '" data-key="' + esc(it.key) + '" value="' + esc(curr) + '" aria-label="' + esc(it.label) + '">' +
+                (it.unit ? '<span class="unit faint">' + esc(it.unit) + '</span>' : '') +
+              '</div>';
+            }
+
+            html += '<button type="button" class="btn btn-sm btn-ghost btn-reset" data-key="' + esc(it.key) + '" title="Khôi phục giá trị mặc định cho tham số này"' + (canReset ? '' : ' disabled') + '>' +
+              '<i data-lucide="rotate-ccw"></i>Khôi phục' +
+            '</button>' +
+            '</div></div>';
+          });
+
+          html += '</section>';
+        });
+
+        container.innerHTML = html;
+        bindEvents();
+        updateSaveBar();
+        window.clxIcons();
+      }
+
+      function bindEvents() {
+        /* Bắt sự kiện thay đổi trên các ô nhập text / số */
+        var inputs = document.querySelectorAll('.config-input');
+        inputs.forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            var key = this.dataset.key;
+            var val = this.value;
+            currentValues[key] = val;
+
+            /* Kiểm tra hợp lệ */
+            var err = validateField(key, val);
+            errors[key] = err;
+
+            var errBox = document.getElementById('err-box-' + key);
+            var errText = document.getElementById('err-text-' + key);
+            var rowEl = document.querySelector('.config-row[data-key="' + key + '"]');
+            var resetBtn = rowEl.querySelector('.btn-reset');
+
+            if (err) {
+              this.classList.add('is-invalid');
+              errBox.style.display = 'flex';
+              errText.textContent = err;
+              rowEl.classList.add('has-error');
+            } else {
+              this.classList.remove('is-invalid');
+              errBox.style.display = 'none';
+              rowEl.classList.remove('has-error');
+            }
+
+            var isUnsaved = currentValues[key] !== savedValues[key];
+            if (isUnsaved) rowEl.classList.add('is-dirty');
+            else rowEl.classList.remove('is-dirty');
+
+            var canReset = currentValues[key] !== factoryDefaults[key];
+            resetBtn.disabled = !canReset;
+            updateSaveBar();
+          });
+        });
+
+        /* Bắt sự kiện nút công tắc On / Off */
+        var switches = document.querySelectorAll('.toggle-switch');
+        switches.forEach(function (sw) {
+          sw.addEventListener('click', function () {
+            var key = this.dataset.key;
+            var isOn = currentValues[key] === 'on';
+            var next = isOn ? 'off' : 'on';
+            currentValues[key] = next;
+
+            this.setAttribute('aria-checked', String(!isOn));
+            var lbl = document.getElementById('toggle-lbl-' + key);
+            if (lbl) lbl.textContent = next === 'on' ? 'Bật' : 'Tắt';
+
+            var rowEl = document.querySelector('.config-row[data-key="' + key + '"]');
+            var resetBtn = rowEl.querySelector('.btn-reset');
+            var isUnsaved = currentValues[key] !== savedValues[key];
+            if (isUnsaved) rowEl.classList.add('is-dirty');
+            else rowEl.classList.remove('is-dirty');
+
+            var canReset = currentValues[key] !== factoryDefaults[key];
+            resetBtn.disabled = !canReset;
+            updateSaveBar();
+          });
+        });
+
+        /* Bắt sự kiện nút Khôi phục mặc định từng khóa */
+        var resetBtns = document.querySelectorAll('.btn-reset');
+        resetBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var key = this.dataset.key;
+            openResetModal(key);
+          });
+        });
+      }
+
+      /* Khởi tạo CLXUI.modal cho hộp thoại Khôi phục */
+      var modalResetEl = document.getElementById('modal-reset');
+      var resetModal = U.modal(modalResetEl, { initialFocus: '#btn-modal-reset-confirm' });
+
+      function openResetModal(key) {
+        pendingResetKey = key;
+        document.getElementById('modal-reset-key').textContent = key;
+        document.getElementById('modal-reset-current').textContent = currentValues[key];
+        document.getElementById('modal-reset-default').textContent = factoryDefaults[key];
+        resetModal.open();
+        window.clxIcons();
+      }
+
+      document.getElementById('btn-modal-reset-close').addEventListener('click', resetModal.close);
+      document.getElementById('btn-modal-reset-cancel').addEventListener('click', resetModal.close);
+
+      document.getElementById('btn-modal-reset-confirm').addEventListener('click', function () {
+        if (!pendingResetKey) return;
+        var k = pendingResetKey;
+        currentValues[k] = factoryDefaults[k];
+        delete errors[k];
+
+        resetModal.close();
+        renderSettings();
+        showToast('Đã khôi phục tham số ' + k + ' về mặc định gốc (' + factoryDefaults[k] + ').');
+      });
+
+      /* Nút Hủy bỏ tất cả thay đổi trên thanh lưu */
+      document.getElementById('btn-cancel-all').addEventListener('click', function () {
+        Object.keys(savedValues).forEach(function (k) {
+          currentValues[k] = savedValues[k];
+        });
+        errors = {};
+        renderSettings();
+        showToast('Đã hủy bỏ toàn bộ thay đổi chưa lưu.');
+      });
+
+      /* Nút Lưu thay đổi trên thanh lưu */
+      document.getElementById('btn-save-all').addEventListener('click', function () {
+        if (hasErrors()) {
+          showToast('Vui lòng sửa các trường báo lỗi trước khi lưu.');
+          return;
+        }
+        var dirtyKeys = getDirtyKeys();
+        if (dirtyKeys.length === 0) return;
+
+        /* Áp dụng các thay đổi thành savedValues mới */
+        dirtyKeys.forEach(function (k) {
+          savedValues[k] = currentValues[k];
+        });
+
+        renderSettings();
+        showToast('Đã lưu thành công ' + dirtyKeys.length + ' cấu hình hệ thống.');
+      });
+
+      /* Khởi chạy lần đầu */
+      renderSettings();
+    })();
+  </script>
+</body>
+</html>

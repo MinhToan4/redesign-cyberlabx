@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tài khoản · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bổ trợ riêng trang Quản lý tài khoản */
+    .stat-strip-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .stat-strip-4 > div { padding: 16px 20px; }
+    .stat-strip-4 > div + div { border-left: 1px solid var(--line); }
+
+    .bulk-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+      animation: rise 160ms var(--ease);
+    }
+    .bulk-bar[hidden] { display: none; }
+
+    /* Lưới bảng mặc định cho desktop rộng (> 1360px, 9 cột) */
+    .tbl-accounts .tbl-row { padding: 0 16px; gap: 12px; }
+    .tbl-accounts {
+      --cols: 32px 36px minmax(0, 1.4fr) 100px 88px 104px 92px 136px 68px;
+    }
+
+    .col-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    .col-actions .icon-btn { width: 32px; height: 32px; }
+    .mobile-sub { display: none; }
+    .desktop-sub { display: none; }
+
+    /* Màn hình laptop / viewport <= 1360px (bao gồm 1280px): ẩn cột Đăng nhập gần nhất (8 cột), gộp vào dòng phụ */
+    @media (max-width: 1360px) {
+      .tbl-accounts {
+        --cols: 32px 36px minmax(0, 1.4fr) 96px 84px 96px 90px 68px;
+      }
+      .col-hide-md { display: none !important; }
+      .desktop-sub { display: block; }
+    }
+
+    /* Tablet (<= 960px): ẩn thêm cột Lớp hành chính (7 cột) */
+    @media (max-width: 960px) {
+      .tbl-accounts {
+        --cols: 32px 36px minmax(0, 1.4fr) 90px 80px 88px 68px;
+      }
+      .col-hide-tablet { display: none !important; }
+    }
+
+    /* Mobile (<= 680px): gọn 4 cột, không cuộn ngang */
+    @media (max-width: 680px) {
+      .stat-strip-4 { grid-template-columns: repeat(2, 1fr); }
+      .stat-strip-4 > div:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .stat-strip-4 > div:nth-child(4) { border-top: 1px solid var(--line); }
+      .tbl-accounts .tbl-row { padding: 0 10px; gap: 8px; }
+      .tbl-accounts {
+        --cols: 30px minmax(0, 1fr) 80px 68px;
+      }
+      .col-hide-sm { display: none !important; }
+      .desktop-sub { display: none !important; }
+      .mobile-sub { display: flex; align-items: center; gap: 6px; }
+      .toolbar { gap: 6px; }
+      .search { min-width: 100% !important; }
+    }
+
+    /* Modal / Hộp thoại theo chuẩn CLXUI.modal */
+    .modal-box {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-card);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0;
+      box-shadow: var(--shadow-pop);
+      width: min(540px, calc(100vw - 32px));
+      margin: auto;
+    }
+    .modal-body { padding: 20px; }
+    .modal-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 20px; border-top: 1px solid var(--line); background: var(--surface-2);
+    }
+
+    /* Checkbox tùy chỉnh nhẹ nhàng */
+    .row-cb {
+      width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; margin: 0;
+    }
+
+    /* Toast thông báo */
+    .toast-box {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 18px; border-radius: var(--r-control);
+      background: var(--surface); border: 1px solid var(--line-strong); box-shadow: var(--shadow-pop);
+      font-size: 13.5px; color: var(--text);
+      animation: rise 200ms var(--ease);
+    }
+    .toast-box[hidden] { display: none; }
+  </style>
+</head>
+<body data-role="admin" data-page="accounts" data-title="Tài khoản">
+  <main class="content" id="content">
+    <div class="stack">
+
+      <!-- Chỉ số tổng quan tài khoản -->
+      <section class="card stat-strip-4" aria-label="Tổng quan tài khoản hệ thống">
+        <div class="stat">
+          <div class="label">Tổng tài khoản</div>
+          <div class="value tnum" id="stat-total">—</div>
+          <div class="hint">Hệ thống phân quyền</div>
+        </div>
+        <div class="stat">
+          <div class="label">Đang hoạt động</div>
+          <div class="value tnum" id="stat-active">—</div>
+          <div class="hint">Có quyền đăng nhập</div>
+        </div>
+        <div class="stat">
+          <div class="label">Ngừng hoạt động</div>
+          <div class="value tnum" id="stat-inactive">—</div>
+          <div class="hint">Khóa hoặc bảo lưu</div>
+        </div>
+        <div class="stat">
+          <div class="label">Cơ cấu vai trò</div>
+          <div class="value tnum" id="stat-roles" style="font-size:18px;line-height:36px;font-weight:500">—</div>
+          <div class="hint" id="stat-roles-hint">Tỉ lệ sinh viên / nhân sự</div>
+        </div>
+      </section>
+
+      <!-- Thanh công cụ lọc & Hành động chính -->
+      <section>
+        <div class="card card-pad" style="margin-bottom:12px">
+          <div class="row-between" style="flex-wrap:wrap;gap:12px">
+            <!-- Khu vực lọc tìm kiếm -->
+            <div class="toolbar" style="flex:1;min-width:280px">
+              <div class="search" style="min-width:240px;flex:1">
+                <i data-lucide="search"></i>
+                <input class="input" id="search-input" placeholder="Tìm theo tên hoặc tài khoản..." aria-label="Tìm kiếm theo tên hoặc tài khoản">
+              </div>
+              <select class="select" id="filter-role" style="width:auto" aria-label="Lọc theo vai trò">
+                <option value="">Mọi vai trò</option>
+                <option value="Sinh viên">Sinh viên</option>
+                <option value="Giảng viên">Giảng viên</option>
+                <option value="Trợ giảng">Trợ giảng</option>
+              </select>
+              <select class="select" id="filter-faculty" style="width:auto" aria-label="Lọc theo khoa">
+                <option value="">Mọi khoa</option>
+                <option value="CNTT1">Khoa CNTT1</option>
+                <option value="ATTT">Khoa ATTT</option>
+                <option value="DTVT">Khoa ĐTVT</option>
+              </select>
+              <div class="segmented" id="filter-status" role="group" aria-label="Lọc theo trạng thái">
+                <button type="button" class="btn-seg" data-status="" aria-pressed="true">Tất cả</button>
+                <button type="button" class="btn-seg" data-status="active" aria-pressed="false">Hoạt động</button>
+                <button type="button" class="btn-seg" data-status="inactive" aria-pressed="false">Ngừng</button>
+              </div>
+            </div>
+
+            <!-- Nút phụ Xuất CSV & NÚT CHÍNH DUY NHẤT: Cấp tài khoản -->
+            <div class="row-gap" style="flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;align-items:flex-end">
+                <button type="button" class="btn btn-sm" id="btn-export-csv" title="Xuất danh sách theo bộ lọc ra định dạng CSV">
+                  <i data-lucide="download"></i>Xuất CSV
+                </button>
+                <span class="faint" style="font-size:11px;margin-top:3px">Ghi nhật ký kiểm toán</span>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-open-create">
+                <i data-lucide="user-plus"></i>Cấp tài khoản
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng sổ cái tài khoản -->
+        <div class="card ledger" id="table-card">
+          <!-- Thanh thao tác hàng loạt (chỉ hiện khi có checkbox được chọn) -->
+          <div class="bulk-bar" id="bulk-bar" hidden>
+            <div class="row-gap">
+              <span class="faint" style="font-size:13px"><i data-lucide="check-square" style="vertical-align:-2px"></i></span>
+              <strong id="bulk-selected-count" style="font-weight:500;font-size:13.5px">Đã chọn 0 tài khoản</strong>
+            </div>
+            <div class="row-gap">
+              <button type="button" class="btn btn-sm" id="btn-bulk-deact" style="color:var(--warn)">
+                <i data-lucide="user-x"></i>Ngừng hoạt động
+              </button>
+              <button type="button" class="btn btn-sm" id="btn-bulk-act" style="color:var(--ok)">
+                <i data-lucide="user-check"></i>Bật hoạt động
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm faint" id="btn-bulk-clear">Bỏ chọn</button>
+            </div>
+          </div>
+
+          <!-- Lưới dữ liệu -->
+          <div class="tbl tbl-accounts" role="table" aria-label="Danh sách tài khoản hệ thống">
+            <div class="tbl-row tbl-head" role="row">
+              <span role="columnheader" style="display:flex;align-items:center;justify-content:center">
+                <input type="checkbox" class="row-cb" id="cb-all" aria-label="Chọn tất cả tài khoản trên trang hiện tại">
+              </span>
+              <span role="columnheader" class="no col-hide-sm">STT</span>
+              <span role="columnheader">Họ và tên</span>
+              <span role="columnheader" class="col-hide-sm">Tài khoản</span>
+              <span role="columnheader" class="col-hide-sm">Vai trò</span>
+              <span role="columnheader" class="col-hide-sm">Lớp hành chính</span>
+              <span role="columnheader">Trạng thái</span>
+              <span role="columnheader" class="col-hide-md col-hide-sm">Đăng nhập gần nhất</span>
+              <span role="columnheader" style="text-align:right">Thao tác</span>
+            </div>
+
+            <!-- Các hàng dữ liệu động được render bằng JS -->
+            <div id="accounts-rows"></div>
+          </div>
+
+          <!-- Trạng thái rỗng khi không có kết quả -->
+          <div class="empty" id="empty-state" hidden>
+            <div style="font-size:14px;margin-bottom:8px">Không tìm thấy tài khoản nào khớp với bộ lọc.</div>
+            <div class="faint" style="font-size:12.5px;margin-bottom:16px">Hãy thử đổi từ khóa tìm kiếm hoặc bỏ bớt tiêu chí lọc vai trò, khoa.</div>
+            <button type="button" class="btn btn-sm" id="btn-reset-filters">Đặt lại bộ lọc</button>
+          </div>
+
+          <!-- Phân trang chuẩn CLXUI.pager -->
+          <div class="pager-host" id="pager"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== CÁC HỘP THOẠI (MODAL) ==================== -->
+
+  <!-- ==================== CÁC HỘP THOẠI (MODAL DÙNG CLXUI.modal) ==================== -->
+
+  <!-- 1. Hộp thoại Cấp tài khoản mới -->
+  <div class="dlg-scrim" id="modal-provision" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-provision-title">
+      <div class="card-head">
+        <h2 id="modal-provision-title">Cấp tài khoản mới</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-provision">
+        <div class="modal-body stack-sm">
+          <div class="field">
+            <label for="prov-role">Vai trò người dùng <span style="color:var(--err)">*</span></label>
+            <select id="prov-role" class="select" required>
+              <option value="Sinh viên">Sinh viên</option>
+              <option value="Giảng viên">Giảng viên</option>
+              <option value="Trợ giảng">Trợ giảng</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="prov-username">Tên tài khoản (Mã) <span style="color:var(--err)">*</span></label>
+              <input id="prov-username" class="input mono" placeholder="vd: B23DCAT049 hoặc gv04" required>
+              <div class="field-error" id="prov-username-err" style="color:var(--err);font-size:12px;margin-top:4px" hidden></div>
+            </div>
+            <div class="field">
+              <label for="prov-fullname">Họ và tên <span style="color:var(--err)">*</span></label>
+              <input id="prov-fullname" class="input" placeholder="vd: Nguyễn Văn Bình" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="prov-email">Email nhận thông tin <span style="color:var(--err)">*</span></label>
+            <input id="prov-email" type="email" class="input" placeholder="vd: sv.binh@stu.ptit.edu.vn" required>
+          </div>
+
+          <!-- Khối trường riêng của Sinh viên -->
+          <div id="prov-student-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="prov-class">Lớp hành chính <span style="color:var(--err)">*</span></label>
+              <input id="prov-class" class="input mono" placeholder="vd: D23CQAT01-B">
+            </div>
+            <div class="field">
+              <label for="prov-cohort">Khóa đào tạo</label>
+              <input id="prov-cohort" class="input" value="K23 (2023-2028)" readonly>
+            </div>
+          </div>
+
+          <!-- Khối trường riêng của Cán bộ (Giảng viên / Trợ giảng) -->
+          <div id="prov-staff-fields" style="display:none;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="prov-faculty">Khoa chuyên môn <span style="color:var(--err)">*</span></label>
+              <select id="prov-faculty" class="select">
+                <option value="CNTT1">Khoa CNTT1</option>
+                <option value="ATTT">Khoa ATTT</option>
+                <option value="DTVT">Khoa ĐTVT</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="prov-title">Học hàm / Học vị</label>
+              <input id="prov-title" class="input" placeholder="vd: ThS., TS., PGS.TS.">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="prov-note">Ghi chú quản trị</label>
+            <textarea id="prov-note" class="textarea" rows="2" placeholder="Ghi chú nội bộ về tài khoản (không bắt buộc)..." style="min-height:64px"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">
+            <i data-lucide="shield-check" style="width:13px;height:13px;vertical-align:-2px"></i> Mật khẩu ngẫu nhiên gửi qua email
+          </span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Cấp tài khoản</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Hộp thoại Sửa thông tin tài khoản -->
+  <div class="dlg-scrim" id="modal-edit" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+      <div class="card-head">
+        <h2 id="modal-edit-title">Sửa thông tin tài khoản</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-edit">
+        <input type="hidden" id="edit-id">
+        <div class="modal-body stack-sm">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label>Mã tài khoản</label>
+              <input id="edit-username" class="input mono" readonly>
+            </div>
+            <div class="field">
+              <label>Vai trò</label>
+              <input id="edit-role" class="input" readonly>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="edit-fullname">Họ và tên <span style="color:var(--err)">*</span></label>
+            <input id="edit-fullname" class="input" required>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="edit-class-or-faculty" id="edit-lbl-class">Lớp hành chính / Khoa</label>
+              <input id="edit-class-or-faculty" class="input">
+            </div>
+            <div class="field">
+              <label for="edit-status">Trạng thái tài khoản</label>
+              <select id="edit-status" class="select">
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Ngừng hoạt động</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="edit-note">Ghi chú điều chỉnh</label>
+            <textarea id="edit-note" class="textarea" rows="2" placeholder="Ghi chú lý do cập nhật..." style="min-height:64px"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Cập nhật có hiệu lực ngay lập tức</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Lưu thay đổi</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Hộp thoại Cấp lại mật khẩu -->
+  <div class="dlg-scrim" id="modal-reset-pwd" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title">
+      <div class="card-head">
+        <h2 id="modal-reset-title">Cấp lại mật khẩu</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-reset-pwd">
+        <input type="hidden" id="reset-pwd-id">
+        <div class="modal-body stack-sm">
+          <p style="font-size:13.5px;line-height:1.6">
+            Bạn có chắc chắn muốn cấp lại mật khẩu cho tài khoản <strong id="reset-pwd-code" class="mono" style="color:var(--accent)"></strong> (<span id="reset-pwd-name"></span>)?
+          </p>
+          <div class="card card-pad" style="background:var(--surface-2);border-radius:var(--r-control);font-size:12.5px;color:var(--text-2);line-height:1.5">
+            Hệ thống sẽ vô hiệu hóa mật khẩu hiện tại, tạo mật khẩu ngẫu nhiên mới và gửi đường dẫn đặt lại tới email đã đăng ký. Người dùng phải đổi mật khẩu ở lần đăng nhập tiếp theo.
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Thao tác được ghi nhật ký kiểm toán</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm">Xác nhận cấp lại</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Hộp thoại Thao tác hàng loạt (BẮT BUỘC nhập lý do) -->
+  <div class="dlg-scrim" id="modal-bulk" hidden>
+    <div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-bulk-title">
+      <div class="card-head">
+        <h2 id="modal-bulk-title">Xác nhận thao tác hàng loạt</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng hộp thoại"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-bulk">
+        <input type="hidden" id="bulk-action-type">
+        <div class="modal-body stack-sm">
+          <p style="font-size:13.5px;line-height:1.6">
+            Thao tác: <strong id="bulk-action-desc" style="font-weight:600"></strong> cho <strong id="bulk-target-count" class="mono tnum">0</strong> tài khoản đã chọn.
+          </p>
+
+          <div class="field">
+            <label for="bulk-reason">Lý do điều chỉnh trạng thái hàng loạt <span style="color:var(--err)">*</span></label>
+            <textarea id="bulk-reason" class="textarea" rows="3" required placeholder="Bắt buộc nhập lý do (vd: Chuyển kỳ học vụ, hết hạn hợp đồng, yêu cầu rà soát bảo mật...)" style="min-height:76px"></textarea>
+          </div>
+
+          <div class="faint" style="font-size:12px;display:flex;align-items:center;gap:6px">
+            <i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--warn);flex:none"></i>
+            <span>Thao tác hàng loạt áp dụng ngay và lưu vết cùng lý do vào sổ nhật ký kiểm toán.</span>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <span class="faint" style="font-size:12px">Hành động bảo mật quản trị</span>
+          <div class="row-gap">
+            <button type="button" class="btn btn-sm" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="btn-bulk-submit">Xác nhận</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thông báo Toast -->
+  <div class="toast-box" id="toast" hidden role="status" aria-live="polite">
+    <i data-lucide="check-circle" style="color:var(--ok)"></i>
+    <span id="toast-text"></span>
+  </div>
+
+  <!-- Nạp script chuẩn -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/shell.js"></script>
+
+  <script>
+    (function () {
+      var S = window.CLX_STAFF;
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      if (!S || !S.accounts) return;
+
+      /* Bản sao dữ liệu tài khoản có thể thao tác (sửa, đổi trạng thái) trong phiên làm việc */
+      var accounts = S.accounts.map(function (a) {
+        return Object.assign({}, a);
+      });
+
+      /* Trạng thái bộ lọc & phân trang */
+      var state = {
+        search: '',
+        role: '',
+        faculty: '',
+        status: '',
+        page: 1,
+        pageSize: 20,
+        selected: new Set()
+      };
+
+      /* DOM Elements */
+      var elTotal = document.getElementById('stat-total');
+      var elActive = document.getElementById('stat-active');
+      var elInactive = document.getElementById('stat-inactive');
+      var elRoles = document.getElementById('stat-roles');
+
+      var searchInput = document.getElementById('search-input');
+      var filterRole = document.getElementById('filter-role');
+      var filterFaculty = document.getElementById('filter-faculty');
+      var filterStatus = document.getElementById('filter-status');
+
+      var rowsContainer = document.getElementById('accounts-rows');
+      var emptyState = document.getElementById('empty-state');
+      var pagerHost = document.getElementById('pager');
+
+      var cbAll = document.getElementById('cb-all');
+      var bulkBar = document.getElementById('bulk-bar');
+      var bulkCountEl = document.getElementById('bulk-selected-count');
+
+      var toast = document.getElementById('toast');
+      var toastText = document.getElementById('toast-text');
+      var toastTimer = null;
+
+      function showToast(msg) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastText.textContent = msg;
+        toast.hidden = false;
+        if (window.clxIcons) window.clxIcons();
+        toastTimer = setTimeout(function () {
+          toast.hidden = true;
+        }, 3200);
+      }
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pg = U.pager(pagerHost, {
+        total: accounts.length,
+        page: 1,
+        size: 20,
+        sizes: [10, 20, 40],
+        onChange: function (page, size) {
+          state.page = page;
+          state.pageSize = size;
+          renderTable();
+        }
+      });
+
+      /* Cập nhật các chỉ số thống kê trên thẻ đầu trang */
+      function updateStats() {
+        var total = accounts.length;
+        var act = 0, inact = 0, stu = 0, tea = 0, ta = 0;
+        accounts.forEach(function (a) {
+          if (a.status === 'active') act++; else inact++;
+          if (a.role === 'Sinh viên') stu++;
+          else if (a.role === 'Giảng viên') tea++;
+          else if (a.role === 'Trợ giảng') ta++;
+        });
+
+        elTotal.textContent = total;
+        elActive.textContent = act;
+        elInactive.textContent = inact;
+        elRoles.textContent = stu + ' SV · ' + tea + ' GV · ' + ta + ' TG';
+      }
+
+      /* Lọc danh sách */
+      function getFiltered() {
+        var q = state.search.trim().toLowerCase();
+        return accounts.filter(function (a) {
+          if (state.role && a.role !== state.role) return false;
+          if (state.faculty && a.faculty !== state.faculty) return false;
+          if (state.status && a.status !== state.status) return false;
+          if (q) {
+            var matchName = a.name && a.name.toLowerCase().indexOf(q) !== -1;
+            var matchCode = a.account && a.account.toLowerCase().indexOf(q) !== -1;
+            var matchClass = a.classCode && a.classCode.toLowerCase().indexOf(q) !== -1;
+            if (!matchName && !matchCode && !matchClass) return false;
+          }
+          return true;
+        });
+      }
+
+      /* Cập nhật thanh thao tác hàng loạt */
+      function updateBulkBar() {
+        var count = state.selected.size;
+        if (count > 0) {
+          bulkBar.hidden = false;
+          bulkCountEl.textContent = 'Đã chọn ' + count + ' tài khoản';
+        } else {
+          bulkBar.hidden = true;
+        }
+      }
+
+      /* Render bảng dữ liệu */
+      function renderTable() {
+        var filtered = getFiltered();
+        var total = filtered.length;
+
+        if (total === 0) {
+          rowsContainer.innerHTML = '';
+          emptyState.hidden = false;
+          cbAll.checked = false;
+          updateBulkBar();
+          pg.set({ total: 0, page: 1 });
+          if (window.clxIcons) window.clxIcons();
+          return;
+        }
+
+        emptyState.hidden = true;
+
+        var pageItems = U.paginate(filtered, state.page, state.pageSize);
+        var start = (state.page - 1) * state.pageSize;
+
+        // Kiểm tra checkbox chọn tất cả trên trang hiện tại
+        var allPageChecked = pageItems.length > 0 && pageItems.every(function (item) {
+          return state.selected.has(item.id);
+        });
+        cbAll.checked = allPageChecked;
+
+        var html = '';
+        pageItems.forEach(function (item, idx) {
+          var isChecked = state.selected.has(item.id);
+          var stt = start + idx + 1;
+          var statusClass = item.status === 'active' ? 's-ok' : 's-err';
+          var statusText = item.status === 'active' ? 'Hoạt động' : 'Ngừng';
+
+          html += '<div class="tbl-row" role="row" style="' + (isChecked ? 'background:var(--accent-soft)' : '') + '">' +
+            '<span role="cell" style="display:flex;align-items:center;justify-content:center">' +
+              '<input type="checkbox" class="row-cb item-cb" data-id="' + item.id + '" aria-label="Chọn tài khoản ' + esc(item.account) + '" ' + (isChecked ? 'checked' : '') + '>' +
+            '</span>' +
+            '<span role="cell" class="no col-hide-sm">' + stt + '</span>' +
+            '<span role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500" title="' + esc(item.name) + '">' + esc(item.name) + '</div>' +
+              '<div class="desktop-sub faint" style="font-size:11.5px;margin-top:2px">' +
+                '<span class="mono tnum">Đăng nhập: ' + esc(item.lastLogin || 'Chưa đăng nhập') + '</span>' +
+              '</div>' +
+              '<div class="mobile-sub faint mono" style="font-size:11.5px;margin-top:2px">' +
+                '<span class="text-accent">' + esc(item.account) + '</span> · <span class="chip" style="height:18px;font-size:11px;padding:0 5px">' + esc(item.role) + '</span>' +
+              '</div>' +
+            '</span>' +
+            '<span role="cell" class="col-hide-sm"><span class="mono tnum text-accent" style="font-size:13px">' + esc(item.account) + '</span></span>' +
+            '<span role="cell" class="col-hide-sm"><span class="chip">' + esc(item.role) + '</span></span>' +
+            '<span role="cell" class="col-hide-sm"><span class="mono dim" style="font-size:12.5px">' + esc(item.classCode || '—') + '</span></span>' +
+            '<span role="cell"><span class="status ' + statusClass + '">' + statusText + '</span></span>' +
+            '<span role="cell" class="col-hide-md col-hide-sm"><span class="mono faint tnum" style="font-size:12px">' + esc(item.lastLogin || 'Chưa đăng nhập') + '</span></span>' +
+            '<span role="cell" class="col-actions">' +
+              '<button type="button" class="icon-btn btn-edit-row" data-id="' + item.id + '" aria-label="Sửa tài khoản ' + esc(item.account) + '" title="Sửa thông tin"><i data-lucide="edit-2"></i></button>' +
+              '<button type="button" class="icon-btn btn-reset-row" data-id="' + item.id + '" aria-label="Cấp lại mật khẩu cho ' + esc(item.account) + '" title="Cấp lại mật khẩu"><i data-lucide="key-round"></i></button>' +
+            '</span>' +
+          '</div>';
+        });
+
+        rowsContainer.innerHTML = html;
+        updateBulkBar();
+        if (window.clxIcons) window.clxIcons();
+      }
+
+      /* Sự kiện tìm kiếm & bộ lọc: đổi bộ lọc luôn về trang 1 */
+      function onFilterChange() {
+        state.page = 1;
+        var filtered = getFiltered();
+        pg.set({ total: filtered.length, page: 1 });
+        renderTable();
+      }
+
+      searchInput.addEventListener('input', function () {
+        state.search = this.value;
+        onFilterChange();
+      });
+
+      filterRole.addEventListener('change', function () {
+        state.role = this.value;
+        onFilterChange();
+      });
+
+      filterFaculty.addEventListener('change', function () {
+        state.faculty = this.value;
+        onFilterChange();
+      });
+
+      var segButtons = filterStatus.querySelectorAll('.btn-seg');
+      segButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          segButtons.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+          this.setAttribute('aria-pressed', 'true');
+          state.status = this.dataset.status;
+          onFilterChange();
+        });
+      });
+
+      document.getElementById('btn-reset-filters').addEventListener('click', function () {
+        searchInput.value = '';
+        state.search = '';
+        filterRole.value = '';
+        state.role = '';
+        filterFaculty.value = '';
+        state.faculty = '';
+        segButtons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.status === '' ? 'true' : 'false'); });
+        state.status = '';
+        onFilterChange();
+      });
+
+      /* Checkbox chọn hàng & chọn tất cả */
+      cbAll.addEventListener('change', function () {
+        var filtered = getFiltered();
+        var pageItems = U.paginate(filtered, state.page, state.pageSize);
+
+        if (this.checked) {
+          pageItems.forEach(function (it) { state.selected.add(it.id); });
+        } else {
+          pageItems.forEach(function (it) { state.selected.delete(it.id); });
+        }
+        renderTable();
+      });
+
+      rowsContainer.addEventListener('change', function (e) {
+        if (e.target.classList.contains('item-cb')) {
+          var id = parseInt(e.target.dataset.id, 10);
+          if (e.target.checked) state.selected.add(id);
+          else state.selected.delete(id);
+          renderTable();
+        }
+      });
+
+      document.getElementById('btn-bulk-clear').addEventListener('click', function () {
+        state.selected.clear();
+        renderTable();
+      });
+
+      /* ==================== XUẤT CSV CHUẨN RFC 4180 ==================== */
+      function escapeCSVCell(val) {
+        if (val === null || val === undefined) return '""';
+        var str = String(val);
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+
+      document.getElementById('btn-export-csv').addEventListener('click', function () {
+        var filtered = getFiltered();
+        if (filtered.length === 0) {
+          showToast('Không có dữ liệu phù hợp để xuất CSV.');
+          return;
+        }
+        var headers = ['STT', 'Mã ID', 'Họ và tên', 'Mã tài khoản', 'Vai trò', 'Khoa', 'Lớp hành chính', 'Trạng thái', 'Đăng nhập gần nhất'];
+        var csv = '\uFEFF' + headers.map(escapeCSVCell).join(',') + '\r\n';
+
+        filtered.forEach(function (a, idx) {
+          var row = [
+            idx + 1,
+            escapeCSVCell(a.id),
+            escapeCSVCell(a.name),
+            escapeCSVCell(a.account),
+            escapeCSVCell(a.role),
+            escapeCSVCell(a.faculty),
+            escapeCSVCell(a.classCode || '—'),
+            escapeCSVCell(a.status === 'active' ? 'Hoạt động' : 'Ngừng hoạt động'),
+            escapeCSVCell(a.lastLogin || 'Chưa đăng nhập')
+          ];
+          csv += row.join(',') + '\r\n';
+        });
+
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        var dateStr = new Date().toISOString().slice(0, 10);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'cyberlabx-tai-khoan-' + dateStr + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast('Đã xuất ' + filtered.length + ' tài khoản ra tệp CSV (thao tác đã lưu nhật ký).');
+      });
+
+      /* ==================== HỘP THOẠI MODALS (CLXUI.modal) ==================== */
+
+      /* 1. Cấp tài khoản mới */
+      var dlgProvision = document.getElementById('modal-provision');
+      var mProvision = U.modal(dlgProvision, { initialFocus: '#prov-role' });
+      var btnOpenCreate = document.getElementById('btn-open-create');
+      var formProvision = document.getElementById('form-provision');
+      var provRole = document.getElementById('prov-role');
+      var provUsername = document.getElementById('prov-username');
+      var errProvUsername = document.getElementById('prov-username-err');
+      var provStudentFields = document.getElementById('prov-student-fields');
+      var provStaffFields = document.getElementById('prov-staff-fields');
+      var provClass = document.getElementById('prov-class');
+
+      dlgProvision.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mProvision.close);
+      });
+
+      provUsername.addEventListener('input', function () {
+        errProvUsername.hidden = true;
+        this.removeAttribute('aria-invalid');
+      });
+
+      btnOpenCreate.addEventListener('click', function () {
+        formProvision.reset();
+        errProvUsername.hidden = true;
+        provUsername.removeAttribute('aria-invalid');
+        provRole.value = 'Sinh viên';
+        provStudentFields.style.display = 'grid';
+        provStaffFields.style.display = 'none';
+        provClass.required = true;
+        mProvision.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      provRole.addEventListener('change', function () {
+        if (this.value === 'Sinh viên') {
+          provStudentFields.style.display = 'grid';
+          provStaffFields.style.display = 'none';
+          provClass.required = true;
+        } else {
+          provStudentFields.style.display = 'none';
+          provStaffFields.style.display = 'grid';
+          provClass.required = false;
+        }
+      });
+
+      formProvision.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var role = provRole.value;
+        var username = provUsername.value.trim();
+        var fullname = document.getElementById('prov-fullname').value.trim();
+        var email = document.getElementById('prov-email').value.trim();
+
+        if (!username || !fullname || !email) return;
+
+        /* Kiểm tra trùng mã tài khoản (chuẩn hóa không phân biệt hoa thường) */
+        var normUser = username.toLowerCase();
+        var exists = accounts.some(function (a) {
+          return a.account && a.account.trim().toLowerCase() === normUser;
+        });
+
+        if (exists) {
+          errProvUsername.textContent = 'Mã tài khoản "' + username + '" đã tồn tại trong hệ thống.';
+          errProvUsername.hidden = false;
+          provUsername.setAttribute('aria-invalid', 'true');
+          provUsername.focus();
+          return;
+        }
+
+        var newAcc = {
+          id: Date.now(),
+          name: fullname,
+          account: username,
+          role: role,
+          faculty: role === 'Sinh viên' ? 'CNTT1' : document.getElementById('prov-faculty').value,
+          classCode: role === 'Sinh viên' ? provClass.value.trim() : '',
+          status: 'active',
+          lastLogin: 'Chưa đăng nhập'
+        };
+
+        accounts.unshift(newAcc);
+        updateStats();
+        onFilterChange();
+        mProvision.close();
+        showToast('Đã cấp tài khoản ' + username + ' thành công.');
+      });
+
+      /* 2. Sửa thông tin tài khoản */
+      var dlgEdit = document.getElementById('modal-edit');
+      var mEdit = U.modal(dlgEdit, { initialFocus: '#edit-fullname' });
+      var formEdit = document.getElementById('form-edit');
+      var editId = document.getElementById('edit-id');
+      var editUsername = document.getElementById('edit-username');
+      var editRole = document.getElementById('edit-role');
+      var editFullname = document.getElementById('edit-fullname');
+      var editClassOrFaculty = document.getElementById('edit-class-or-faculty');
+      var editLblClass = document.getElementById('edit-lbl-class');
+      var editStatus = document.getElementById('edit-status');
+
+      dlgEdit.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mEdit.close);
+      });
+
+      rowsContainer.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-edit-row');
+        if (!btn) return;
+        var id = parseInt(btn.dataset.id, 10);
+        var acc = accounts.find(function (a) { return a.id === id; });
+        if (!acc) return;
+
+        editId.value = acc.id;
+        editUsername.value = acc.account;
+        editRole.value = acc.role;
+        editFullname.value = acc.name;
+        editStatus.value = acc.status;
+
+        if (acc.role === 'Sinh viên') {
+          editLblClass.textContent = 'Lớp hành chính';
+          editClassOrFaculty.value = acc.classCode || '';
+        } else {
+          editLblClass.textContent = 'Khoa chuyên môn';
+          editClassOrFaculty.value = acc.faculty || 'CNTT1';
+        }
+
+        mEdit.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formEdit.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var id = parseInt(editId.value, 10);
+        var acc = accounts.find(function (a) { return a.id === id; });
+        if (!acc) return;
+
+        acc.name = editFullname.value.trim();
+        acc.status = editStatus.value;
+        if (acc.role === 'Sinh viên') {
+          acc.classCode = editClassOrFaculty.value.trim();
+        } else {
+          acc.faculty = editClassOrFaculty.value.trim();
+        }
+
+        updateStats();
+        renderTable();
+        mEdit.close();
+        showToast('Đã cập nhật thông tin tài khoản ' + acc.account + '.');
+      });
+
+      /* 3. Cấp lại mật khẩu */
+      var dlgResetPwd = document.getElementById('modal-reset-pwd');
+      var mResetPwd = U.modal(dlgResetPwd, { initialFocus: '#form-reset-pwd .btn-primary' });
+      var formResetPwd = document.getElementById('form-reset-pwd');
+      var resetPwdId = document.getElementById('reset-pwd-id');
+      var resetPwdCode = document.getElementById('reset-pwd-code');
+      var resetPwdName = document.getElementById('reset-pwd-name');
+
+      dlgResetPwd.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mResetPwd.close);
+      });
+
+      rowsContainer.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-reset-row');
+        if (!btn) return;
+        var id = parseInt(btn.dataset.id, 10);
+        var acc = accounts.find(function (a) { return a.id === id; });
+        if (!acc) return;
+
+        resetPwdId.value = acc.id;
+        resetPwdCode.textContent = acc.account;
+        resetPwdName.textContent = acc.name;
+
+        mResetPwd.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formResetPwd.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var id = parseInt(resetPwdId.value, 10);
+        var acc = accounts.find(function (a) { return a.id === id; });
+        if (acc) {
+          showToast('Đã cấp lại mật khẩu cho ' + acc.account + ' (đã ghi nhận nhật ký).');
+        }
+        mResetPwd.close();
+      });
+
+      /* 4. Thao tác hàng loạt (Ngừng / Bật hoạt động) */
+      var dlgBulk = document.getElementById('modal-bulk');
+      var mBulk = U.modal(dlgBulk, { initialFocus: '#bulk-reason' });
+      var formBulk = document.getElementById('form-bulk');
+      var bulkActionType = document.getElementById('bulk-action-type');
+      var bulkActionDesc = document.getElementById('bulk-action-desc');
+      var bulkTargetCount = document.getElementById('bulk-target-count');
+      var bulkReason = document.getElementById('bulk-reason');
+
+      dlgBulk.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', mBulk.close);
+      });
+
+      document.getElementById('btn-bulk-deact').addEventListener('click', function () {
+        if (state.selected.size === 0) return;
+        bulkActionType.value = 'inactive';
+        bulkActionDesc.textContent = 'Ngừng hoạt động';
+        bulkActionDesc.style.color = 'var(--warn)';
+        bulkTargetCount.textContent = state.selected.size;
+        bulkReason.value = '';
+        mBulk.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      document.getElementById('btn-bulk-act').addEventListener('click', function () {
+        if (state.selected.size === 0) return;
+        bulkActionType.value = 'active';
+        bulkActionDesc.textContent = 'Bật hoạt động';
+        bulkActionDesc.style.color = 'var(--ok)';
+        bulkTargetCount.textContent = state.selected.size;
+        bulkReason.value = '';
+        mBulk.open();
+        if (window.clxIcons) window.clxIcons();
+      });
+
+      formBulk.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var reason = bulkReason.value.trim();
+        if (!reason) {
+          bulkReason.focus();
+          return;
+        }
+        var newStatus = bulkActionType.value;
+        var count = state.selected.size;
+
+        accounts.forEach(function (a) {
+          if (state.selected.has(a.id)) {
+            a.status = newStatus;
+          }
+        });
+
+        state.selected.clear();
+        updateStats();
+        renderTable();
+        mBulk.close();
+        showToast('Đã chuyển trạng thái ' + count + ' tài khoản thành ' + (newStatus === 'active' ? 'Hoạt động' : 'Ngừng hoạt động') + '.');
+      });
+
+      /* Khởi tạo giao diện ban đầu */
+      updateStats();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

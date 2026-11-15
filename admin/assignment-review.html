@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duyệt bài tập · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bố cục trang Duyệt bài tập */
+    .review-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 16px;
+      align-items: start;
+    }
+    .review-layout.is-full { grid-template-columns: minmax(0, 1fr); }
+    .review-layout.is-full .preview-pane { display: none; }
+
+    /* Thanh tab trạng thái */
+    .tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 18px; padding: 0 6px; border-radius: 10px;
+      font: 500 11.5px var(--mono); background: var(--surface-3); color: var(--text-2);
+    }
+    .tabs button[aria-selected='true'] .tab-badge { background: var(--accent-soft); color: var(--accent); }
+
+    /* Thanh tác vụ hàng loạt */
+    .batch-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 16px; background: var(--surface-2); border: 1px solid var(--line-strong);
+      border-radius: var(--r-control); margin-bottom: 12px;
+    }
+    .batch-bar .info { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 13px; }
+    .batch-bar .actions { display: flex; align-items: center; gap: 8px; }
+
+    /* Bảng dữ liệu */
+    .tbl-scroll { overflow-x: hidden; }
+    .tbl-check { display: grid; place-items: center; cursor: pointer; }
+    .tbl-check input[type='checkbox'] { width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: var(--accent); }
+    .tbl-row { padding: 0 10px; gap: 8px; font-size: 12.5px; }
+    .tbl-row.is-active { background: var(--surface-2); }
+    .tbl-row.is-active::after {
+      content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+      width: 2px; border-radius: 0 2px 2px 0; background: var(--accent);
+    }
+
+    /* Định vị chính xác đường kẻ sổ cái giữa STT và Mã */
+    #review-tbl.has-check .tbl-row::before { left: 62px; }
+    #review-tbl:not(.has-check) .tbl-row::before { left: 38px; }
+
+    /* Panel xem trước bên phải */
+    .preview-pane {
+      position: sticky; top: calc(var(--topbar-h) + 16px);
+      height: 640px; max-height: calc(100vh - var(--topbar-h) - 32px);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .preview-head {
+      padding: 14px 18px; border-bottom: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 6px; flex: none;
+    }
+    .preview-body {
+      padding: 16px 18px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 18px; flex: 1;
+    }
+    .preview-foot {
+      padding: 12px 18px; border-top: 1px solid var(--line);
+      background: var(--surface); display: flex; align-items: center;
+      justify-content: flex-end; gap: 10px; flex: none;
+    }
+
+    /* Hộp cảnh báo lý do từ chối */
+    .reject-box {
+      padding: 12px 14px; border-radius: var(--r-control);
+      background: var(--err-soft); border: 1px solid color-mix(in srgb, var(--err) 30%, transparent);
+      color: var(--text); font-size: 13px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .reject-box .head { display: flex; align-items: center; gap: 6px; color: var(--err); font-weight: 500; }
+
+    /* Dòng bước thực hiện */
+    .step-item { display: flex; gap: 10px; font-size: 12.5px; }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--surface-3); color: var(--text-2);
+      display: grid; place-items: center; font: 500 11px var(--mono); flex: none;
+    }
+    .step-desc { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .step-title { font-weight: 500; color: var(--text); }
+    .step-detail { color: var(--text-2); font-size: 12px; line-height: 17px; }
+    .step-verify {
+      font: 400 11px var(--mono); color: var(--text-3);
+      background: var(--surface-2); padding: 3px 6px; border-radius: var(--r-tag);
+      display: inline-block; margin-top: 2px;
+    }
+
+    /* Bảng thông số chấm */
+    .rubric-table { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-control); overflow: hidden; font-size: 12px; }
+    .rubric-row { display: grid; grid-template-columns: minmax(0, 1.3fr) 60px minmax(0, 1.7fr); gap: 8px; padding: 6px 10px; align-items: center; border-bottom: 1px solid var(--line); }
+    .rubric-row:last-child { border-bottom: 0; }
+    .rubric-head { background: var(--surface-2); font-weight: 500; color: var(--text-3); font-size: 11px; }
+
+    /* Hộp thoại xác nhận */
+    .modal-scrim { position: fixed; inset: 0; z-index: 100; background: var(--scrim); display: grid; place-items: center; padding: 20px; }
+    .modal-scrim[hidden] { display: none; }
+    .modal-box { width: min(480px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-panel); box-shadow: var(--shadow-pop); }
+    .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: flex-end; gap: 10px; background: var(--surface-2); }
+    .err-hint { font-size: 12.5px; color: var(--err); background: var(--err-soft); padding: 8px 12px; border-radius: var(--r-control); border: 1px solid color-mix(in srgb, var(--err) 25%, transparent); }
+
+    /* Toast thông báo */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 95; padding: 10px 16px; border-radius: var(--r-control); background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-pop); transform: translateY(20px); opacity: 0; transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease); pointer-events: none; }
+    .toast.is-show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 1080px) {
+      .review-layout { grid-template-columns: minmax(0, 1fr); }
+      .preview-pane { position: static; height: auto; max-height: none; }
+    }
+    @media (max-width: 760px) {
+      .col-hide-mobile { display: none !important; }
+      #review-tbl.has-check .tbl-row::before, #review-tbl:not(.has-check) .tbl-row::before { display: none; }
+    }
+  </style>
+</head>
+<body data-role="admin" data-page="assignment-review" data-title="Duyệt bài tập">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- Bộ lọc và Tabs -->
+      <section class="card card-pad stack-sm" style="padding-bottom:14px">
+        <div class="tabs" role="tablist" id="review-tabs" aria-label="Bộ lọc trạng thái duyệt">
+          <button role="tab" id="tab-pending" aria-selected="true" data-tab="0">
+            <i data-lucide="clock"></i>Chưa duyệt <span class="tab-badge" id="count-pending">0</span>
+          </button>
+          <button role="tab" id="tab-approved" aria-selected="false" data-tab="1">
+            <i data-lucide="check"></i>Đã duyệt <span class="tab-badge" id="count-approved">0</span>
+          </button>
+          <button role="tab" id="tab-rejected" aria-selected="false" data-tab="2">
+            <i data-lucide="x"></i>Từ chối <span class="tab-badge" id="count-rejected">0</span>
+          </button>
+        </div>
+
+        <!-- Công cụ tìm kiếm & lọc -->
+        <div class="toolbar" style="margin-top:10px">
+          <div class="search" style="min-width:220px;flex:1">
+            <i data-lucide="search"></i>
+            <input class="input" id="search-input" placeholder="Tìm tên bài, mã bài, tác giả..." aria-label="Tìm kiếm bài tập">
+          </div>
+          <select class="select" id="filter-type" style="width:auto" aria-label="Loại bài tập">
+            <option value="">Tất cả loại bài</option>
+          </select>
+          <select class="select" id="filter-topic" style="width:auto" aria-label="Chủ đề">
+            <option value="">Tất cả chủ đề</option>
+          </select>
+          <select class="select" id="filter-diff" style="width:auto" aria-label="Độ khó">
+            <option value="">Mọi độ khó</option>
+            <option value="1">Mức 1</option>
+            <option value="2">Mức 2</option>
+            <option value="3">Mức 3</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" id="btn-reset-filters" title="Đặt lại bộ lọc">
+            <i data-lucide="rotate-ccw"></i>Đặt lại
+          </button>
+        </div>
+      </section>
+
+      <!-- Thanh thao tác hàng loạt (chỉ hiện khi có chọn ở tab Chưa duyệt) -->
+      <div class="batch-bar" id="batch-bar" style="display:none">
+        <div class="info">
+          <i data-lucide="check-square"></i>
+          <span>Đã chọn <b id="batch-count" class="tnum">0</b> bài tập</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-sm" id="btn-batch-approve">
+            <i data-lucide="check"></i>Duyệt hàng loạt
+          </button>
+          <button class="btn btn-sm" id="btn-batch-reject">
+            <i data-lucide="x"></i>Từ chối hàng loạt
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-batch-clear">Bỏ chọn</button>
+        </div>
+      </div>
+
+      <!-- Bố cục: Bảng sổ cái + Panel xem trước bên phải -->
+      <div class="review-layout" id="review-layout">
+        <!-- Cột Bảng danh sách -->
+        <section class="card" aria-label="Danh sách bài tập cần xét duyệt">
+          <div class="tbl-scroll">
+            <div class="tbl ledger" id="review-tbl" role="table" aria-label="Danh sách bài tập">
+              <!-- Render bằng JavaScript -->
+            </div>
+          </div>
+          <!-- Phân trang chuẩn CLXUI.pager -->
+          <div class="pager-host" id="pager"></div>
+        </section>
+
+        <!-- Panel Xem trước chi tiết bên phải -->
+        <aside class="card preview-pane" id="preview-pane" aria-label="Chi tiết bài tập đang chọn">
+          <div class="preview-head">
+            <div class="row-between">
+              <div class="row-gap">
+                <span class="chip chip-mono" id="prev-code">rv-01</span>
+                <span class="chip chip-mono" id="prev-version">v1</span>
+                <span id="prev-status-chip"></span>
+              </div>
+              <button class="icon-btn" id="btn-close-preview" aria-label="Đóng bảng xem trước" title="Thu gọn bảng xem trước">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <h3 id="prev-title" style="font-size:14.5px;line-height:21px;margin-top:2px">Tiêu đề bài</h3>
+            <div class="faint trunc" style="font-size:12px" id="prev-meta">Học phần · Tác giả</div>
+          </div>
+
+          <div class="preview-body" id="prev-body">
+            <!-- Render bằng JS -->
+          </div>
+
+          <div class="preview-foot" id="prev-foot">
+            <!-- Nút hành động phê duyệt / từ chối -->
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hộp thoại Từ chối (Bắt buộc nhập lý do) -->
+  <div class="modal-scrim" id="modal-reject" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-reject-title">
+      <div class="modal-head">
+        <h3 id="modal-reject-title">Từ chối bài tập</h3>
+        <button class="icon-btn" id="btn-modal-reject-close" aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-reject-target-desc" style="font-size:13.5px">
+          Bạn đang từ chối bài tập: <b id="modal-reject-code"></b>
+        </div>
+        <div class="field">
+          <label for="reject-reason-input">Lý do từ chối <span style="color:var(--err)">*</span></label>
+          <textarea class="textarea" id="reject-reason-input" placeholder="Nêu rõ lý do và hướng dẫn giảng viên/trợ giảng chỉnh sửa (bắt buộc)..." rows="4"></textarea>
+          <div class="err-hint" id="reject-error-hint" style="display:none">
+            Vui lòng nhập lý do từ chối để gửi lại cho người tạo bài.
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="btn-modal-reject-cancel">Hủy</button>
+        <button class="btn" id="btn-modal-reject-confirm" style="color:var(--err);border-color:color-mix(in srgb, var(--err) 40%, transparent)">
+          <i data-lucide="x"></i>Xác nhận từ chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hộp thoại Xác nhận Phê duyệt -->
+  <div class="modal-scrim" id="modal-approve" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-approve-title">
+      <div class="modal-head">
+        <h3 id="modal-approve-title">Xác nhận phê duyệt bài tập</h3>
+        <button class="icon-btn" id="btn-modal-approve-close" aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-approve-desc" style="font-size:13.5px">
+          Xác nhận phê duyệt bài tập <b id="modal-approve-code"></b> vào hệ thống?
+        </div>
+        <div class="faint" style="font-size:12.5px;line-height:18px">
+          Sau khi duyệt, bài tập sẽ được xuất bản vào kho chung để các giảng viên gán vào lớp học phần hoặc ca thi.
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="btn-modal-approve-cancel">Hủy</button>
+        <button class="btn btn-primary" id="btn-modal-approve-confirm">
+          <i data-lucide="check"></i>Xác nhận duyệt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i data-lucide="check-circle" style="color:var(--ok)"></i>
+    <span id="toast-text">Thông báo</span>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/data-review.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var U = window.CLXUI, esc = U.esc;
+      var STAFF = window.CLX_STAFF;
+      var DETAILS = window.CLX_REVIEW || {};
+
+      /* Bản sao dữ liệu để thao tác trạng thái duyệt tức thì */
+      var items = STAFF.review.map(function (it) {
+        return Object.assign({}, it, {
+          rejectionReason: (DETAILS[it.code] && DETAILS[it.code].rejectionReason) || (it.status === 2 ? 'Yêu cầu kiểm tra lại kịch bản và môi trường kiểm thử.' : '')
+        });
+      });
+
+      var state = {
+        tab: 0, /* 0: Chưa duyệt, 1: Đã duyệt, 2: Từ chối */
+        search: '',
+        type: '',
+        topic: '',
+        diff: '',
+        page: 1,
+        size: 20,
+        selected: {}, /* mã bài được chọn */
+        activeCode: null, /* mã bài đang mở xem trước */
+        isPaneOpen: true,
+        modalRejectAction: null,
+        modalApproveAction: null
+      };
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pg = U.pager(document.getElementById('pager'), {
+        total: 0,
+        page: 1,
+        size: 20,
+        sizes: [10, 20, 40],
+        onChange: function (page, size) {
+          state.page = page;
+          state.size = size;
+          renderTable();
+        }
+      });
+
+      /* Khởi tạo danh sách loại và chủ đề vào dropdown */
+      var types = [];
+      var topics = [];
+      items.forEach(function (it) {
+        if (it.type && types.indexOf(it.type) === -1) types.push(it.type);
+        if (it.topic && topics.indexOf(it.topic) === -1) topics.push(it.topic);
+      });
+      var typeSelect = document.getElementById('filter-type');
+      types.forEach(function (t) {
+        typeSelect.innerHTML += '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+      });
+      var topicSelect = document.getElementById('filter-topic');
+      topics.forEach(function (tp) {
+        topicSelect.innerHTML += '<option value="' + esc(tp) + '">' + esc(tp) + '</option>';
+      });
+
+      function showToast(msg) {
+        var t = document.getElementById('toast');
+        document.getElementById('toast-text').textContent = msg;
+        t.classList.add('is-show');
+        setTimeout(function () { t.classList.remove('is-show'); }, 3000);
+      }
+
+      function updateCounts() {
+        var p = 0, a = 0, r = 0;
+        items.forEach(function (it) {
+          if (it.status === 0) p++;
+          else if (it.status === 1) a++;
+          else if (it.status === 2) r++;
+        });
+        document.getElementById('count-pending').textContent = p;
+        document.getElementById('count-approved').textContent = a;
+        document.getElementById('count-rejected').textContent = r;
+      }
+
+      function getFiltered() {
+        return items.filter(function (it) {
+          if (it.status !== state.tab) return false;
+          if (state.type && it.type !== state.type) return false;
+          if (state.topic && it.topic !== state.topic) return false;
+          if (state.diff && String(it.diff) !== state.diff) return false;
+          if (state.search) {
+            var q = state.search.toLowerCase();
+            var matchCode = it.code.toLowerCase().indexOf(q) !== -1;
+            var matchTitle = it.title.toLowerCase().indexOf(q) !== -1;
+            var matchAuthor = it.author.toLowerCase().indexOf(q) !== -1;
+            if (!matchCode && !matchTitle && !matchAuthor) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderTable() {
+        var filtered = getFiltered();
+        var total = filtered.length;
+        var rows = U.paginate(filtered, state.page, state.size);
+        var start = (state.page - 1) * state.size;
+
+        var isPending = state.tab === 0;
+        var isRejected = state.tab === 2;
+
+        /* Chọn tự động bài đầu tiên nếu chưa chọn bài nào hợp lệ */
+        var activeExists = rows.some(function (r) { return r.code === state.activeCode; });
+        if (!activeExists && rows.length > 0 && !state.activeCode) {
+          state.activeCode = rows[0].code;
+        }
+
+        /* Định nghĩa lưới cột cho bảng gọn gàng vừa vặn */
+        var tbl = document.getElementById('review-tbl');
+        if (isPending) tbl.classList.add('has-check');
+        else tbl.classList.remove('has-check');
+
+        var isMobile = window.innerWidth <= 760;
+        var cols = '';
+        if (isMobile) {
+          cols = isPending ? '28px 52px minmax(0, 1fr) 46px' : '52px minmax(0, 1fr) 46px';
+        } else {
+          if (isPending) {
+            cols = '24px 28px 50px minmax(110px, 1.3fr) 62px 62px 42px minmax(80px, 1fr) 32px 66px';
+          } else if (isRejected) {
+            cols = '28px 50px minmax(110px, 1.2fr) 62px 62px 42px minmax(80px, 1fr) minmax(90px, 1.1fr) 66px';
+          } else {
+            cols = '28px 50px minmax(120px, 1.3fr) 62px 64px 42px minmax(80px, 1fr) 32px 66px';
+          }
+        }
+        tbl.style.setProperty('--cols', cols);
+
+        var allSelectedInPage = rows.length > 0 && rows.every(function (r) { return state.selected[r.code]; });
+        var someSelectedInPage = rows.some(function (r) { return state.selected[r.code]; });
+
+        var html = '<div class="tbl-row tbl-head" role="row">';
+        if (isPending) {
+          html += '<span class="tbl-check" role="columnheader">' +
+            '<input type="checkbox" id="check-all" aria-label="Chọn tất cả bài trong trang"' +
+            (allSelectedInPage ? ' checked' : '') + '></span>';
+        }
+        html += '<span class="no col-hide-mobile" role="columnheader">STT</span>' +
+          '<span role="columnheader">Mã</span>' +
+          '<span role="columnheader">Tên bài tập</span>' +
+          '<span role="columnheader" class="col-hide-mobile">Loại</span>' +
+          '<span role="columnheader" class="col-hide-mobile">Chủ đề</span>' +
+          '<span role="columnheader" style="text-align:center">Mức</span>' +
+          '<span role="columnheader" class="col-hide-mobile">Tác giả</span>';
+        if (isRejected) {
+          html += '<span role="columnheader" class="col-hide-mobile">Lý do từ chối</span>';
+        } else {
+          html += '<span role="columnheader" class="col-hide-mobile" style="text-align:center">Bản</span>';
+        }
+        html += '<span role="columnheader" class="num col-hide-mobile">Thời điểm</span></div>';
+
+        if (rows.length === 0) {
+          html += '<div class="empty" style="grid-column:1/-1">' +
+            (filtered.length === 0 && items.filter(function (it) { return it.status === state.tab; }).length === 0
+              ? 'Không có bài tập nào trong mục này.'
+              : 'Không có bài tập nào khớp với bộ lọc hiện tại. Thử đổi từ khóa hoặc bộ lọc.') +
+            '</div>';
+        } else {
+          rows.forEach(function (it, idx) {
+            var stt = start + idx + 1;
+            var isChecked = !!state.selected[it.code];
+            var isActive = it.code === state.activeCode;
+            var timeShort = it.requestedAt ? it.requestedAt.slice(5) : '';
+
+            html += '<div class="tbl-row is-link' + (isActive ? ' is-active' : '') + '" role="row" tabindex="0" data-code="' + esc(it.code) + '" aria-label="Bài ' + esc(it.code) + ': ' + esc(it.title) + '">';
+            if (isPending) {
+              html += '<span class="tbl-check" onclick="event.stopPropagation()">' +
+                '<input type="checkbox" class="row-check" data-code="' + esc(it.code) + '"' + (isChecked ? ' checked' : '') + ' aria-label="Chọn bài ' + esc(it.code) + '">' +
+                '</span>';
+            }
+            html += '<span class="no col-hide-mobile">' + stt + '</span>' +
+              '<span><button type="button" class="btn-link mono font-medium btn-select-item" data-code="' + esc(it.code) + '" aria-label="Xem chi tiết bài ' + esc(it.code) + ' - ' + esc(it.title) + '" style="background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-align:left">' + esc(it.code) + '</button></span>' +
+              '<div style="min-width:0">' +
+                '<div class="trunc" style="font-weight:500" title="' + esc(it.title) + '">' + esc(it.title) + '</div>' +
+                (isMobile ? '<div class="faint trunc" style="font-size:11px">' + esc(it.author) + ' · ' + esc(it.topic) + '</div>' : '') +
+              '</div>' +
+              '<span class="col-hide-mobile"><span class="chip trunc" style="max-width:62px" title="' + esc(it.type) + '">' + esc(it.type) + '</span></span>' +
+              '<span class="dim trunc col-hide-mobile" title="' + esc(it.topic) + '">' + esc(it.topic) + '</span>' +
+              '<span style="text-align:center"><span class="chip">M' + it.diff + '</span></span>' +
+              '<div class="trunc col-hide-mobile" title="' + esc(it.author) + ' · ' + esc(it.authorRole) + '"><span style="font-weight:500">' + esc(it.author) + '</span></div>';
+
+            if (isRejected) {
+              html += '<span class="trunc faint col-hide-mobile" style="font-size:11.5px" title="' + esc(it.rejectionReason) + '">' + esc(it.rejectionReason || '—') + '</span>';
+            } else {
+              html += '<span class="col-hide-mobile" style="text-align:center"><span class="chip chip-mono" style="padding:0 4px">v' + it.version + '</span></span>';
+            }
+            html += '<span class="num mono faint tnum col-hide-mobile" style="font-size:11.5px">' + esc(timeShort) + '</span></div>';
+          });
+        }
+
+        tbl.innerHTML = html;
+
+        /* Indeterminate check all */
+        var checkAllEl = document.getElementById('check-all');
+        if (checkAllEl) {
+          checkAllEl.indeterminate = someSelectedInPage && !allSelectedInPage;
+        }
+
+        function selectItem(code) {
+          state.activeCode = code;
+          state.isPaneOpen = true;
+          document.getElementById('review-layout').classList.remove('is-full');
+          renderTable();
+          renderPreview();
+        }
+
+        /* Gắn sự kiện click hàng và hỗ trợ bàn phím Enter / Space */
+        var rowEls = tbl.querySelectorAll('.tbl-row[data-code]');
+        rowEls.forEach(function (el) {
+          el.addEventListener('click', function (e) {
+            if (e.target.closest('.tbl-check') || e.target.closest('.row-check')) return;
+            selectItem(this.dataset.code);
+          });
+          el.addEventListener('keydown', function (e) {
+            if (e.target.matches('input[type="checkbox"]')) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectItem(this.dataset.code);
+            }
+          });
+        });
+
+        var selectBtns = tbl.querySelectorAll('.btn-select-item');
+        selectBtns.forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            selectItem(this.dataset.code);
+          });
+        });
+
+        var checkEls = tbl.querySelectorAll('.row-check');
+        checkEls.forEach(function (chk) {
+          chk.addEventListener('change', function (e) {
+            e.stopPropagation();
+            var c = this.dataset.code;
+            if (this.checked) state.selected[c] = true;
+            else delete state.selected[c];
+            renderBatchBar();
+            var currRows = U.paginate(getFiltered(), state.page, state.size);
+            var allIn = currRows.length > 0 && currRows.every(function (r) { return state.selected[r.code]; });
+            var someIn = currRows.some(function (r) { return state.selected[r.code]; });
+            var ca = document.getElementById('check-all');
+            if (ca) {
+              ca.checked = allIn;
+              ca.indeterminate = someIn && !allIn;
+            }
+          });
+        });
+
+        if (checkAllEl) {
+          checkAllEl.addEventListener('change', function () {
+            var checked = this.checked;
+            rows.forEach(function (r) {
+              if (checked) state.selected[r.code] = true;
+              else delete state.selected[r.code];
+            });
+            renderTable();
+            renderBatchBar();
+          });
+        }
+
+        renderBatchBar();
+      }
+
+      function renderBatchBar() {
+        var bar = document.getElementById('batch-bar');
+        var keys = Object.keys(state.selected);
+        if (state.tab === 0 && keys.length > 0) {
+          bar.style.display = 'flex';
+          document.getElementById('batch-count').textContent = keys.length;
+        } else {
+          bar.style.display = 'none';
+        }
+      }
+
+      function renderPreview() {
+        var pane = document.getElementById('preview-pane');
+        if (!state.isPaneOpen || !state.activeCode) {
+          document.getElementById('review-layout').classList.add('is-full');
+          return;
+        }
+        document.getElementById('review-layout').classList.remove('is-full');
+
+        var it = items.filter(function (x) { return x.code === state.activeCode; })[0];
+        if (!it) {
+          document.getElementById('prev-body').innerHTML = '<div class="empty">Chọn một bài tập để xem chi tiết.</div>';
+          document.getElementById('prev-foot').innerHTML = '';
+          return;
+        }
+
+        var d = DETAILS[it.code] || {};
+
+        document.getElementById('prev-code').textContent = it.code;
+        document.getElementById('prev-version').textContent = 'v' + it.version;
+        document.getElementById('prev-title').textContent = it.title;
+        document.getElementById('prev-meta').textContent = (d.course || it.topic) + ' · ' + it.author + ' (' + it.authorRole + ') · Gửi ' + it.requestedAt;
+
+        var statusChipEl = document.getElementById('prev-status-chip');
+        if (it.status === 0) {
+          statusChipEl.innerHTML = '<span class="chip chip-warn"><span class="dot"></span>Chưa duyệt</span>';
+        } else if (it.status === 1) {
+          statusChipEl.innerHTML = '<span class="chip chip-ok"><span class="dot"></span>Đã duyệt</span>';
+        } else {
+          statusChipEl.innerHTML = '<span class="chip chip-err"><span class="dot"></span>Từ chối</span>';
+        }
+
+        var bodyHtml = '';
+
+        /* Nếu bị từ chối, hiện rõ khối lý do từ chối màu đỏ đầu tiên */
+        if (it.status === 2 && it.rejectionReason) {
+          bodyHtml += '<div class="reject-box">' +
+            '<div class="head"><i data-lucide="circle-alert"></i><b>Lý do từ chối của Quản trị viên:</b></div>' +
+            '<div class="desc">' + esc(it.rejectionReason) + '</div>' +
+            '</div>';
+        }
+
+        /* Mô tả & Thông tin môi trường */
+        bodyHtml += '<div class="stack-sm">' +
+          '<div class="section-head" style="margin-bottom:4px"><b style="font-size:12.5px">Tóm tắt & Môi trường thực hành</b></div>' +
+          '<div style="font-size:12.5px;line-height:19px;color:var(--text-2)">' + esc(d.summary || it.title) + '</div>' +
+          '<dl class="kv" style="grid-template-columns:90px 1fr;margin-top:6px;font-size:12px">' +
+            '<dt>Đối tượng</dt><dd>' + esc(d.targetAudience || 'Sinh viên ngành An toàn thông tin') + '</dd>' +
+            '<dt>Máy ảo mẫu</dt><dd class="mono">' + esc(d.vmImage || 'clx-base-box:latest') + '</dd>' +
+            '<dt>Tài nguyên</dt><dd class="tnum">' + esc((d.cpu || '1 vCPU') + ' · ' + (d.ram || '2 GB RAM')) + '</dd>' +
+            '<dt>Cấu hình mạng</dt><dd>' + esc(d.network || 'Host-only') + '</dd>' +
+          '</dl>' +
+        '</div>';
+
+        /* Các bước thực hiện */
+        bodyHtml += '<div class="stack-sm">' +
+          '<div class="section-head" style="margin-bottom:6px">' +
+            '<b style="font-size:12.5px">Các bước thực hiện</b>' +
+            '<span class="meta tnum">' + ((d.steps && d.steps.length) || 0) + ' bước</span>' +
+          '</div>';
+
+        if (d.steps && d.steps.length) {
+          d.steps.forEach(function (st) {
+            bodyHtml += '<div class="step-item">' +
+              '<span class="step-num">' + st.num + '</span>' +
+              '<div class="step-desc">' +
+                '<span class="step-title">' + esc(st.name) + '</span>' +
+                '<span class="step-detail">' + esc(st.detail) + '</span>' +
+                '<span class="step-verify"><i data-lucide="check" style="display:inline-block;width:11px;height:11px;vertical-align:-1px;margin-right:3px"></i>' + esc(st.verify) + '</span>' +
+              '</div>' +
+            '</div>';
+          });
+        }
+        bodyHtml += '</div>';
+
+        /* Tiêu chí chấm tự động */
+        if (d.grading) {
+          bodyHtml += '<div class="stack-sm">' +
+            '<div class="section-head" style="margin-bottom:6px">' +
+              '<b style="font-size:12.5px">Thông số chấm tự động</b>' +
+              '<span class="meta tnum">Tối đa ' + d.grading.maxScore + ' điểm · ' + esc(d.grading.timeout) + '</span>' +
+            '</div>' +
+            '<div class="faint" style="font-size:11.5px">Phương thức: ' + esc(d.grading.mode) + '</div>' +
+            '<div class="rubric-table">' +
+              '<div class="rubric-row rubric-head">' +
+                '<span>Tiêu chí</span><span>Điểm</span><span>Điều kiện</span>' +
+              '</div>';
+          (d.grading.criteria || []).forEach(function (cr) {
+            bodyHtml += '<div class="rubric-row">' +
+              '<span style="font-weight:500">' + esc(cr.name) + '</span>' +
+              '<span class="mono tnum" style="color:var(--accent)">' + esc(cr.score) + '</span>' +
+              '<span class="faint trunc" title="' + esc(cr.check) + '">' + esc(cr.check) + '</span>' +
+            '</div>';
+          });
+          bodyHtml += '</div></div>';
+        }
+
+        document.getElementById('prev-body').innerHTML = bodyHtml;
+
+        /* Nút chân trang */
+        var footHtml = '';
+        if (it.status === 0) {
+          footHtml = '<button class="btn" id="btn-reject-single"><i data-lucide="x"></i>Từ chối</button>' +
+            '<button class="btn btn-primary" id="btn-approve-single"><i data-lucide="check"></i>Phê duyệt</button>';
+        } else if (it.status === 1) {
+          footHtml = '<span class="faint" style="font-size:12px;margin-right:auto"><i data-lucide="check-check" style="vertical-align:-2px"></i> Đã xuất bản</span>' +
+            '<button class="btn btn-sm btn-ghost" id="btn-reopen-single"><i data-lucide="undo-2"></i>Đưa về Chưa duyệt</button>';
+        } else if (it.status === 2) {
+          footHtml = '<span class="faint" style="font-size:12px;margin-right:auto"><i data-lucide="ban" style="vertical-align:-2px"></i> Bài bị từ chối</span>' +
+            '<button class="btn btn-sm btn-ghost" id="btn-reopen-single"><i data-lucide="undo-2"></i>Xem xét lại</button>';
+        }
+        document.getElementById('prev-foot').innerHTML = footHtml;
+
+        /* Gắn sự kiện các nút */
+        var approveBtn = document.getElementById('btn-approve-single');
+        if (approveBtn) {
+          approveBtn.addEventListener('click', function () {
+            openApproveModal('single', [it]);
+          });
+        }
+        var rejectBtn = document.getElementById('btn-reject-single');
+        if (rejectBtn) {
+          rejectBtn.addEventListener('click', function () {
+            openRejectModal('single', [it]);
+          });
+        }
+        var reopenBtn = document.getElementById('btn-reopen-single');
+        if (reopenBtn) {
+          reopenBtn.addEventListener('click', function () {
+            it.status = 0;
+            updateCounts();
+            var f = getFiltered();
+            var actual = pg.set({ total: f.length, page: 1 });
+            state.page = actual.page;
+            state.size = actual.size;
+            renderTable();
+            renderPreview();
+            showToast('Đã chuyển bài ' + it.code + ' về danh sách Chưa duyệt.');
+          });
+        }
+
+        window.clxIcons();
+      }
+
+      /* Khởi tạo CLXUI.modal cho các hộp thoại */
+      var modalApproveEl = document.getElementById('modal-approve');
+      var approveModal = U.modal(modalApproveEl, {
+        initialFocus: '#btn-modal-approve-confirm',
+        onClose: function () {
+          state.modalApproveAction = null;
+        }
+      });
+
+      var modalRejectEl = document.getElementById('modal-reject');
+      var rejectModal = U.modal(modalRejectEl, {
+        initialFocus: '#reject-reason-input',
+        onClose: function () {
+          state.modalRejectAction = null;
+        }
+      });
+
+      /* Modal Phê duyệt */
+      function openApproveModal(action, targetItems) {
+        state.modalApproveAction = { action: action, items: targetItems };
+        if (targetItems.length === 1) {
+          document.getElementById('modal-approve-code').textContent = targetItems[0].code + ' (' + targetItems[0].title + ')';
+        } else {
+          document.getElementById('modal-approve-code').textContent = targetItems.length + ' bài tập đã chọn';
+        }
+        approveModal.open();
+        window.clxIcons();
+      }
+
+      document.getElementById('btn-modal-approve-close').addEventListener('click', approveModal.close);
+      document.getElementById('btn-modal-approve-cancel').addEventListener('click', approveModal.close);
+
+      document.getElementById('btn-modal-approve-confirm').addEventListener('click', function () {
+        if (!state.modalApproveAction) return;
+        var actItems = state.modalApproveAction.items;
+        actItems.forEach(function (it) {
+          it.status = 1; /* Đã duyệt */
+          delete state.selected[it.code];
+        });
+        approveModal.close();
+        updateCounts();
+        var f = getFiltered();
+        var actual = pg.set({ total: f.length, page: 1 });
+        state.page = actual.page;
+        state.size = actual.size;
+        renderTable();
+        renderPreview();
+        showToast('Đã phê duyệt ' + actItems.length + ' bài tập thành công.');
+      });
+
+      /* Modal Từ chối (Bắt buộc nhập lý do) */
+      function openRejectModal(action, targetItems) {
+        state.modalRejectAction = { action: action, items: targetItems };
+        var input = document.getElementById('reject-reason-input');
+        input.value = '';
+        document.getElementById('reject-error-hint').style.display = 'none';
+
+        if (targetItems.length === 1) {
+          document.getElementById('modal-reject-code').textContent = targetItems[0].code + ' · ' + targetItems[0].title;
+        } else {
+          document.getElementById('modal-reject-code').textContent = targetItems.length + ' bài tập đã chọn';
+        }
+        rejectModal.open();
+        window.clxIcons();
+      }
+
+      document.getElementById('btn-modal-reject-close').addEventListener('click', rejectModal.close);
+      document.getElementById('btn-modal-reject-cancel').addEventListener('click', rejectModal.close);
+
+      document.getElementById('btn-modal-reject-confirm').addEventListener('click', function () {
+        var reason = document.getElementById('reject-reason-input').value.trim();
+        var hint = document.getElementById('reject-error-hint');
+        if (!reason) {
+          hint.style.display = 'block';
+          document.getElementById('reject-reason-input').focus();
+          return;
+        }
+        hint.style.display = 'none';
+        if (!state.modalRejectAction) return;
+
+        var actItems = state.modalRejectAction.items;
+        actItems.forEach(function (it) {
+          it.status = 2; /* Từ chối */
+          it.rejectionReason = reason;
+          delete state.selected[it.code];
+        });
+        rejectModal.close();
+        updateCounts();
+        var f = getFiltered();
+        var actual = pg.set({ total: f.length, page: 1 });
+        state.page = actual.page;
+        state.size = actual.size;
+        renderTable();
+        renderPreview();
+        showToast('Đã từ chối ' + actItems.length + ' bài tập (lý do đã lưu).');
+      });
+
+      /* Thao tác hàng loạt */
+      document.getElementById('btn-batch-approve').addEventListener('click', function () {
+        var selCodes = Object.keys(state.selected);
+        var selItems = items.filter(function (it) { return selCodes.indexOf(it.code) !== -1; });
+        if (selItems.length > 0) openApproveModal('batch', selItems);
+      });
+      document.getElementById('btn-batch-reject').addEventListener('click', function () {
+        var selCodes = Object.keys(state.selected);
+        var selItems = items.filter(function (it) { return selCodes.indexOf(it.code) !== -1; });
+        if (selItems.length > 0) openRejectModal('batch', selItems);
+      });
+      document.getElementById('btn-batch-clear').addEventListener('click', function () {
+        state.selected = {};
+        renderTable();
+        renderBatchBar();
+      });
+
+      /* Đóng preview pane */
+      document.getElementById('btn-close-preview').addEventListener('click', function () {
+        state.isPaneOpen = false;
+        document.getElementById('review-layout').classList.add('is-full');
+      });
+
+      /* Sự kiện Tabs */
+      var tabBtns = document.querySelectorAll('#review-tabs button[data-tab]');
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var t = +this.dataset.tab;
+          if (state.tab === t) return;
+          state.tab = t;
+          tabBtns.forEach(function (b) { b.setAttribute('aria-selected', String(+b.dataset.tab === t)); });
+          state.page = 1;
+          state.selected = {};
+          var tabItems = items.filter(function (it) { return it.status === t; });
+          state.activeCode = tabItems.length > 0 ? tabItems[0].code : null;
+          var f = getFiltered();
+          var actual = pg.set({ total: f.length, page: 1 });
+          state.page = actual.page;
+          state.size = actual.size;
+          renderTable();
+          renderPreview();
+        });
+      });
+
+      /* Sự kiện Bộ lọc */
+      function onFilterChange() {
+        state.search = document.getElementById('search-input').value.trim();
+        state.type = document.getElementById('filter-type').value;
+        state.topic = document.getElementById('filter-topic').value;
+        state.diff = document.getElementById('filter-diff').value;
+        state.page = 1;
+        state.selected = {};
+        var f = getFiltered();
+        var actual = pg.set({ total: f.length, page: 1 });
+        state.page = actual.page;
+        state.size = actual.size;
+        renderTable();
+        if (f.length > 0 && (!state.activeCode || !f.some(function (x) { return x.code === state.activeCode; }))) {
+          state.activeCode = f[0].code;
+        }
+        renderPreview();
+      }
+      document.getElementById('search-input').addEventListener('input', onFilterChange);
+      document.getElementById('filter-type').addEventListener('change', onFilterChange);
+      document.getElementById('filter-topic').addEventListener('change', onFilterChange);
+      document.getElementById('filter-diff').addEventListener('change', onFilterChange);
+
+      document.getElementById('btn-reset-filters').addEventListener('click', function () {
+        document.getElementById('search-input').value = '';
+        document.getElementById('filter-type').value = '';
+        document.getElementById('filter-topic').value = '';
+        document.getElementById('filter-diff').value = '';
+        onFilterChange();
+      });
+
+      window.addEventListener('resize', function () {
+        renderTable();
+      });
+
+      /* Khởi chạy lần đầu */
+      updateCounts();
+      var initialFiltered = getFiltered();
+      var actualInit = pg.set({ total: initialFiltered.length, page: 1 });
+      state.page = actualInit.page;
+      state.size = actualInit.size;
+      renderTable();
+      renderPreview();
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>
