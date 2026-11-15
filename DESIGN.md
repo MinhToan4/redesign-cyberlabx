@@ -1,6 +1,6 @@
 # CyberLabX — thiết kế lại giao diện Sinh viên (prototype)
 
-Mở `index.html` bằng trình duyệt (cần mạng cho font Inter/JetBrains Mono và icon Lucide). Không có bước build.
+Mở `index.html` bằng trình duyệt (cần mạng cho font IBM Plex Sans/Mono và icon Lucide). Không có bước build.
 
 - Chuẩn giao diện đầy đủ (dành cho người và agent): `skills/cyberlabx-ui/SKILL.md`
 - Mã mẫu thành phần: `skills/cyberlabx-ui/references/components.md`
