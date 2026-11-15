@@ -1,17 +1,17 @@
 /* Bộ icon CyberLabX: phong cách an toàn thông tin.
-   Lưới 24px, nét 1.75px, đầu nét VUÔNG, góc nhọn (miter); các góc lớn được VÁT 45° cùng ngôn ngữ với bo góc của thẻ và nút.
+   Lưới 24px, nét 1.75px, đầu nét VUÔNG, góc nhọn (miter); các góc lớn được VÁT 45° đều cả bốn góc (đối xứng).
    Dùng như Lucide: <i data-lucide="tên"></i> rồi gọi window.clxIcons(). Tên chưa có trong bộ này tự lùi về Lucide,
    được vẽ cùng kiểu nét (vuông đầu, góc nhọn) để cả hệ thống đồng nhất.
    Thêm icon: khai báo markup bên trong <svg> (path/polyline, không đặt stroke/fill riêng trừ khi cần tô đặc), thêm alias nếu cần. */
 (function () {
   var I = {
     /* Điều hướng */
-    'layout-dashboard': '<path d="M4 4h7v5l-2 2H4z"/><path d="M13 4h7v2l-2 2h-5z"/><path d="M13 10h7v8l-2 2h-5z"/><path d="M4 13h7v5l-2 2H4z"/>',
-    'terminal': '<path d="M7 4h13v13l-3 3H4V7z"/><path d="M8 10l3 2.5L8 15"/><path d="M13 15.5h4"/>',
-    'log': '<path d="M7 3h13v15l-3 3H4V6z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h4"/>',
+    'layout-dashboard': '<path d="M4 4h7v7H4z"/><path d="M13 4h7v4h-7z"/><path d="M13 10h7v10h-7z"/><path d="M4 13h7v7H4z"/>',
+    'terminal': '<path d="M7 4h10l3 3v10l-3 3H7l-3-3V7z"/><path d="M8 10l3 2.5L8 15"/><path d="M13 15.5h4"/>',
+    'log': '<path d="M7 3h10l3 3v12l-3 3H7l-3-3V6z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h4"/>',
     'trophy': '<path d="M7 4h10v7l-3 3h-4l-3-3z"/><path d="M7 6H4v3l3 3"/><path d="M17 6h3v3l-3 3"/><path d="M12 14v4"/><path d="M8 20h8"/>',
     'book': '<path d="M3 5h7l2 2 2-2h7v13h-7l-2 2-2-2H3z"/><path d="M12 7v13"/>',
-    'bot': '<path d="M8 8h11v8l-3 3H5v-8z"/><path d="M12 8V4"/><path d="M10 4h4"/><path d="M9 13v1.5"/><path d="M15 13v1.5"/><path d="M3 12v3"/><path d="M21 12v3"/>',
+    'bot': '<path d="M8 8h8l3 3v5l-3 3H8l-3-3v-5z"/><path d="M12 8V4"/><path d="M10 4h4"/><path d="M9 13v1.5"/><path d="M15 13v1.5"/><path d="M3 12v3"/><path d="M21 12v3"/>',
     'user-badge': '<path d="M10 4h4l2 2v3l-2 2h-4L8 9V6z"/><path d="M5 20v-3l3-3h8l3 3v3z"/>',
     'menu': '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
     'search': '<path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="M16 16l5 5"/>',

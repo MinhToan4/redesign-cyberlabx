@@ -212,7 +212,7 @@
   function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
 
   /* Dấu hiệu nhận diện: ô vuông đặc, chữ X tạo bởi hai nét, một chấm nhấn ở góc */
-  var MARK = '<svg viewBox="0 0 28 28" aria-hidden="true"><path d="M8 0h20v20l-8 8H0V8z" fill="var(--accent)"/><path d="M10 10l8 8M18 10l-8 8" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>';
+  var MARK = '<svg viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="var(--accent)"/><path d="M9.5 9.5l9 9M18.5 9.5l-9 9" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="square" fill="none"/></svg>';
 
   var navHtml = nav.map(function (n) {
     if (n[0] === null) return '<div class="nav-label">' + esc(n[1]) + '</div>';

@@ -37,7 +37,7 @@ Nguồn thật của hệ thống: `assets/tokens.css`, `assets/base.css`, `asse
 | Trạng thái | `--ok` `--err` `--warn` `--info` (+ `-soft`) | chỉ kết quả bài nộp, báo lỗi/thành công/cảnh báo |
 | | `--mute-soft` | hover trên nền trơn, chip trung tính |
 | Heatmap | `--heat-0` … `--heat-4` | lưới hoạt động |
-| Hình khối | `--r-tag` 4/2, `--r-control` 10/6, `--r-card` 16/9, `--r-panel` 18/10, `--corner` | bo góc bất đối xứng (lớn ở trên-trái và dưới-phải), hai góc lớn được VÁT 45° |
+| Hình khối | `--r-tag` 4, `--r-control` 8, `--r-card` 14, `--r-panel` 16 | bo góc ĐỐI XỨNG: cả bốn góc cùng bán kính, không bo bất đối xứng, không vát |
 | Khác | `--shadow-pop` | popover/menu nổi, nút nổi: CHỈ là viền 1px, không đổ bóng |
 | Chữ | `--font`, `--mono` | họ chữ |
 | Chuyển động | `--dur` 140ms, `--ease` | mọi transition |
@@ -47,7 +47,7 @@ Quy tắc dùng màu:
 2. Màu trạng thái luôn đi kèm **chữ hoặc mã** (AC, "Hạn hôm nay"), không bao giờ chỉ có màu (người mù màu).
 3. Nền `*-soft` dùng cho chip/badge; không dùng làm nền cả card.
 4. **Không glow, không đổ bóng, không gradient, không kính mờ (`backdrop-filter`/`blur`), không `filter: drop-shadow`, không `text-shadow`.** Không `box-shadow` có độ mờ (blur) khác 0 ở bất kỳ thành phần nào, kể cả focus: focus dùng viền `--accent` (ô nhập) hoặc `outline` 2px (nút/liên kết). Chỉ cho phép vòng 1px `0 0 0 1px` (là viền, không phải bóng). Không viền màu dày > 1px (trừ vạch nhấn 2px của nav/tab đang chọn).
-5. **Màu theo aws-quest, hình khối riêng.** Nền tối gần đen trung tính: `--bg` #08090b, `--surface` #101113, `--surface-2` #181a1e, `--surface-3` #22252a; nền sáng TRẮNG THUẦN (`--bg` và `--surface` đều #ffffff, không pha kem; bậc nền xám trung tính #f4f4f5 / #e7e7e9); điểm nhấn cam hổ phách (tối #e9a33b, sáng #a6530b; chữ đặt trên nền nhấn dùng `--accent-ink`). Tuyệt đối không ngả xanh/tím, không dựng lớp nền màu để "tạo chiều sâu": chiều sâu chỉ đến từ bậc nền và viền hairline. **Góc vát:** card, nút, ô nhập, chip, hộp thoại dùng token bo góc bất đối xứng cùng `corner-shape: var(--corner)` (đã áp sẵn trong `tokens.css`); phần tử tròn (avatar, chấm trạng thái) giữ tròn; không tự đặt `border-radius` ngoài token.
+5. **Màu theo aws-quest, hình khối riêng.** Nền tối gần đen trung tính: `--bg` #08090b, `--surface` #101113, `--surface-2` #181a1e, `--surface-3` #22252a; nền sáng TRẮNG THUẦN (`--bg` và `--surface` đều #ffffff, không pha kem; bậc nền xám trung tính #f4f4f5 / #e7e7e9); điểm nhấn cam hổ phách (tối #e9a33b, sáng #a6530b; chữ đặt trên nền nhấn dùng `--accent-ink`). Tuyệt đối không ngả xanh/tím, không dựng lớp nền màu để "tạo chiều sâu": chiều sâu chỉ đến từ bậc nền và viền hairline. **Bo góc đối xứng:** mọi bề mặt dùng token `--r-*`, cả bốn góc cùng bán kính; không tự đặt `border-radius` ngoài token, không bo bất đối xứng, không vát góc. Phần tử tròn (avatar, chấm trạng thái) giữ tròn.
 6. Sáng và tối đều phải đúng: đổi `data-theme` trên `<html>`, không bao giờ kiểm tra theme bằng JS để chọn màu.
 
 ## 3. Chữ
@@ -136,7 +136,7 @@ Vùng bấm tối thiểu 32×32 (ưu tiên 36).
 - [ ] Không emoji, không dấu chấm than, không chữ hoa toàn bộ, không weight ≥ 700, không italic.
 - [ ] Không tiêu đề lớn lặp lại tên trang; không dòng mô tả thừa; không banner minh họa.
 - [ ] Chỉ 1 màu nhấn; màu trạng thái luôn kèm chữ/mã.
-- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc/góc vát theo token.
+- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc đối xứng theo token.
 - [ ] Mọi danh sách có phân trang; bảng là CSS grid; đổi bộ lọc về trang 1.
 - [ ] Hover, focus-visible, disabled, rỗng, lỗi đều có.
 - [ ] Sáng và tối đều đọc được; 390px không cuộn ngang; vùng bấm ≥ 32px.
