@@ -2,8 +2,838 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=dashboard.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <script src="assets/theme.js"></script>
+  <style>
+    /* Kiểu riêng cho Cổng duyệt thiết kế (Hub) CyberLabX */
+    .hub-layout {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 36px 32px 64px;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+    .hub-aside {
+      position: sticky;
+      top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hub-main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+    .brand-mark-svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+      color: var(--text);
+    }
+    .hub-row {
+      --cols: 125px 290px minmax(0, 1fr) 20px;
+      padding: 10px 20px;
+      min-height: 48px;
+      height: auto;
+      align-items: center;
+      text-decoration: none;
+    }
+    .hub-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+    .hub-file {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .hub-desc {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-2);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+    }
+    .hub-arrow {
+      width: 16px;
+      height: 16px;
+      color: var(--text-3);
+      justify-self: end;
+      transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .hub-row:hover .hub-arrow {
+      color: var(--accent);
+      transform: translateX(2px);
+    }
+
+    /* Mục chi tiết đặc trưng */
+    .signature-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .signature-row:last-child {
+      border-bottom: 0;
+    }
+    .signature-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .signature-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .signature-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .signature-desc {
+      font-size: 12.5px;
+      color: var(--text-2);
+      line-height: 1.4;
+    }
+    .signature-demo {
+      flex: none;
+    }
+
+    /* Thước thu gọn trong Chi tiết đặc trưng */
+    .mini-ruler {
+      position: relative;
+      height: 60px;
+      width: 250px;
+      margin: 0;
+    }
+    .mini-ruler .axis {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 38px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+    .mini-ruler .day {
+      position: absolute;
+      top: 34px;
+      width: 1px;
+      height: 8px;
+      background: var(--line-strong);
+    }
+    .mini-ruler .day.is-today {
+      background: var(--accent);
+      height: 16px;
+      top: 30px;
+    }
+    .mini-ruler .day span {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10.5px;
+      line-height: 14px;
+      color: var(--text-3);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .mini-ruler .day.is-today span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .mini-ruler .due {
+      position: absolute;
+      top: 4px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .mini-ruler .due b {
+      font: 500 10.5px var(--mono);
+      color: var(--text);
+    }
+    .mini-ruler .due i {
+      width: 1px;
+      height: 16px;
+      background: var(--warn);
+    }
+    .mini-ruler .due.is-late i {
+      background: var(--err);
+    }
+
+    /* Bảng sổ cái thu gọn */
+    .mini-ledger {
+      width: 250px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-control);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .mini-ledger .tbl-row {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px 0 0;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+    .mini-ledger .tbl-row:last-child {
+      border-bottom: 0;
+    }
+    .mini-ledger .tbl-row::before {
+      content: '';
+      position: absolute;
+      left: 44px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--line);
+    }
+    .mini-ledger .no {
+      color: var(--text-3);
+      font: 400 11px var(--mono);
+      text-align: right;
+      padding-right: 8px;
+    }
+
+    @media (max-width: 1080px) and (min-width: 761px) {
+      .hub-row {
+        --cols: 120px 240px minmax(0, 1fr) 18px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hub-layout {
+        grid-template-columns: 1fr;
+        padding: 24px 16px 48px;
+        gap: 20px;
+      }
+      .hub-aside {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .hub-row {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 20px !important;
+        grid-template-areas:
+          "title arrow"
+          "desc  desc"
+          "file  file";
+        gap: 3px 10px !important;
+        padding: 12px 16px !important;
+        min-height: 56px !important;
+        height: auto !important;
+        align-items: start !important;
+      }
+      .hub-name {
+        grid-area: title;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      .hub-arrow {
+        grid-area: arrow;
+        align-self: center;
+        margin-top: 1px;
+      }
+      .hub-desc {
+        grid-area: desc;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--text-2);
+        white-space: normal !important;
+        margin-top: 2px;
+      }
+      .hub-file {
+        grid-area: file;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 2px;
+      }
+      .signature-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 12px 16px;
+      }
+      .signature-demo {
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
+  </style>
 </head>
-<body><a href="dashboard.html">Vào CyberLabX</a></body>
+<body>
+  <div class="hub-layout">
+    <!-- Cột trái: Giới thiệu hệ thống, điều khiển và liên kết -->
+    <aside class="hub-aside">
+      <div class="card card-pad">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="brand-mark-svg">
+            <svg viewBox="0 0 28 28" aria-hidden="true" width="28" height="28">
+              <rect width="28" height="28" rx="6" fill="currentColor"/>
+              <path d="M9 9l10 10M19 9L9 19" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+              <circle cx="21.5" cy="6.5" r="2.4" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em">CyberLabX</span>
+          <span class="chip chip-mono" style="margin-left:auto">v2.0</span>
+        </div>
+        <p style="font-size:13.5px;line-height:20px;color:var(--text-2);margin-top:12px">
+          Hệ thống thực hành và tự động chấm bài lab an toàn thông tin.
+        </p>
+
+        <div style="height:1px;background:var(--line);margin:16px 0"></div>
+
+        <div class="kicker" style="margin-bottom:8px">Cổng duyệt thiết kế</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-sm" id="theme-btn" type="button" aria-label="Chuyển giao diện sáng hoặc tối">
+            <i data-lucide="sun-moon"></i>
+            <span id="theme-btn-label">Giao diện: Tối</span>
+            <span class="kbd" style="margin-left:auto">T</span>
+          </button>
+          <a class="btn btn-sm btn-primary" href="login.html">
+            <i data-lucide="log-in"></i>
+            <span>Đăng nhập</span>
+          </a>
+          <a class="btn btn-sm" href="huong-dan-chay/README.md">
+            <i data-lucide="book-open"></i>
+            <span>Hướng dẫn chạy</span>
+            <i data-lucide="arrow-right" style="margin-left:auto"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="card card-pad" style="font-size:13px;color:var(--text-2);line-height:1.5">
+        <div class="kicker" style="margin-bottom:8px">Tiêu chuẩn giao diện v2</div>
+        <ul style="display:flex;flex-direction:column;gap:8px;padding-left:0">
+          <li style="display:flex;align-items:baseline;gap:8px">
+            <span class="dot" style="margin-top:6px;background:var(--accent)"></span>
+            <span>Nền tối xám-đen thuần LeetCode (<span class="mono">#161616</span>)</span>
+          </li>
+          <li style="display:flex;align-items:baseline;gap:8px">
+            <span class="dot" style="margin-top:6px;background:var(--accent)"></span>
+            <span>Font IBM Plex Sans &amp; Mono, không glow/bóng</span>
+          </li>
+          <li style="display:flex;align-items:baseline;gap:8px">
+            <span class="dot" style="margin-top:6px;background:var(--accent)"></span>
+            <span>4 vai trò, 28 màn hình &amp; luồng nghiệp vụ</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Cột phải: Danh mục 4 vai trò & Chi tiết đặc trưng -->
+    <main class="hub-main">
+      <div class="toolbar" style="margin-bottom:2px">
+        <div class="search" style="flex:1;min-width:200px">
+          <i data-lucide="search"></i>
+          <input id="hub-filter" class="input" placeholder="Lọc nhanh trang theo tên, mã tệp hoặc từ khóa..." aria-label="Lọc nhanh trang">
+        </div>
+        <span class="faint tnum" id="filter-count" style="font-size:12.5px;padding-right:4px">28 trang</span>
+      </div>
+
+      <!-- Thông báo khi lọc ra 0 kết quả -->
+      <div id="hub-empty" class="card empty" style="display:none">
+        Không tìm thấy trang nào khớp với từ khóa lọc.
+      </div>
+
+      <!-- Vai trò 1: Sinh viên -->
+      <section class="card hub-role-card" aria-label="Sinh viên">
+        <div class="card-head">
+          <div>
+            <h2 style="font-size:15px;font-weight:600">Sinh viên</h2>
+            <div class="faint" style="font-size:12.5px;margin-top:2px">
+              Học tập cá nhân: bài tập, lịch sử nộp bài, thước hạn nộp và lộ trình Public.
+            </div>
+          </div>
+          <span class="chip chip-mono">8 trang · /</span>
+        </div>
+        <div class="tbl" role="table" aria-label="Danh sách trang Sinh viên">
+          <a class="tbl-row is-link hub-row" href="dashboard.html" role="row">
+            <span class="hub-name">Tổng quan</span>
+            <span class="hub-file mono tnum trunc">dashboard.html</span>
+            <span class="hub-desc">Lược đồ tiến độ học kỳ, thước hạn nộp 14 ngày tới, mạng nhện kỹ năng và cấp bậc.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="assignments.html" role="row">
+            <span class="hub-name">Bài tập</span>
+            <span class="hub-file mono tnum trunc">assignments.html</span>
+            <span class="hub-desc">Lớp học phần và bản đồ lộ trình Public, chi tiết đề bài kèm nộp bài tệp .lab.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="history.html" role="row">
+            <span class="hub-name">Lịch sử</span>
+            <span class="hub-file mono tnum trunc">history.html</span>
+            <span class="hub-desc">Bảng sổ cái nhật ký nộp bài, phân loại kết quả AC/WA/WF/WFN/CPY và bộ lọc.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="leaderboard.html" role="row">
+            <span class="hub-name">Bảng xếp hạng</span>
+            <span class="hub-file mono tnum trunc">leaderboard.html</span>
+            <span class="hub-desc">Xếp hạng theo lớp học phần và toàn khóa, bục vinh danh Top 3, định vị vị trí của tôi.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="guide.html" role="row">
+            <span class="hub-name">Hướng dẫn</span>
+            <span class="hub-file mono tnum trunc">guide.html</span>
+            <span class="hub-desc">Quy trình 4 bước làm bài, cấu trúc tệp nộp .lab chuẩn và nội quy phòng thi.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="chatbot.html" role="row">
+            <span class="hub-name">ChatBot</span>
+            <span class="hub-file mono tnum trunc">chatbot.html</span>
+            <span class="hub-desc">Trợ lý AI giải đáp kỹ thuật, hỗ trợ lệnh Labtainer và môi trường an toàn mạng.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="account.html" role="row">
+            <span class="hub-name">Tài khoản</span>
+            <span class="hub-file mono tnum trunc">account.html</span>
+            <span class="hub-desc">Thông tin cá nhân, hồ sơ kỹ năng chuyên sâu và lịch sử huy hiệu thành tích.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="login.html" role="row">
+            <span class="hub-name">Đăng nhập</span>
+            <span class="hub-file mono tnum trunc">login.html</span>
+            <span class="hub-desc">Giao diện xác thực sinh viên và cán bộ giảng dạy qua tài khoản nhà trường.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- Vai trò 2: Giảng viên -->
+      <section class="card hub-role-card" aria-label="Giảng viên">
+        <div class="card-head">
+          <div>
+            <h2 style="font-size:15px;font-weight:600">Giảng viên</h2>
+            <div class="faint" style="font-size:12.5px;margin-top:2px">
+              Quản lý đào tạo: theo dõi tiến độ lớp, ngân hàng đề lab, tổ chức ca thi và hỏi đáp 1-1.
+            </div>
+          </div>
+          <span class="chip chip-mono">7 trang · teacher/</span>
+        </div>
+        <div class="tbl" role="table" aria-label="Danh sách trang Giảng viên">
+          <a class="tbl-row is-link hub-row" href="teacher/statistics.html" role="row">
+            <span class="hub-name">Thống kê</span>
+            <span class="hub-file mono tnum trunc">teacher/statistics.html</span>
+            <span class="hub-desc">Tỷ lệ hoàn thành theo lớp, sinh viên dưới ngưỡng cảnh báo và phân bố kết quả.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/classes.html" role="row">
+            <span class="hub-name">Lớp học phần</span>
+            <span class="hub-file mono tnum trunc">teacher/classes.html</span>
+            <span class="hub-desc">Danh sách lớp giảng dạy, tiến độ bình quân và quản lý bài tập theo lớp.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/class-detail.html?class=INT1449.01" role="row">
+            <span class="hub-name">Chi tiết lớp</span>
+            <span class="hub-file mono tnum trunc">teacher/class-detail.html?class=INT1449.01</span>
+            <span class="hub-desc">Danh sách 30 sinh viên lớp INT1449.01, tỷ lệ giải bài và cảnh báo học vụ.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/assignments.html" role="row">
+            <span class="hub-name">Bài tập</span>
+            <span class="hub-file mono tnum trunc">teacher/assignments.html</span>
+            <span class="hub-desc">Ngân hàng đề lab, thiết lập tiêu chí chấm, số lượt nộp tối đa và hạn chót.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/exams.html" role="row">
+            <span class="hub-name">Ca thi</span>
+            <span class="hub-file mono tnum trunc">teacher/exams.html</span>
+            <span class="hub-desc">Lịch ca thi kết thúc học phần, thời lượng, danh sách thí sinh và phòng thi.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/exam-monitor.html" role="row">
+            <span class="hub-name">Giám sát ca thi</span>
+            <span class="hub-file mono tnum trunc">teacher/exam-monitor.html</span>
+            <span class="hub-desc">Theo dõi nhịp tim thí sinh theo thời gian thực, phát hiện mất kết nối và cảnh báo.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="teacher/qa.html" role="row">
+            <span class="hub-name">Hỏi đáp 1-1</span>
+            <span class="hub-file mono tnum trunc">teacher/qa.html</span>
+            <span class="hub-desc">Kênh trao đổi trực tiếp với sinh viên về vướng mắc kỹ thuật và phúc khảo bài lab.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- Vai trò 3: Trợ giảng -->
+      <section class="card hub-role-card" aria-label="Trợ giảng">
+        <div class="card-head">
+          <div>
+            <h2 style="font-size:15px;font-weight:600">Trợ giảng</h2>
+            <div class="faint" style="font-size:12.5px;margin-top:2px">
+              Hỗ trợ giảng dạy: theo dõi tiến độ, hỗ trợ coi thi (không có Hỏi đáp 1-1, không xóa bài).
+            </div>
+          </div>
+          <span class="chip chip-mono">6 trang · ta/</span>
+        </div>
+        <div class="tbl" role="table" aria-label="Danh sách trang Trợ giảng">
+          <a class="tbl-row is-link hub-row" href="ta/statistics.html" role="row">
+            <span class="hub-name">Thống kê</span>
+            <span class="hub-file mono tnum trunc">ta/statistics.html</span>
+            <span class="hub-desc">Theo dõi tiến độ lớp hỗ trợ, bài nộp gần đây và danh sách cần trợ giúp.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="ta/classes.html" role="row">
+            <span class="hub-name">Lớp học phần</span>
+            <span class="hub-file mono tnum trunc">ta/classes.html</span>
+            <span class="hub-desc">Danh sách các lớp học phần được phân công hỗ trợ giảng dạy trong học kỳ.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="ta/class-detail.html?class=INT1449.01" role="row">
+            <span class="hub-name">Chi tiết lớp</span>
+            <span class="hub-file mono tnum trunc">ta/class-detail.html?class=INT1449.01</span>
+            <span class="hub-desc">Tiến độ chi tiết từng sinh viên lớp INT1449.01 (chế độ chỉ đọc, không xóa bài).</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="ta/assignments.html" role="row">
+            <span class="hub-name">Bài tập</span>
+            <span class="hub-file mono tnum trunc">ta/assignments.html</span>
+            <span class="hub-desc">Xem yêu cầu bài lab và bộ dữ liệu kiểm thử phục vụ giải đáp sinh viên.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="ta/exams.html" role="row">
+            <span class="hub-name">Ca thi</span>
+            <span class="hub-file mono tnum trunc">ta/exams.html</span>
+            <span class="hub-desc">Danh sách ca thi được phân công phối hợp coi thi và hỗ trợ kỹ thuật.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="ta/exam-monitor.html" role="row">
+            <span class="hub-name">Giám sát ca thi</span>
+            <span class="hub-file mono tnum trunc">ta/exam-monitor.html</span>
+            <span class="hub-desc">Hỗ trợ theo dõi thí sinh, kiểm tra địa chỉ IP và ghi nhận sự cố mạng.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- Vai trò 4: Admin -->
+      <section class="card hub-role-card" aria-label="Admin">
+        <div class="card-head">
+          <div>
+            <h2 style="font-size:15px;font-weight:600">Admin</h2>
+            <div class="faint" style="font-size:12.5px;margin-top:2px">
+              Quản trị hệ thống: giám sát tài nguyên Docker, duyệt đề lab mới và nhật ký kiểm toán.
+            </div>
+          </div>
+          <span class="chip chip-mono">7 trang · admin/</span>
+        </div>
+        <div class="tbl" role="table" aria-label="Danh sách trang Admin">
+          <a class="tbl-row is-link hub-row" href="admin/statistics.html" role="row">
+            <span class="hub-name">Thống kê</span>
+            <span class="hub-file mono tnum trunc">admin/statistics.html</span>
+            <span class="hub-desc">Tổng quan tài nguyên toàn trường, tải máy chủ chấm bài và lưu lượng nộp lab.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/resources.html" role="row">
+            <span class="hub-name">Giám sát tài nguyên</span>
+            <span class="hub-file mono tnum trunc">admin/resources.html</span>
+            <span class="hub-desc">Tình trạng cụm máy chủ Docker/Labtainer, tải CPU, RAM và dung lượng đĩa.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/accounts.html" role="row">
+            <span class="hub-name">Tài khoản</span>
+            <span class="hub-file mono tnum trunc">admin/accounts.html</span>
+            <span class="hub-desc">Quản lý người dùng, phân quyền Giảng viên, Trợ giảng và Sinh viên.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/classes.html" role="row">
+            <span class="hub-name">Lớp học phần</span>
+            <span class="hub-file mono tnum trunc">admin/classes.html</span>
+            <span class="hub-desc">Khởi tạo lớp học phần mới, đồng bộ danh sách sinh viên từ phòng đào tạo.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/assignment-review.html" role="row">
+            <span class="hub-name">Duyệt bài tập</span>
+            <span class="hub-file mono tnum trunc">admin/assignment-review.html</span>
+            <span class="hub-desc">Phê duyệt bài lab mới từ giảng viên trước khi đưa vào ngân hàng đề chính thức.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/audit-logs.html" role="row">
+            <span class="hub-name">Nhật ký hoạt động</span>
+            <span class="hub-file mono tnum trunc">admin/audit-logs.html</span>
+            <span class="hub-desc">Ghi nhận toàn bộ thao tác quản trị, đăng nhập bất thường và chỉnh sửa điểm.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+          <a class="tbl-row is-link hub-row" href="admin/config-system.html" role="row">
+            <span class="hub-name">Cấu hình hệ thống</span>
+            <span class="hub-file mono tnum trunc">admin/config-system.html</span>
+            <span class="hub-desc">Thiết lập tham số môi trường chấm, ngưỡng cảnh báo gian lận và sao lưu.</span>
+            <i data-lucide="chevron-right" class="hub-arrow" aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- Mục Chi tiết đặc trưng -->
+      <section class="card" aria-label="Chi tiết đặc trưng">
+        <div class="card-head">
+          <div>
+            <h2 style="font-size:15px;font-weight:600">Chi tiết đặc trưng</h2>
+            <div class="faint" style="font-size:12.5px;margin-top:2px">
+              6 điểm nhấn bản sắc của CyberLabX v2 — lấy từ nghiệp vụ chấm bài, không phải trang trí.
+            </div>
+          </div>
+          <span class="chip chip-mono">Mục 15 SKILL.md</span>
+        </div>
+
+        <div>
+          <!-- Điểm 1: Dấu chấm bài -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Dấu chấm bài</span>
+                <span class="chip chip-mono" style="font-size:11px">.verdict.v-*</span>
+              </div>
+              <div class="signature-desc">
+                Viền mảnh, mã monospace, nền trong; hiện diện chuẩn hóa ở mọi nơi có kết quả bài nộp.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div class="row-gap" style="gap:6px">
+                <span class="verdict v-AC">AC</span>
+                <span class="verdict v-WA">WA</span>
+                <span class="verdict v-WF">WF</span>
+                <span class="verdict v-WFN">WFN</span>
+                <span class="verdict v-CPY">CPY</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Điểm 2: Thanh vạch -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Thanh vạch</span>
+                <span class="chip chip-mono" style="font-size:11px">.ticks</span>
+              </div>
+              <div class="signature-desc">
+                Đại lượng đếm được và nhỏ (&le; 20): lượt nộp đã dùng, bước lab, mức tải tài nguyên máy.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div class="row-gap" style="gap:10px">
+                <div class="ticks" role="img" aria-label="3/5 lượt" style="width:72px">
+                  <i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>
+                </div>
+                <span class="mono faint tnum" style="font-size:11.5px">3/5 lượt</span>
+                <div class="ticks is-ok" role="img" aria-label="Đạt" style="width:56px">
+                  <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Điểm 3: Thước hạn nộp -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Thước hạn nộp</span>
+                <span class="chip chip-mono" style="font-size:11px">.ruler</span>
+              </div>
+              <div class="signature-desc">
+                Trục thời gian ngắn trực quan hóa các mốc hạn nộp bài tập và lịch ca thi trong tuần.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div class="mini-ruler" role="img" aria-label="Thước hạn nộp minh họa">
+                <div class="axis"></div>
+                <div class="day is-today" style="left:10%">
+                  <span>Hôm nay</span>
+                </div>
+                <div class="day" style="left:52%">
+                  <span>20/09</span>
+                </div>
+                <div class="day" style="left:90%">
+                  <span>25/09</span>
+                </div>
+                <div class="due" style="left:52%">
+                  <b>nmap</b>
+                  <i></i>
+                </div>
+                <div class="due is-late" style="left:90%">
+                  <b>gdb</b>
+                  <i></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Điểm 4: Bảng sổ cái -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Bảng sổ cái</span>
+                <span class="chip chip-mono" style="font-size:11px">.ledger + .no</span>
+              </div>
+              <div class="signature-desc">
+                Cột số thứ tự monospace căn phải và đường kẻ lề dọc phân tách nhật ký nộp bài, kiểm toán.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div class="mini-ledger">
+                <div class="tbl-row">
+                  <span class="no">01</span>
+                  <span class="trunc dim" style="font-size:12px">B23DCCN135 nộp nmap</span>
+                  <span class="verdict v-AC" style="transform:scale(0.85);transform-origin:right">AC</span>
+                </div>
+                <div class="tbl-row">
+                  <span class="no">02</span>
+                  <span class="trunc dim" style="font-size:12px">B23DCAT004 nộp backup</span>
+                  <span class="verdict v-WFN" style="transform:scale(0.85);transform-origin:right">WFN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Điểm 5: Hàng bấm được -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Hàng bấm được</span>
+                <span class="chip chip-mono" style="font-size:11px">a.tbl-row.is-link</span>
+              </div>
+              <div class="signature-desc">
+                Vạch nhấn trái 2px xuất hiện khi hover, dẫn tới trang chi tiết với chuyển động êm.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div style="width:250px;border:1px solid var(--line);border-radius:var(--r-control);overflow:hidden;background:var(--surface)">
+                <a class="tbl-row is-link" href="#demo" style="--cols:minmax(0,1fr) auto;min-height:32px;padding:0 12px;font-size:12px;text-decoration:none">
+                  <span class="trunc">INT1449.01 · AT &amp; BM</span>
+                  <span class="mono faint" style="font-size:11px">&rarr;</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Điểm 6: Trạng thái & Phím tắt -->
+          <div class="signature-row">
+            <div class="signature-info">
+              <div class="signature-head">
+                <span class="signature-title">Trạng thái &amp; Phím tắt</span>
+                <span class="chip chip-mono" style="font-size:11px">.status · .kbd</span>
+              </div>
+              <div class="signature-desc">
+                Trạng thái đối tượng (chấm tròn màu kèm chữ) và gợi ý phím tắt thao tác nhanh trên bàn phím.
+              </div>
+            </div>
+            <div class="signature-demo">
+              <div class="row-gap" style="gap:8px;flex-wrap:wrap">
+                <span class="status s-ok" style="font-size:12px">Hoạt động</span>
+                <span class="status s-warn" style="font-size:12px">Cảnh báo</span>
+                <span class="status s-err" style="font-size:12px">Mất mạng</span>
+                <span class="kbd">Ctrl</span><span class="kbd">K</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script>
+    (function () {
+      // 1. Khởi tạo icon Lucide
+      function initIcons() {
+        if (window.lucide) {
+          window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+        }
+      }
+      initIcons();
+
+      // 2. Chuyển đổi giao diện sáng/tối
+      var themeBtn = document.getElementById('theme-btn');
+      var themeLabel = document.getElementById('theme-btn-label');
+
+      function updateThemeUI(theme) {
+        if (themeLabel) {
+          themeLabel.textContent = theme === 'light' ? 'Giao diện: Sáng' : 'Giao diện: Tối';
+        }
+      }
+
+      var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      updateThemeUI(currentTheme);
+
+      if (themeBtn) {
+        themeBtn.addEventListener('click', function () {
+          var current = document.documentElement.getAttribute('data-theme') || 'dark';
+          var next = current === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('clx-theme', next); } catch (e) {}
+          updateThemeUI(next);
+          initIcons();
+        });
+      }
+
+      // Phím tắt 'T' chuyển giao diện sáng/tối
+      window.addEventListener('keydown', function (e) {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key === 't' || e.key === 'T') {
+          if (themeBtn) themeBtn.click();
+        }
+      });
+
+      // 3. Bộ lọc nhanh trang
+      var filterInput = document.getElementById('hub-filter');
+      var filterCount = document.getElementById('filter-count');
+      var hubEmpty = document.getElementById('hub-empty');
+      var rows = Array.prototype.slice.call(document.querySelectorAll('.hub-row'));
+      var roleCards = Array.prototype.slice.call(document.querySelectorAll('.hub-role-card'));
+
+      if (filterInput) {
+        filterInput.addEventListener('input', function () {
+          var q = this.value.trim().toLowerCase();
+          var visibleCount = 0;
+
+          roleCards.forEach(function (card) {
+            var cardRows = Array.prototype.slice.call(card.querySelectorAll('.hub-row'));
+            var cardVisible = 0;
+            cardRows.forEach(function (row) {
+              var text = (row.textContent || '').toLowerCase();
+              var href = (row.getAttribute('href') || '').toLowerCase();
+              var matches = !q || text.indexOf(q) !== -1 || href.indexOf(q) !== -1;
+              row.style.display = matches ? '' : 'none';
+              if (matches) {
+                cardVisible++;
+                visibleCount++;
+              }
+            });
+            card.style.display = cardVisible > 0 ? '' : 'none';
+          });
+
+          if (filterCount) {
+            filterCount.textContent = visibleCount + ' / ' + rows.length + ' trang';
+          }
+          if (hubEmpty) {
+            hubEmpty.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
+        });
+      }
+    })();
+  </script>
+</body>
 </html>
