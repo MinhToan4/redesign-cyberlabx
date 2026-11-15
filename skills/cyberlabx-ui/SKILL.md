@@ -259,3 +259,13 @@ Trang Sinh viên (thư mục gốc, trừ `index.html`) tự đặt `<html data-
 - **Họa tiết nền:** lưới thoi rất mờ (SVG, độ trong suốt 3.5–4%), cố định khi cuộn.
 - Các vai trò khác (Giảng viên, Trợ giảng, Admin) dùng skin mặc định cho đến khi được duyệt chuyển sang skin này.
 Trang Sinh viên viết MỚI: dùng đúng class của `components.css`, không đặt cỡ chữ dưới 13px, không tự đặt `border-radius`.
+
+## 22. Chống nhấp nháy khi chuyển trang (bắt buộc giữ)
+
+Mỗi lần đổi trang là một lần tải lại, nên:
+- **Không** nạp font hay icon từ CDN. Dùng `assets/vendor/fonts.css` và `assets/vendor/lucide.min.js` (tự lưu), kèm tiền tố `../` ở thư mục con.
+- `theme.js` (nạp trong `<head>`) đặt `data-theme`, `data-skin` và chỉ đặt `data-ready` khi DOM đã dựng và font đã tải (chờ tối đa 0.8 giây); `base.css` ẩn `body` cho tới lúc đó (tự hiện sau 2 giây nếu script lỗi). Đừng bỏ `theme.js` khỏi `<head>`.
+- `html { scrollbar-gutter: stable }` để nội dung không xê dịch khi trang dài/ngắn khác nhau.
+- Không dùng hiệu ứng vào trang (mờ dần, trượt) cho khối chính: nó chạy lại ở mọi lần chuyển trang và trông như nhấp nháy.
+- Không dùng `requestAnimationFrame` để điều khiển việc hiện trang (không chạy khi trình duyệt chưa vẽ khung).
+- Không đặt `font-family` hay `font-size` gốc riêng trong từng trang; cỡ chữ nằm trong skin của vai trò.

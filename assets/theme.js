@@ -14,3 +14,14 @@
   var hub = /\/index\.html$/.test(path) || /\/$/.test(path);
   if (!staff && !hub) root.setAttribute('data-skin', 'quest');
 })();
+
+/* Hiện trang khi DOM đã dựng xong và font đã tải (tối đa chờ 0.8 giây), tránh chớp chữ đổi font và khung hiện muộn. */
+(function () {
+  var shown = false;
+  function show() { if (shown) return; shown = true; document.documentElement.setAttribute('data-ready', '1'); }
+  function go() {
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    Promise.race([fonts, new Promise(function (r) { setTimeout(r, 800); })]).then(show);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();

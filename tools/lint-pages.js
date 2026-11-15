@@ -20,6 +20,8 @@ const rules = [
   ['<table> hiển thị (bảng sr-only cho biểu đồ thì được)', /<table[\s>]/g, (m, ctx) => !/sr-only/.test(ctx)],
   ['animate width/height', /transition:[^;]*\b(width|height|top|left)\b/g],
   ['Inter/JetBrains', /Inter\b|JetBrains/g],
+  ['nạp font/icon từ CDN (dùng assets/vendor để khỏi nhấp nháy)', /fonts\.googleapis\.com|fonts\.gstatic\.com|unpkg\.com/g],
+  ['thiếu theme.js trong <head> (chống nhấp nháy)', /^(?![\s\S]*assets\/theme\.js)[\s\S]*$/g],
 ];
 let bad = 0;
 for (const f of pages) {

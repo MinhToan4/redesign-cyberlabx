@@ -132,11 +132,6 @@ svg { flex: none; }
 /* Icon Lucide mặc định 16px, nét 1.5; thành phần cụ thể (nav, icon-btn, fab) đặt cỡ riêng ở components.css. */
 svg.lucide { width: 16px; height: 16px; stroke-width: 1.75; }
 
-/* Vào trang: một chuyển động ngắn (mờ dần + trượt lên 8px), các khối cách nhau 40ms, tối đa 6 khối. */
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.stack > *:nth-child(-n+6), .cols > * { animation: rise 280ms var(--ease) both; }
-.stack > *:nth-child(2) { animation-delay: 40ms; } .stack > *:nth-child(3) { animation-delay: 80ms; }
-.stack > *:nth-child(4) { animation-delay: 120ms; } .stack > *:nth-child(5) { animation-delay: 160ms; } .stack > *:nth-child(6) { animation-delay: 200ms; }
 
 .nav .nav-off { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; color: var(--text-3); cursor: default; }
 .nav .nav-off svg { width: 18px; height: 18px; stroke-width: 1.75; }
@@ -144,3 +139,9 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.75; }
 /* Icon: đầu nét vuông, góc nhọn (phong cách bảo mật) */
 svg.lucide { stroke-linecap: square; stroke-linejoin: miter; }
 .brand-mark { color: var(--accent); }
+
+/* Chống nhấp nháy khi chuyển trang: thanh cuộn luôn chiếm chỗ (nội dung không xê dịch khi trang dài/ngắn khác nhau),
+   và trang chỉ hiện khi khung + font đã sẵn sàng (theme.js đặt data-ready). Nếu script lỗi, tự hiện sau 2 giây. */
+html { background: var(--bg); scrollbar-gutter: stable; }
+html:not([data-ready]) body { visibility: hidden; animation: clx-show 0s 2s forwards; }
+@keyframes clx-show { to { visibility: visible; } }

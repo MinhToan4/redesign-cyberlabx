@@ -14,7 +14,7 @@ Bản prototype tĩnh (HTML, CSS, JavaScript thuần, không cần build) thiế
 
 ## Chạy thử
 
-Cần Node.js 18 trở lên (chỉ để mở máy chủ tĩnh; prototype không có phụ thuộc nào) và kết nối mạng để tải font IBM Plex và icon Lucide từ CDN.
+Cần Node.js 18 trở lên (chỉ để mở máy chủ tĩnh; prototype không có phụ thuộc nào). Font và icon đã được lưu sẵn trong `assets/vendor/` nên chạy được cả khi không có mạng và không bị nhấp nháy do chờ tải font.
 
 ```bash
 node huong-dan-chay/serve.js        # http://localhost:5200
@@ -58,6 +58,7 @@ teacher/  ta/  admin/   màn hình theo vai trò
 assets/
   tokens.css            màu, bo góc gần vuông, chữ (sáng và tối)
   skin-quest.css        bộ giao diện cỡ lớn cho vai trò Sinh viên (bám aws-quest)
+  vendor/               font (Be Vietnam Pro, Chakra Petch, IBM Plex) và Lucide tự lưu, kèm giấy phép
   icons.js              bộ icon bảo mật (nét vuông); tên chưa có lùi về Lucide
   base.css              reset, khung ứng dụng, sidebar, topbar
   components.css        nút, thẻ, chip, bảng, tab, form, phân trang, bảng lệnh
@@ -65,7 +66,7 @@ assets/
   charts.js             radar, bản đồ nhiệt (SVG thuần)
   data*.js              dữ liệu mẫu (sinh từ hạt giống cố định, số liệu khớp nhau giữa các trang)
 skills/cyberlabx-ui/    chuẩn giao diện cho người và agent (SKILL.md, mã mẫu thành phần)
-tools/                  script hỗ trợ (sinh trang Trợ giảng, kiểm tra tĩnh)
+tools/                  script hỗ trợ (sinh trang Trợ giảng, kiểm tra tĩnh, tải lại font và icon)
 huong-dan-chay/         hướng dẫn chạy, máy chủ tĩnh không phụ thuộc
 docs/preview/           ảnh xem trước
 ```

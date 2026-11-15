@@ -2,7 +2,7 @@
 
 Đây là prototype tĩnh (HTML/CSS/JS thuần), không cần build, không cần cài gói. Có 2 cách xem.
 
-> **Cần có mạng.** Font IBM Plex Sans/Mono (Google Fonts) và icon Lucide (unpkg) tải từ CDN. Offline vẫn mở được nhưng icon sẽ trống và font về mặc định.
+> Font và icon đã được lưu sẵn trong `assets/vendor/`, nên prototype chạy được cả khi không có mạng. Muốn tải lại hoặc nâng phiên bản: `node tools/vendor-assets.js` (cần mạng).
 
 ## Cách 1 — Mở thẳng file (nhanh nhất)
 
@@ -73,7 +73,7 @@ huong-dan-chay/        thư mục này
 
 | Hiện tượng | Cách xử lý |
 |---|---|
-| Icon không hiện, chữ lạ | Không có mạng hoặc bị chặn CDN. Kiểm tra mạng rồi F5. |
+| Icon không hiện, chữ lạ | Thiếu thư mục `assets/vendor/` (chưa kéo đủ repo). Kéo lại repo hoặc chạy `node tools/vendor-assets.js` (cần mạng). |
 | Trang trắng, Console báo `CLX is not defined` | `assets/data.js` không nạp được. Mở bằng máy chủ (Cách 2) hoặc kiểm tra đường dẫn. |
 | `Error: listen EADDRINUSE` | Cổng đang bận. Chạy `node huong-dan-chay/serve.js 5300`. |
 | `node` không được nhận ra | Cài Node.js từ nodejs.org, mở lại cửa sổ lệnh. |
