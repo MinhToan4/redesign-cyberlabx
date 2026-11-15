@@ -61,9 +61,9 @@
 
   --ok: #17794b;
   --ok-soft: rgba(23, 121, 75, 0.1);
-  --err: #c4403f;
+  --err: #b3342f;
   --err-soft: rgba(196, 64, 63, 0.1);
-  --warn: #9a6a07;
+  --warn: #86590a;
   --warn-soft: rgba(154, 106, 7, 0.11);
   --info: #6847c9;
   --info-soft: rgba(104, 71, 201, 0.09);
@@ -80,17 +80,18 @@
 }
 
 :root {
-  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-  --r-control: 8px;
-  --r-card: 12px;
-  --r-panel: 14px;
+  --r-tag: 4px;
+  --r-control: 6px;
+  --r-card: 10px;
+  --r-panel: 12px;
 
   --sidebar-w: 240px;
   --topbar-h: 56px;
   --content-max: 1200px;
 
-  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 140ms;
 }

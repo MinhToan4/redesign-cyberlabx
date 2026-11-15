@@ -3,8 +3,12 @@
   var NS = 'http://www.w3.org/2000/svg';
 
   // Radar kỹ năng: data = [{ name, value 0-100 }], tối thiểu 3 trục.
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function clamp(v) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(100, v)) : 0; }
+
   function radar(host, data, opts) {
     opts = opts || {};
+    data = data.map(function (d) { return { name: esc(d.name), value: clamp(d.value) }; });
     var size = opts.size || 300, cx = size / 2, cy = size / 2 + 4, R = size / 2 - 62, n = data.length;
     var pt = function (i, f) { var a = -Math.PI / 2 + (i * 2 * Math.PI) / n; return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f]; };
     var ring = function (f) { return data.map(function (_, i) { return pt(i, f).join(','); }).join(' '); };
@@ -24,6 +28,7 @@
 
   // Lưới hoạt động: heat = mảng mức 0-4 theo cột-tuần (7 ngày mỗi tuần).
   function heatmap(host, heat) {
+    heat = heat.map(function (v) { v = Math.round(Number(v)); return v >= 0 && v <= 4 ? v : 0; });
     var weeks = Math.ceil(heat.length / 7), cell = 12, gap = 3, w = weeks * (cell + gap), h = 7 * (cell + gap);
     var s = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" role="img" aria-label="Hoạt động nộp bài 12 tháng gần nhất" style="display:block">';
     heat.forEach(function (v, i) {

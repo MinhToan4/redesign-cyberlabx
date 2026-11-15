@@ -565,3 +565,6 @@
     });
   });
 })();
+
+/* Mốc "hôm nay" cố định của dữ liệu mẫu (các hạn nộp trong data.js nằm quanh ngày này) để giao diện luôn giống nhau mỗi lần mở. */
+window.CLX.today = '2026-09-18';
