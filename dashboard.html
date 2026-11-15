@@ -14,10 +14,18 @@
   <script src="assets/theme.js"></script>
   <style>
     /* Riêng trang Tổng quan */
-    a.pick { position: relative; display: grid; grid-template-columns: 76px minmax(0, 1fr) 120px 104px auto; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); transition: background-color var(--dur) var(--ease); }
+    a.pick { position: relative; display: grid; grid-template-columns: 76px minmax(0, 1fr) 120px 104px 96px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); transition: background-color var(--dur) var(--ease); }
     a.pick:hover { background: var(--mute-soft); }
     a.pick:hover::after { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 0 2px 2px 0; background: var(--accent); }
     .pick .t { font-weight: 500; }
+    .pick > .row-gap:last-child { justify-self: end; }
+    .pick .cls, .pick .due-date { display: none; }
+    .pick .cls { font-size: 15px; min-width: 0; }
+    @media (min-width: 1700px) {
+      a.pick { grid-template-columns: 76px minmax(0, 1.5fr) minmax(0, 1fr) 130px 120px 96px; }
+      .pick .cls { display: block; }
+      .pick .due-date { display: block; }
+    }
     .pick .m { font-size: 12.5px; color: var(--text-3); }
     .pick .left { font-size: 13px; text-align: right; color: var(--text-2); white-space: nowrap; }
     .pick .left.soon { color: var(--warn); }
@@ -140,8 +148,9 @@
         return '<a class="pick" href="assignments.html?class=' + encodeURIComponent(x.cls.code) + '&code=' + encodeURIComponent(a.code) + '">' +
           '<span class="chip chip-mono code">' + esc(x.cls.course) + '</span>' +
           '<div style="min-width:0"><div class="t" title="' + esc(a.title) + '">' + esc(a.title) + '</div><div class="m">' + esc(a.topic) + ' · ' + a.xp + ' XP</div></div>' +
+          '<div class="cls"><div>' + esc(x.cls.name) + '</div><div class="m">' + esc(x.cls.group) + ' · ' + esc(x.cls.teacher) + '</div></div>' +
           '<div class="attempts">' + (parts ? U.ticks(+parts[1], +parts[0], 'is-error') + '<span class="n">' + esc(a.attempts) + ' lượt</span>' : '<span class="n">Chưa nộp</span>') + '</div>' +
-          '<div class="left tnum' + (x.diff <= 3 ? ' soon' : '') + '" title="Hạn ' + esc(a.deadline) + '">' + left + '</div>' +
+          '<div class="left tnum' + (x.diff <= 3 ? ' soon' : '') + '" title="Hạn ' + esc(a.deadline) + '">' + left + '<div class="m tnum due-date">' + esc(a.deadline.slice(8, 10) + '/' + a.deadline.slice(5, 7) + ' ' + a.deadline.slice(11)) + '</div></div>' +
           '<span class="row-gap">' + (a.status ? U.verdict(a.status) : '') + '<i data-lucide="arrow-right" class="faint"></i></span></a>';
       }).join('') || '<div class="empty">Không có bài nào đến hạn trong 14 ngày tới.</div>';
 

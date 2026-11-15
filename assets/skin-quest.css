@@ -7,7 +7,7 @@
   --font-display: 'Chakra Petch', 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
   --sidebar-w: 264px;
   --topbar-h: 68px;
-  --content-max: 1240px;
+  --content-max: 1880px;
 }
 
 /* ---------- Chữ ---------- */
@@ -48,16 +48,16 @@
 [data-skin='quest'] .progress { height: 6px; border-radius: var(--r-tag); }
 
 /* ---------- Thanh trên ---------- */
-[data-skin='quest'] .topbar { height: var(--topbar-h); padding: 0 40px; gap: 14px; }
+[data-skin='quest'] .topbar { height: var(--topbar-h); padding: 0 clamp(24px, 3vw, 56px); gap: 14px; }
 [data-skin='quest'] .topbar .page-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
 [data-skin='quest'] .search-btn { height: 46px; padding: 0 10px 0 16px; border-radius: var(--r-control); gap: 10px; }
 [data-skin='quest'] .search-btn span { min-width: 190px; font-size: 15px; }
 [data-skin='quest'] .icon-btn { width: 46px; height: 46px; border-radius: var(--r-control); }
 [data-skin='quest'] .icon-btn svg { width: 22px; height: 22px; }
 [data-skin='quest'] .kbd { height: 24px; min-width: 24px; font-size: 12px; }
-[data-skin='quest'] .content { padding: 36px 40px 88px; }
+[data-skin='quest'] .content { padding: 36px clamp(24px, 3vw, 56px) 88px; }
 [data-skin='quest'] .stack { gap: 28px; }
-[data-skin='quest'] .cols { grid-template-columns: minmax(0, 1fr) 352px; gap: 28px; }
+[data-skin='quest'] .cols { grid-template-columns: minmax(0, 1fr) clamp(352px, 24vw, 460px); gap: 28px; }
 
 /* ---------- Thành phần ---------- */
 [data-skin='quest'] .btn { height: 46px; padding: 0 22px; font-size: 15px; font-weight: 500; border-radius: var(--r-control); border-color: var(--line-strong); }
@@ -127,3 +127,6 @@
   [data-skin='quest'] .stat .label { font-size: 11px; letter-spacing: 0.06em; }
   [data-skin='quest'] .tbl-row { padding: 0 16px; }
 }
+
+/* Màn rộng: giãn khoảng cách giữa các cột để thông tin phủ đều bề ngang */
+[data-skin='quest'] .tbl-row { column-gap: clamp(18px, 2vw, 48px); }

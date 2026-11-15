@@ -70,7 +70,7 @@ Quy tắc dùng màu:
 
 - Khung ứng dụng do `assets/shell.js` vẽ: sidebar 240px (logo, 6 mục nav, tiến trình học kỳ, menu người dùng), topbar 56px (tên trang, đổi sáng/tối, thông báo). **Không tự vẽ lại khung.** Trang chỉ có `<main class="content" id="content">`.
 - Tiêu đề trang nằm ở topbar (`data-title`, tùy chọn `data-crumb` cho trang con). **Không lặp lại tiêu đề lớn trong nội dung.** Không dòng mô tả "cho có".
-- Chiều rộng nội dung tối đa 1200px, căn giữa. Trang 2 cột dùng `.cols` (cột chính + cột phụ 340px), tự xếp 1 cột dưới 1080px.
+- Tận dụng bề ngang màn hình: nội dung tối đa 1600px (skin quest của Sinh viên: 1880px), lề ngang co giãn theo màn hình (`clamp(24px, 3vw, 56px)`), không để hai bên trống. Trang 2 cột dùng `.cols` (cột chính + cột phụ co giãn 352–460px), tự xếp 1 cột dưới 1080px. Cột bảng chia theo tỉ lệ (`fr`) thay vì một cột `1fr` kèm nhiều cột cố định nhỏ, để thông tin phủ đều bề ngang; màn rộng (từ 1700px) có thể hiện thêm cột phụ có ích. Viền giao diện sáng đủ đậm (`--line` 20%, `--line-strong` 40%) để thấy rõ khối.
 - Một trang có tối đa **3 mức** thị giác: (1) tiêu đề mục `h2`, (2) nội dung card, (3) chú thích `--text-3`. Nhiều hơn là rối.
 - Chỉ **một** thao tác chính trên mỗi vùng nhìn. Các thao tác phụ dùng `.btn` viền hoặc `.btn-ghost`.
 - Danh sách nhiều dòng luôn có phân trang bằng `CLXUI.pager` (20–40 dòng/trang; mã mẫu ở `references/components.md`), không tự viết HTML phân trang. Đổi bộ lọc/tìm kiếm thì về trang 1. Bảng dùng CSS grid (`.tbl`), **không dùng `<table>`**.
