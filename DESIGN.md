@@ -9,7 +9,7 @@ Mở `index.html` bằng trình duyệt (cần mạng cho font IBM Plex Sans/Mon
 
 ## Hướng thiết kế
 
-"Sổ tay phòng lab" phong cách an toàn thông tin: yên tĩnh, chính xác, nhiều dữ liệu, ít trang trí. Nền gần đen và một màu nhấn cam hổ phách (tham khảo aws-quest), màu còn lại chỉ để báo kết quả bài nộp. Bo góc đối xứng và bộ icon riêng nét vuông. Chữ monospace chỉ cho mã. Chip kết quả AC/WA/WF/WFN/CPY là chi tiết đặc trưng.
+"Sổ tay phòng lab" phong cách an toàn thông tin: yên tĩnh, chính xác, nhiều dữ liệu, ít trang trí. Nền gần đen và một màu nhấn cam hổ phách (tham khảo aws-quest), màu còn lại chỉ để báo kết quả bài nộp. Bo góc gần vuông 2–4px; vai trò Sinh viên dùng skin "quest" bám aws-quest. Chữ monospace chỉ cho mã. Chip kết quả AC/WA/WF/WFN/CPY là chi tiết đặc trưng.
 
 ## Đã bỏ so với bản hiện tại
 

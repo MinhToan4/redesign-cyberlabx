@@ -36,7 +36,7 @@ Hoặc bấm đúp `index.html`. Hướng dẫn đầy đủ (xem trên điện 
 | Bảng sổ cái | Nhật ký và lịch sử: cột số thứ tự monospace, đường kẻ lề |
 | Bảng lệnh `Ctrl K` | Tìm nhanh bằng bàn phím, không dấu cũng tìm được |
 
-Nguyên tắc: bề mặt trung tính gần đen và một màu nhấn cam hổ phách (bảng màu tham khảo dự án aws-quest), nền sáng trắng thuần, màu còn lại chỉ để báo trạng thái; không glow, không đổ bóng, không gradient, không kính mờ; chữ IBM Plex (có đủ dấu tiếng Việt); bo góc đối xứng bốn góc (thẻ 14, nút và ô nhập 8, panel 16); **bộ icon riêng** nét 1.75, đầu vuông, chủ đề bảo mật (`assets/icons.js`); chuyển động ngắn, một đường cong, chỉ `opacity` và `transform`.
+Nguyên tắc: bề mặt trung tính gần đen và một màu nhấn cam hổ phách (bảng màu tham khảo dự án aws-quest), nền sáng trắng thuần, màu còn lại chỉ để báo trạng thái; không glow, không đổ bóng, không gradient, không kính mờ; **bo góc gần vuông 2–4px, không hình tròn** (vuông vức, chắc chắn, nghiêm túc); chữ lớn dễ đọc ở vai trò Sinh viên (skin "quest": tiêu đề Chakra Petch, nội dung Be Vietnam Pro, nhãn mono viết hoa); chuyển động ngắn, một đường cong, chỉ `opacity` và `transform`. Cơ sở nghiên cứu: [`docs/design-research.md`](docs/design-research.md).
 
 ## Vai trò và màn hình
 
@@ -56,7 +56,8 @@ index.html              cổng duyệt thiết kế: chọn vai trò, xem mọi 
 *.html                  màn hình Sinh viên
 teacher/  ta/  admin/   màn hình theo vai trò
 assets/
-  tokens.css            màu, bo góc đối xứng, chữ (sáng và tối)
+  tokens.css            màu, bo góc gần vuông, chữ (sáng và tối)
+  skin-quest.css        bộ giao diện cỡ lớn cho vai trò Sinh viên (bám aws-quest)
   icons.js              bộ icon bảo mật (nét vuông); tên chưa có lùi về Lucide
   base.css              reset, khung ứng dụng, sidebar, topbar
   components.css        nút, thẻ, chip, bảng, tab, form, phân trang, bảng lệnh

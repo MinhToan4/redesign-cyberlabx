@@ -37,7 +37,7 @@ Nguồn thật của hệ thống: `assets/tokens.css`, `assets/base.css`, `asse
 | Trạng thái | `--ok` `--err` `--warn` `--info` (+ `-soft`) | chỉ kết quả bài nộp, báo lỗi/thành công/cảnh báo |
 | | `--mute-soft` | hover trên nền trơn, chip trung tính |
 | Heatmap | `--heat-0` … `--heat-4` | lưới hoạt động |
-| Hình khối | `--r-tag` 4, `--r-control` 8, `--r-card` 14, `--r-panel` 16 | bo góc ĐỐI XỨNG: cả bốn góc cùng bán kính, không bo bất đối xứng, không vát |
+| Hình khối | `--r-tag` 2, `--r-control` 3, `--r-card` 4, `--r-panel` 4 | bo góc GẦN VUÔNG (2–4px), đối xứng: vuông vức, chắc chắn. Không hình tròn, không viên thuốc |
 | Khác | `--shadow-pop` | popover/menu nổi, nút nổi: CHỈ là viền 1px, không đổ bóng |
 | Chữ | `--font`, `--mono` | họ chữ |
 | Chuyển động | `--dur` 140ms, `--ease` | mọi transition |
@@ -47,7 +47,7 @@ Quy tắc dùng màu:
 2. Màu trạng thái luôn đi kèm **chữ hoặc mã** (AC, "Hạn hôm nay"), không bao giờ chỉ có màu (người mù màu).
 3. Nền `*-soft` dùng cho chip/badge; không dùng làm nền cả card.
 4. **Không glow, không đổ bóng, không gradient, không kính mờ (`backdrop-filter`/`blur`), không `filter: drop-shadow`, không `text-shadow`.** Không `box-shadow` có độ mờ (blur) khác 0 ở bất kỳ thành phần nào, kể cả focus: focus dùng viền `--accent` (ô nhập) hoặc `outline` 2px (nút/liên kết). Chỉ cho phép vòng 1px `0 0 0 1px` (là viền, không phải bóng). Không viền màu dày > 1px (trừ vạch nhấn 2px của nav/tab đang chọn).
-5. **Màu theo aws-quest, hình khối riêng.** Nền tối gần đen trung tính: `--bg` #08090b, `--surface` #101113, `--surface-2` #181a1e, `--surface-3` #22252a; nền sáng TRẮNG THUẦN (`--bg` và `--surface` đều #ffffff, không pha kem; bậc nền xám trung tính #f4f4f5 / #e7e7e9); điểm nhấn cam hổ phách (tối #e9a33b, sáng #a6530b; chữ đặt trên nền nhấn dùng `--accent-ink`). Tuyệt đối không ngả xanh/tím, không dựng lớp nền màu để "tạo chiều sâu": chiều sâu chỉ đến từ bậc nền và viền hairline. **Bo góc đối xứng:** mọi bề mặt dùng token `--r-*`, cả bốn góc cùng bán kính; không tự đặt `border-radius` ngoài token, không bo bất đối xứng, không vát góc. Phần tử tròn (avatar, chấm trạng thái) giữ tròn.
+5. **Màu theo aws-quest, hình khối riêng.** Nền tối gần đen trung tính: `--bg` #08090b, `--surface` #101113, `--surface-2` #181a1e, `--surface-3` #22252a; nền sáng TRẮNG THUẦN (`--bg` và `--surface` đều #ffffff, không pha kem; bậc nền xám trung tính #f4f4f5 / #e7e7e9); điểm nhấn cam hổ phách (tối #e9a33b, sáng #a6530b; chữ đặt trên nền nhấn dùng `--accent-ink`). Tuyệt đối không ngả xanh/tím, không dựng lớp nền màu để "tạo chiều sâu": chiều sâu chỉ đến từ bậc nền và viền hairline. **Bo góc gần vuông:** mọi bề mặt dùng token `--r-*` (2–4px, cả bốn góc bằng nhau); không tự đặt `border-radius` ngoài token; không hình tròn hay viên thuốc (avatar, chấm trạng thái, nút nổi, thanh tiến độ đều vuông vức). Lý do: góc vuông gợi sự nghiêm túc, chính xác, vững chắc, hợp sản phẩm an toàn thông tin (xem `docs/design-research.md`).
 6. Sáng và tối đều phải đúng: đổi `data-theme` trên `<html>`, không bao giờ kiểm tra theme bằng JS để chọn màu.
 
 ## 3. Chữ
@@ -136,7 +136,7 @@ Vùng bấm tối thiểu 32×32 (ưu tiên 36).
 - [ ] Không emoji, không dấu chấm than, không chữ hoa toàn bộ, không weight ≥ 700, không italic.
 - [ ] Không tiêu đề lớn lặp lại tên trang; không dòng mô tả thừa; không banner minh họa.
 - [ ] Chỉ 1 màu nhấn; màu trạng thái luôn kèm chữ/mã.
-- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc đối xứng theo token.
+- [ ] Khoảng cách toàn bội số 4, cùng cấp thì cùng khoảng; bo góc gần vuông theo token.
 - [ ] Mọi danh sách có phân trang; bảng là CSS grid; đổi bộ lọc về trang 1.
 - [ ] Hover, focus-visible, disabled, rỗng, lỗi đều có.
 - [ ] Sáng và tối đều đọc được; 390px không cuộn ngang; vùng bấm ≥ 32px.
@@ -248,3 +248,14 @@ Trang ngoài thư mục gốc dùng `../assets/...` cho CSS/JS. Mẫu đầu tra
 - [ ] Dữ liệu lấy từ `CLX`/`CLX_STAFF`/file dữ liệu riêng; tên và số hợp lý, định dạng nhất quán.
 - [ ] Nội dung từ dữ liệu được chèn bằng `CLXUI.esc` hoặc `textContent`, không nối chuỗi người dùng vào `innerHTML`.
 - [ ] Chụp ảnh sáng + tối + mobile (khung 390px) và xem lại ảnh trước khi báo xong.
+
+## 21. Skin "quest" cho vai trò Sinh viên
+
+Trang Sinh viên (thư mục gốc, trừ `index.html`) tự đặt `<html data-skin="quest">` (xem `assets/theme.js`) và nạp `assets/skin-quest.css`, bám ngôn ngữ thiết kế của dự án aws-quest:
+- **Chữ lớn dễ đọc:** nội dung 16px; tiêu đề Chakra Petch 700 (h1 34px, h2 22px, h3 18px); nội dung Be Vietnam Pro; nhãn nhỏ dùng IBM Plex Mono viết hoa giãn chữ 12.5px (`.kicker`, `.nav-label`, `.stat .label`, tiêu đề cột).
+- **Thanh bên rộng 264px:** hàng nav cao 48px, chữ 16px, icon 22px; mục đang chọn có viền và nền `--surface-2`, icon đổi màu nhấn; tên thương hiệu "CyberLabX." có dấu chấm cam.
+- **Thành phần cỡ lớn:** nút và ô nhập cao 46px, hàng bảng cao 60px, chip 26px, số liệu lớn 42px, thẻ padding 28px.
+- **Icon:** Lucide gốc, nét 1.75, đầu tròn (không dùng bộ `icons.js` vuông của skin mặc định); dấu hiệu nhận diện là khiên có dấu kiểm và tia sáng cam.
+- **Họa tiết nền:** lưới thoi rất mờ (SVG, độ trong suốt 3.5–4%), cố định khi cuộn.
+- Các vai trò khác (Giảng viên, Trợ giảng, Admin) dùng skin mặc định cho đến khi được duyệt chuyển sang skin này.
+Trang Sinh viên viết MỚI: dùng đúng class của `components.css`, không đặt cỡ chữ dưới 13px, không tự đặt `border-radius`.

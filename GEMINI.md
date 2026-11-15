@@ -8,7 +8,7 @@
 2. `skills/cyberlabx-ui/references/components.md` — mã mẫu từng thành phần, bảng icon.
 3. `dashboard.html` — trang mẫu chuẩn.
 
-Luật ngắn: nền tối gần đen trung tính (#08090b), nền sáng trắng thuần, điểm nhấn cam hổ phách, bo góc ĐỐI XỨNG theo token `--r-*`, icon bộ riêng `assets/icons.js` (nét vuông); TUYỆT ĐỐI không glow/đổ bóng/blur quanh viền, nút, card, ô nhập (focus chỉ đổi màu viền); chỉ dùng token/class trong `assets/`; không hex, gradient, emoji, dấu chấm than; không tiêu đề lớn lặp tên trang; một màu nhấn; bảng là CSS grid + phân trang; tiếng Việt có dấu; không bịa dữ liệu (lấy từ `assets/data.js`); không sửa `assets/*` khi chưa được giao, ghi nhu cầu vào `NOTES.md` (sổ tạm cục bộ).
+Luật ngắn: nền tối gần đen trung tính (#08090b), nền sáng trắng thuần, điểm nhấn cam hổ phách, bo góc GẦN VUÔNG (2–4px) theo token `--r-*`, không hình tròn, icon Lucide nét 1.75 (skin quest) hoặc bộ `assets/icons.js` (skin mặc định); trang Sinh viên dùng skin quest (mục 21 SKILL.md: chữ 16px, Chakra Petch); TUYỆT ĐỐI không glow/đổ bóng/blur quanh viền, nút, card, ô nhập (focus chỉ đổi màu viền); chỉ dùng token/class trong `assets/`; không hex, gradient, emoji, dấu chấm than; không tiêu đề lớn lặp tên trang; một màu nhấn; bảng là CSS grid + phân trang; tiếng Việt có dấu; không bịa dữ liệu (lấy từ `assets/data.js`); không sửa `assets/*` khi chưa được giao, ghi nhu cầu vào `NOTES.md` (sổ tạm cục bộ).
 Làm xong phải tự chụp ảnh (cách chụp ở mục 12 của SKILL.md), xem lại sáng + tối, 1440px + 390px, và duyệt checklist mục 13.
 
 Vai trò khác Sinh viên nằm trong `teacher/`, `ta/`, `admin/` (xem mục 16 SKILL.md: `data-role`, `../assets/`, `assets/data-staff.js`). Chi tiết đặc trưng và quy tắc biểu đồ: mục 15 và 17. Phông chữ: IBM Plex Sans/Mono (không Inter).
