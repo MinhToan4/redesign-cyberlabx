@@ -6,14 +6,15 @@
   <title>Tổng quan · CyberLabX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/base.css">
   <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/skin-quest.css">
   <script src="assets/theme.js"></script>
   <style>
     /* Riêng trang Tổng quan */
-    a.pick { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr) 112px 120px auto; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); transition: background-color var(--dur) var(--ease); }
+    a.pick { position: relative; display: grid; grid-template-columns: 76px minmax(0, 1fr) 120px 104px auto; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--line); transition: background-color var(--dur) var(--ease); }
     a.pick:hover { background: var(--mute-soft); }
     a.pick:hover::after { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 0 2px 2px 0; background: var(--accent); }
     .pick .t { font-weight: 500; }
@@ -138,9 +139,9 @@
         var left = x.diff === 0 ? 'Hạn hôm nay' : 'Còn ' + x.diff + ' ngày';
         return '<a class="pick" href="assignments.html?class=' + encodeURIComponent(x.cls.code) + '&code=' + encodeURIComponent(a.code) + '">' +
           '<span class="chip chip-mono code">' + esc(x.cls.course) + '</span>' +
-          '<div style="min-width:0"><div class="t trunc" title="' + esc(a.title) + '">' + esc(a.title) + '</div><div class="m">' + esc(a.topic) + ' · ' + a.xp + ' XP</div></div>' +
-          '<div class="attempts">' + (parts ? U.ticks(+parts[1], +parts[0], 'is-error') + '<span class="n">Lượt nộp ' + esc(a.attempts) + '</span>' : '<span class="n">Chưa nộp</span>') + '</div>' +
-          '<div class="left tnum' + (x.diff <= 3 ? ' soon' : '') + '">' + left + '<div class="m tnum">' + esc(a.deadline.slice(8, 10) + '/' + a.deadline.slice(5, 7) + ' ' + a.deadline.slice(11)) + '</div></div>' +
+          '<div style="min-width:0"><div class="t" title="' + esc(a.title) + '">' + esc(a.title) + '</div><div class="m">' + esc(a.topic) + ' · ' + a.xp + ' XP</div></div>' +
+          '<div class="attempts">' + (parts ? U.ticks(+parts[1], +parts[0], 'is-error') + '<span class="n">' + esc(a.attempts) + ' lượt</span>' : '<span class="n">Chưa nộp</span>') + '</div>' +
+          '<div class="left tnum' + (x.diff <= 3 ? ' soon' : '') + '" title="Hạn ' + esc(a.deadline) + '">' + left + '</div>' +
           '<span class="row-gap">' + (a.status ? U.verdict(a.status) : '') + '<i data-lucide="arrow-right" class="faint"></i></span></a>';
       }).join('') || '<div class="empty">Không có bài nào đến hạn trong 14 ngày tới.</div>';
 
