@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ca thi · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    .ruler-card { padding: 16px 20px 12px; }
+    .ruler-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+    .ruler-head h3 { font-size: 13px; font-weight: 500; color: var(--text-2); margin: 0; }
+    .ruler .due.is-live i { background: var(--ok); }
+    .ruler .due.is-live b { color: var(--ok); }
+    .modal-card { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-pop); }
+    /* Bảng ca thi: tối ưu độ rộng cột để vừa vặn ở mọi độ phân giải 1280px/1440px/1920px */
+    .exam-tbl {
+      --cols: 120px minmax(160px, 1.4fr) 135px 85px 85px 110px 90px;
+    }
+    .exam-tbl .tbl-row {
+      grid-template-columns: var(--cols);
+      gap: 12px;
+      padding: 0 16px;
+    }
+    @media (max-width: 768px) {
+      .ruler-card { display: none; }
+      .segmented { display: flex; overflow-x: auto; width: 100%; }
+      .segmented button { flex: 1; min-width: max-content; padding: 0 8px; font-size: 12px; }
+      .exam-tbl .tbl-row.tbl-head { display: none !important; }
+      .exam-tbl .tbl-row {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        grid-template-areas:
+          "code status"
+          "name action";
+        align-items: center;
+        gap: 6px 12px;
+        padding: 12px 16px;
+        min-height: auto;
+      }
+      .exam-tbl .cell-code { grid-area: code; }
+      .exam-tbl .cell-name { grid-area: name; }
+      .exam-tbl .cell-status { grid-area: status; justify-self: end; }
+      .exam-tbl .cell-act { grid-area: action; justify-self: end; }
+      .exam-tbl .cell-extra { display: none !important; }
+    }
+  </style>
+</head>
+<body data-role="teacher" data-page="exams" data-title="Ca thi">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- Thước thời gian 7 ngày tới -->
+      <section class="card ruler-card" aria-label="Thước ca thi 7 ngày tới">
+        <div class="ruler-head">
+          <h3>Lịch ca thi 7 ngày tới</h3>
+          <span class="meta faint tnum" id="ruler-meta" style="font-size:12px"></span>
+        </div>
+        <div class="ruler" id="ruler" role="img" aria-label="Thước các ca thi trong 7 ngày tới"></div>
+      </section>
+
+      <!-- Thanh công cụ & bảng danh sách -->
+      <section>
+        <div class="section-head">
+          <h2>Danh sách ca thi</h2>
+          <span class="meta tnum" id="exam-total-meta"></span>
+        </div>
+
+        <div class="card">
+          <div class="card-head" style="flex-wrap:wrap;gap:12px">
+            <div class="toolbar" style="flex:1;min-width:280px">
+              <div class="search" style="min-width:220px;flex:1">
+                <i data-lucide="search"></i>
+                <input class="input" id="search-input" placeholder="Tìm theo tên hoặc mã ca thi..." aria-label="Tìm ca thi">
+              </div>
+              <select class="select" id="filter-class" style="width:auto" aria-label="Lọc theo lớp học phần">
+                <option value="">Tất cả lớp học phần</option>
+              </select>
+              <div class="segmented" id="status-filter" role="group" aria-label="Lọc theo trạng thái ca thi">
+                <button type="button" aria-pressed="true" data-status="all">Tất cả</button>
+                <button type="button" aria-pressed="false" data-status="live">Đang diễn ra</button>
+                <button type="button" aria-pressed="false" data-status="upcoming">Sắp diễn ra</button>
+                <button type="button" aria-pressed="false" data-status="done">Đã kết thúc</button>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" id="btn-open-create" type="button"><i data-lucide="plus"></i>Tạo ca thi</button>
+            </div>
+          </div>
+
+          <div class="tbl exam-tbl" id="exam-tbl" role="table" aria-label="Bảng ca thi">
+            <div class="tbl-row tbl-head" role="row">
+              <span role="columnheader">Mã ca thi</span>
+              <span role="columnheader">Tên ca thi</span>
+              <span role="columnheader" class="cell-extra">Bắt đầu</span>
+              <span role="columnheader" class="cell-extra">Thời lượng</span>
+              <span role="columnheader" class="cell-extra">Thí sinh</span>
+              <span role="columnheader">Trạng thái</span>
+              <span role="columnheader" style="text-align:right">Thao tác</span>
+            </div>
+            <div id="exam-tbody"></div>
+          </div>
+
+          <div class="pager-host" id="pager"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Hộp thoại tối giản: Tạo ca thi mới -->
+  <div class="dlg-scrim" id="modal-create" hidden>
+    <div class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="card-head">
+        <h2 id="modal-title" style="font-size:15px;font-weight:600">Tạo ca thi mới</h2>
+        <button class="icon-btn" data-close aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-create-exam" class="card-pad stack" style="gap:16px">
+        <div class="field">
+          <label for="create-name">Tên ca thi</label>
+          <input class="input" id="create-name" required placeholder="vd: Thi kết thúc học phần An toàn mạng">
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;gap:12px">
+          <div class="field">
+            <label for="create-class">Lớp học phần</label>
+            <select class="select" id="create-class" required></select>
+          </div>
+          <div class="field">
+            <label for="create-minutes">Thời lượng (phút)</label>
+            <input class="input tnum" type="number" id="create-minutes" value="90" min="15" max="240" required>
+          </div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;gap:12px">
+          <div class="field">
+            <label for="create-date">Ngày bắt đầu</label>
+            <input class="input tnum" type="date" id="create-date" value="2026-09-19" required>
+          </div>
+          <div class="field">
+            <label for="create-time">Giờ bắt đầu</label>
+            <input class="input tnum" type="time" id="create-time" value="08:00" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="create-note">Ghi chú phòng thi (tùy chọn)</label>
+          <input class="input" id="create-note" placeholder="vd: Phòng 402-A2, sinh viên tự chuẩn bị môi trường Labtainer">
+        </div>
+        <div class="row-between" style="margin-top:8px">
+          <button type="button" class="btn" data-close id="btn-cancel-modal">Hủy</button>
+          <button type="submit" class="btn btn-primary"><i data-lucide="check"></i>Xác nhận tạo ca thi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var S = window.CLX_STAFF;
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      var DAY = 86400000;
+      var today = new Date(D.today + 'T00:00:00');
+      var dm = function (d) {
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+      };
+
+      /* Dữ liệu ca thi: sao chép để có thể thêm mới mà không ảnh hưởng data-staff gốc */
+      var examsList = (S.exams || []).slice();
+
+      /* Tạo danh sách lớp cho dropdown */
+      var filterClassEl = document.getElementById('filter-class');
+      var createClassEl = document.getElementById('create-class');
+      (S.classes || []).forEach(function (c) {
+        var opt1 = document.createElement('option');
+        opt1.value = c.code;
+        opt1.textContent = c.code + ' - ' + c.name;
+        filterClassEl.appendChild(opt1);
+
+        var opt2 = document.createElement('option');
+        opt2.value = c.code;
+        opt2.textContent = c.code + ' - ' + c.name;
+        createClassEl.appendChild(opt2);
+      });
+
+      /* Trạng thái bộ lọc và phân trang */
+      var state = {
+        search: '',
+        classCode: '',
+        status: 'all',
+        page: 1,
+        pageSize: 10
+      };
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pagerHost = document.getElementById('pager');
+      var pg = U.pager(pagerHost, {
+        total: examsList.length,
+        page: state.page,
+        size: state.pageSize,
+        sizes: [5, 10, 20],
+        onChange: function (page, size) {
+          state.page = page;
+          state.pageSize = size;
+          renderTable();
+        }
+      });
+
+      /* 1. Vẽ thước 7 ngày */
+      function renderRuler() {
+        var rulerEl = document.getElementById('ruler');
+        var metaEl = document.getElementById('ruler-meta');
+        if (!rulerEl) return;
+
+        /* Ca thi có start trong 7 ngày tới (tính từ today: 0 <= diff <= 6) */
+        var inRange = [];
+        examsList.forEach(function (ex) {
+          var d = new Date(ex.start.replace(' ', 'T') + ':00');
+          var diff = (d - today) / DAY;
+          if (diff >= 0 && diff <= 6.99) {
+            inRange.push({ exam: ex, date: d, diff: diff });
+          }
+        });
+        inRange.sort(function (a, b) { return a.diff - b.diff; });
+
+        if (metaEl) {
+          metaEl.textContent = inRange.length + ' ca thi trong 7 ngày tới';
+        }
+
+        var html = '<div class="axis"></div>';
+        for (var i = 0; i < 7; i++) {
+          var dd = new Date(today.getTime() + i * DAY);
+          var isToday = i === 0;
+          html += '<div class="day' + (isToday ? ' is-today' : '') + '" style="left:' + (i / 6 * 100) + '%">' +
+            '<span>' + (isToday ? 'Hôm nay' : dm(dd)) + '</span></div>';
+        }
+
+        /* Đặt các ca thi lên thước; nếu trùng hoặc rất gần ngày thì chia 2 làn */
+        var lane = [];
+        inRange.forEach(function (x, idx) {
+          var prev = inRange[idx - 1];
+          lane[idx] = prev && Math.abs(x.diff - prev.diff) < 0.6 && !lane[idx - 1] ? 1 : 0;
+          var left = Math.min(100, Math.max(0, x.diff / 6 * 100));
+          var isLive = x.exam.status === 'live';
+          var timeStr = x.exam.start.slice(11, 16);
+          html += '<div class="due' + (isLive ? ' is-live' : '') + '" style="left:' + left.toFixed(1) + '%;--lane:' + (lane[idx] ? 28 : 0) + 'px;--len:' + (lane[idx] ? 28 : 56) + 'px" title="' + esc(x.exam.name) + ' (' + timeStr + ')">' +
+            '<b>' + esc(x.exam.code.replace('EX-', '')) + ' (' + timeStr + ')</b><i></i></div>';
+        });
+
+        rulerEl.innerHTML = html;
+      }
+
+      /* 2. Lọc và vẽ bảng */
+      function getFilteredExams() {
+        return examsList.filter(function (ex) {
+          if (state.classCode && ex.classCode !== state.classCode) return false;
+          if (state.status !== 'all' && ex.status !== state.status) return false;
+          if (state.search) {
+            var q = state.search.toLowerCase();
+            var mName = ex.name.toLowerCase().indexOf(q) !== -1;
+            var mCode = ex.code.toLowerCase().indexOf(q) !== -1;
+            var mCls = ex.classCode.toLowerCase().indexOf(q) !== -1;
+            if (!mName && !mCode && !mCls) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderStatusPill(status) {
+        if (status === 'live') {
+          return '<span class="status s-ok">Đang diễn ra</span>';
+        } else if (status === 'upcoming') {
+          return '<span class="status s-warn">Sắp diễn ra</span>';
+        } else {
+          return '<span class="status">Đã kết thúc</span>';
+        }
+      }
+
+      function renderTable() {
+        var filtered = getFilteredExams();
+        var total = filtered.length;
+
+        var totalMeta = document.getElementById('exam-total-meta');
+        if (totalMeta) {
+          totalMeta.textContent = total + ' ca thi' + (total !== examsList.length ? ' (lọc từ ' + examsList.length + ')' : '');
+        }
+
+        var tbody = document.getElementById('exam-tbody');
+        if (!total) {
+          tbody.innerHTML = '<div class="empty">Không tìm thấy ca thi nào phù hợp với bộ lọc hiện tại.</div>';
+          pg.set({ total: 0, page: 1 });
+        } else {
+          var pageRows = U.paginate(filtered, state.page, state.pageSize);
+          tbody.innerHTML = pageRows.map(function (ex) {
+            var isLive = ex.status === 'live';
+            var studentCount = (ex.joined || 0) + '/' + (ex.students || 0) + ' SV';
+            var actionHtml = '';
+            if (isLive) {
+              actionHtml = '<a class="btn btn-sm btn-ghost" href="exam-monitor.html?code=' + encodeURIComponent(ex.code) + '" style="color:var(--ok);border-color:var(--ok)"><i data-lucide="radio"></i>Theo dõi</a>';
+            } else if (ex.status === 'upcoming') {
+              actionHtml = '<span class="faint" style="font-size:12.5px">Chưa bắt đầu</span>';
+            } else {
+              actionHtml = '<span class="faint" style="font-size:12.5px">Đã lưu trữ</span>';
+            }
+
+            return '<div class="tbl-row" role="row">' +
+              '<div class="cell-code"><span class="chip chip-mono">' + esc(ex.code) + '</span></div>' +
+              '<div class="cell-name" style="min-width:0">' +
+                '<div class="trunc" style="font-weight:500" title="' + esc(ex.name) + '">' + esc(ex.name) + '</div>' +
+                '<div class="faint trunc" style="font-size:12px">' + esc(ex.classCode) + '</div>' +
+              '</div>' +
+              '<div class="cell-extra mono tnum" style="font-size:13px">' + esc(ex.start) + '</div>' +
+              '<div class="cell-extra tnum" style="font-size:13px">' + ex.minutes + ' phút</div>' +
+              '<div class="cell-extra tnum" style="font-size:13px">' + esc(studentCount) + '</div>' +
+              '<div class="cell-status">' + renderStatusPill(ex.status) + '</div>' +
+              '<div class="cell-act" style="text-align:right">' + actionHtml + '</div>' +
+            '</div>';
+          }).join('');
+
+          pg.set({ total: total, page: state.page, size: state.pageSize });
+        }
+
+        window.clxIcons();
+      }
+
+      /* Sự kiện tìm kiếm & lọc */
+      var searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('input', function () {
+        state.search = searchInput.value.trim();
+        state.page = 1;
+        renderTable();
+      });
+
+      filterClassEl.addEventListener('change', function () {
+        state.classCode = filterClassEl.value;
+        state.page = 1;
+        renderTable();
+      });
+
+      var statusFilter = document.getElementById('status-filter');
+      statusFilter.addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-status]');
+        if (!btn) return;
+        statusFilter.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.setAttribute('aria-pressed', 'true');
+        state.status = btn.dataset.status;
+        state.page = 1;
+        renderTable();
+      });
+
+      /* Modal Tạo ca thi: dùng CLXUI.modal chuẩn */
+      var modalCreateEl = document.getElementById('modal-create');
+      var openBtn = document.getElementById('btn-open-create');
+      var form = document.getElementById('form-create-exam');
+
+      var createModal = U.modal(modalCreateEl, {
+        initialFocus: '#create-name',
+        onClose: function () {
+          form.reset();
+          document.getElementById('create-date').value = '2026-09-19';
+          document.getElementById('create-time').value = '08:00';
+          document.getElementById('create-minutes').value = '90';
+        }
+      });
+
+      openBtn.addEventListener('click', createModal.open);
+      modalCreateEl.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', createModal.close);
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = document.getElementById('create-name').value.trim();
+        var classCode = document.getElementById('create-class').value;
+        var minutes = parseInt(document.getElementById('create-minutes').value, 10) || 90;
+        var date = document.getElementById('create-date').value;
+        var time = document.getElementById('create-time').value;
+
+        if (!name || !classCode || !date || !time) return;
+
+        /* Item 11: Lấy sĩ số thật từ S.classes theo classCode đã chọn */
+        var foundCls = (S.classes || []).find(function (c) { return c.code === classCode; });
+        var classStudents = (foundCls && foundCls.students) ? foundCls.students : 50;
+
+        var startStr = date + ' ' + time;
+        var newExam = {
+          code: 'EX-' + classCode.split('.')[0] + '-T' + Math.floor(Math.random() * 90 + 10),
+          name: name,
+          classCode: classCode,
+          start: startStr,
+          minutes: minutes,
+          status: 'upcoming',
+          students: classStudents,
+          joined: 0,
+          submitted: 0
+        };
+
+        examsList.unshift(newExam);
+        createModal.close();
+
+        /* Item 12: Đặt lại cả state và điều khiển bộ lọc trước khi render để thấy ca thi mới tạo */
+        state.search = '';
+        state.classCode = '';
+        state.status = 'all';
+        state.page = 1;
+
+        searchInput.value = '';
+        filterClassEl.value = '';
+        statusFilter.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', b.dataset.status === 'all' ? 'true' : 'false');
+        });
+
+        renderRuler();
+        renderTable();
+      });
+
+      /* Khởi tạo */
+      renderRuler();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

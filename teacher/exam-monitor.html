@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theo dõi ca thi · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .monitor-grid > div { padding: 16px 20px; }
+    .monitor-grid > div + div { border-left: 1px solid var(--line); }
+    .countdown-val {
+      font-family: var(--mono);
+      font-size: 26px;
+      line-height: 34px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--accent);
+    }
+
+    /* Bảng thí sinh: tối ưu kích thước 7 cột vừa vặn ở mọi độ phân giải (1280px, 1440px, 1920px), không cuộn ngang */
+    .monitor-tbl {
+      --cols: 28px minmax(0, 1fr) 86px 92px 44px 30px 60px;
+      font-size: 13px;
+    }
+    .monitor-tbl .tbl-row {
+      grid-template-columns: var(--cols);
+      gap: 8px;
+      padding: 0 12px;
+      min-height: 48px;
+    }
+    .monitor-tbl.ledger .tbl-row::before {
+      left: 44px;
+    }
+    .monitor-tbl .no {
+      padding-right: 4px;
+    }
+
+    .act-btn {
+      display: inline-grid; place-items: center;
+      width: 28px; height: 28px; border: 0; border-radius: var(--r-control);
+      background: transparent; color: var(--text-2); cursor: pointer;
+      transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .act-btn:hover { background: var(--mute-soft); color: var(--text); }
+    .act-btn svg { width: 15px; height: 15px; stroke-width: 1.5; }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 540px;
+      overflow-y: auto;
+      font-size: 12.5px;
+      padding-right: 4px;
+    }
+    .log-item {
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border-radius: var(--r-control);
+      border-left: 2px solid var(--line-strong);
+      line-height: 1.45;
+    }
+    .log-item.is-warn { border-left-color: var(--warn); }
+    .log-item.is-err { border-left-color: var(--err); }
+    .log-item.is-ok { border-left-color: var(--ok); }
+    .log-item .time { font-family: var(--mono); font-size: 11.5px; color: var(--text-3); }
+
+    .modal-card { width: min(480px, 100%); max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-pop); }
+
+    @media (max-width: 900px) {
+      .monitor-grid { grid-template-columns: repeat(2, 1fr); }
+      .monitor-grid > div:nth-child(2) ~ div { border-top: 1px solid var(--line); }
+      .monitor-grid > div:nth-child(odd) { border-left: 0; }
+    }
+    @media (max-width: 820px) {
+      .segmented { display: flex; overflow-x: auto; width: 100%; }
+      .segmented button { flex: 1; min-width: max-content; padding: 0 8px; font-size: 12px; }
+      .monitor-tbl .tbl-row.tbl-head { display: none !important; }
+      .monitor-tbl .tbl-row {
+        display: grid !important;
+        grid-template-columns: 24px minmax(0, 1fr) auto !important;
+        grid-template-areas:
+          "no name status"
+          "no name action";
+        align-items: center;
+        gap: 4px 10px;
+        padding: 12px 14px;
+        min-height: auto;
+      }
+      .monitor-tbl .no { grid-area: no; text-align: left; padding: 0; font-size: 12px; }
+      .monitor-tbl .cell-name { grid-area: name; }
+      .monitor-tbl .cell-status { grid-area: status; justify-self: end; }
+      .monitor-tbl .cell-act { grid-area: action; justify-self: end; min-height: 24px; }
+      .monitor-tbl.ledger .tbl-row::before { display: none; }
+      .monitor-tbl .cell-extra { display: none !important; }
+    }
+  </style>
+</head>
+<body data-role="teacher" data-page="exams" data-crumb="Ca thi" data-title="Theo dõi ca thi">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- Tiêu đề ca thi & thông số chính -->
+      <section class="card monitor-grid" aria-label="Thông số thời gian thực">
+        <div class="stat">
+          <div class="label">Thời gian còn lại</div>
+          <div class="countdown-val tnum" id="countdown">00:46:12</div>
+          <div class="hint">EX-INT1449-GK (90 phút)</div>
+        </div>
+        <div class="stat">
+          <div class="label">Đang làm bài</div>
+          <div class="value tnum" id="stat-working" style="color:var(--text)">0</div>
+          <div class="hint">Kết nối ổn định</div>
+        </div>
+        <div class="stat">
+          <div class="label">Đã nộp bài</div>
+          <div class="value tnum" id="stat-submitted" style="color:var(--ok)">0</div>
+          <div class="hint">Đã khóa bài thi</div>
+        </div>
+        <div class="stat">
+          <div class="label">Mất kết nối (>30s)</div>
+          <div class="value tnum" id="stat-lost" style="color:var(--err)">0</div>
+          <div class="hint">Cần kiểm tra mạng</div>
+        </div>
+        <div class="stat">
+          <div class="label">Bị cảnh cáo / Đình chỉ</div>
+          <div class="value tnum" id="stat-warned" style="color:var(--warn)">0</div>
+          <div class="hint">Vi phạm giám sát</div>
+        </div>
+      </section>
+
+      <!-- Khung làm việc 2 cột -->
+      <div class="cols">
+        <!-- Cột chính: Bảng thí sinh -->
+        <div class="stack">
+          <section>
+            <div class="section-head">
+              <h2>Danh sách thí sinh</h2>
+              <span class="meta tnum" id="table-meta"></span>
+            </div>
+
+            <div class="card">
+              <div class="card-head" style="flex-wrap:wrap;gap:12px">
+                <div class="toolbar" style="flex:1;min-width:260px">
+                  <div class="search" style="min-width:180px;flex:1">
+                    <i data-lucide="search"></i>
+                    <input class="input" id="search-student" placeholder="Tìm theo họ tên, MSSV, IP..." aria-label="Tìm thí sinh">
+                  </div>
+                  <div class="segmented" id="status-filter" role="group" aria-label="Lọc theo trạng thái thí sinh">
+                    <button type="button" aria-pressed="true" data-state="all">Tất cả</button>
+                    <button type="button" aria-pressed="false" data-state="working">Đang làm</button>
+                    <button type="button" aria-pressed="false" data-state="submitted">Đã nộp</button>
+                    <button type="button" aria-pressed="false" data-state="lost">Mất kết nối</button>
+                    <button type="button" aria-pressed="false" data-state="warned">Cảnh cáo</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tbl ledger monitor-tbl" id="students-tbl" role="table" aria-label="Bảng thí sinh ca thi">
+                <div class="tbl-row tbl-head" role="row">
+                  <span role="columnheader" class="no">STT</span>
+                  <span role="columnheader">Thí sinh</span>
+                  <span role="columnheader">Trạng thái</span>
+                  <span role="columnheader" class="cell-extra">Nhịp tim</span>
+                  <span role="columnheader" class="cell-extra num">Đã làm</span>
+                  <span role="columnheader" class="cell-extra num">C/C</span>
+                  <span role="columnheader" style="text-align:right">Thao tác</span>
+                </div>
+                <div id="students-tbody"></div>
+              </div>
+
+              <div class="pager-host" id="pager"></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Cột phụ: Nhật ký hành động giám sát -->
+        <aside class="stack">
+          <section class="card card-pad">
+            <div class="row-between" style="margin-bottom:12px">
+              <div>
+                <h2 style="font-size:14px;font-weight:600">Nhật ký giám sát</h2>
+                <div class="faint" style="font-size:12px;margin-top:2px">Ghi nhận sự kiện thời gian thực</div>
+              </div>
+              <span class="chip chip-mono" id="log-count">0 sự kiện</span>
+            </div>
+            <div class="log-list" id="log-container" role="log" aria-live="polite"></div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hộp xác nhận Cảnh cáo / Đình chỉ (bắt buộc nhập lý do) -->
+  <div class="dlg-scrim" id="action-modal" hidden>
+    <div class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-action-title">
+      <div class="card-head">
+        <h2 id="modal-action-title" style="font-size:15px;font-weight:600">Xác nhận thao tác</h2>
+        <button class="icon-btn" data-close aria-label="Đóng"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-action" class="card-pad stack" style="gap:14px">
+        <div style="font-size:13.5px;line-height:1.5">
+          Bạn đang thực hiện thao tác <strong id="action-type-name"></strong> đối với thí sinh:
+          <div style="margin-top:6px;padding:8px 12px;background:var(--surface-2);border-radius:var(--r-control)">
+            <b id="target-student-name"></b> (<span class="mono" id="target-student-acc"></span>) · IP: <span class="mono" id="target-student-ip"></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="action-reason">Lý do xử lý <span style="color:var(--err)">* (bắt buộc)</span></label>
+          <textarea class="textarea" id="action-reason" required placeholder="Nêu rõ hành vi vi phạm (ví dụ: chuyển cửa sổ quá 3 lần, phát hiện IP lạ...)"></textarea>
+          <div class="faint" id="reason-error" style="font-size:12px;color:var(--err);display:none">Vui lòng nhập lý do cụ thể trước khi xác nhận.</div>
+        </div>
+
+        <div class="row-between" style="margin-top:6px">
+          <button type="button" class="btn" data-close id="btn-cancel-action">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="btn-confirm-action"><i data-lucide="check"></i>Xác nhận</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var S = window.CLX_STAFF;
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      var role = document.body.dataset.role || 'teacher';
+      var isTA = role === 'ta';
+
+      /* Sao chép danh sách thí sinh từ examStudents (55 thí sinh) */
+      var students = (S.examStudents || []).map(function (s, idx) {
+        return {
+          id: idx + 1,
+          name: s.name,
+          account: s.account,
+          state: s.state, // 'working', 'submitted', 'lost', 'warned', 'suspended'
+          heartbeat: s.heartbeat, // số giây từ ping cuối
+          solved: s.solved || 0,
+          totalLabs: 5,
+          warnings: s.warnings || 0,
+          ip: s.ip
+        };
+      });
+
+      /* Danh sách nhật ký giám sát ban đầu */
+      var logs = [
+        { time: '14:14:10', type: 'warn', text: 'Thí sinh B23DCAT026 bị cảnh cáo lần 1 (Chuyển cửa sổ trình duyệt)' },
+        { time: '14:12:35', type: 'err', text: 'Thí sinh B23DCAT029 mất kết nối (>30s không có phản hồi ping)' },
+        { time: '14:05:18', type: 'ok', text: 'Thí sinh B23DCAT021 nộp bài hoàn tất (4/5 bài)' },
+        { time: '14:01:02', type: 'ok', text: 'Thí sinh B23DCAT020 nộp bài hoàn tất (3/5 bài)' },
+        { time: '13:30:00', type: 'info', text: 'Ca thi EX-INT1449-GK chính thức bắt đầu với 55 thí sinh' }
+      ];
+
+      /* Quản lý trạng thái xem */
+      var state = {
+        search: '',
+        statusFilter: 'all',
+        page: 1,
+        pageSize: 10
+      };
+
+      /* Khởi tạo phân trang chuẩn CLXUI.pager */
+      var pagerHost = document.getElementById('pager');
+      var pg = U.pager(pagerHost, {
+        total: students.length,
+        page: state.page,
+        size: state.pageSize,
+        sizes: [10, 20, 50],
+        onChange: function (page, size) {
+          state.page = page;
+          state.pageSize = size;
+          renderTable();
+        }
+      });
+
+      /* 1. Đồng hồ đếm ngược: tính thời gian còn lại từ mốc kết thúc tuyệt đối */
+      var totalRemainSeconds = 46 * 60 + 12;
+      var endTime = Date.now() + totalRemainSeconds * 1000;
+      var countdownEl = document.getElementById('countdown');
+      var countdownTimerId = null;
+      var heartbeatTimerId = null;
+
+      function updateCountdown() {
+        var now = Date.now();
+        var diff = Math.max(0, Math.floor((endTime - now) / 1000));
+        var m = Math.floor(diff / 60);
+        var s = diff % 60;
+        countdownEl.textContent = '00:' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        if (diff === 0 && countdownTimerId) {
+          clearInterval(countdownTimerId);
+          countdownTimerId = null;
+        }
+      }
+
+      /* 2. Cập nhật thống kê đầu trang */
+      function updateStats() {
+        var working = 0, submitted = 0, lost = 0, warned = 0;
+        students.forEach(function (s) {
+          if (s.state === 'submitted') submitted++;
+          else if (s.state === 'suspended' || s.state === 'warned') warned++;
+          else if (s.state === 'lost' || s.heartbeat > 30) lost++;
+          else working++;
+        });
+
+        document.getElementById('stat-working').textContent = working;
+        document.getElementById('stat-submitted').textContent = submitted;
+        document.getElementById('stat-lost').textContent = lost;
+        document.getElementById('stat-warned').textContent = warned;
+      }
+
+      /* 3. Vẽ nhật ký giám sát */
+      function renderLogs() {
+        var container = document.getElementById('log-container');
+        document.getElementById('log-count').textContent = logs.length + ' sự kiện';
+        container.innerHTML = logs.map(function (item) {
+          var cls = item.type === 'warn' ? ' is-warn' : item.type === 'err' ? ' is-err' : item.type === 'ok' ? ' is-ok' : '';
+          return '<div class="log-item' + cls + '">' +
+            '<div class="time tnum">' + esc(item.time) + '</div>' +
+            '<div style="margin-top:2px">' + esc(item.text) + '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      function addLog(type, text) {
+        var now = new Date();
+        var timeStr = String(now.getHours()).padStart(2, '0') + ':' +
+                      String(now.getMinutes()).padStart(2, '0') + ':' +
+                      String(now.getSeconds()).padStart(2, '0');
+        logs.unshift({ time: timeStr, type: type, text: text });
+        if (logs.length > 50) logs.pop();
+        renderLogs();
+      }
+
+      /* 4. Vẽ bảng thí sinh */
+      function getFilteredStudents() {
+        return students.filter(function (s) {
+          if (state.statusFilter !== 'all') {
+            if (state.statusFilter === 'lost') {
+              if (s.state !== 'lost' && s.heartbeat <= 30) return false;
+            } else if (state.statusFilter === 'warned') {
+              if (s.state !== 'warned' && s.state !== 'suspended') return false;
+            } else if (s.state !== state.statusFilter) {
+              return false;
+            }
+          }
+          if (state.search) {
+            var q = state.search.toLowerCase();
+            var mName = s.name.toLowerCase().indexOf(q) !== -1;
+            var mAcc = s.account.toLowerCase().indexOf(q) !== -1;
+            var mIp = s.ip.toLowerCase().indexOf(q) !== -1;
+            if (!mName && !mAcc && !mIp) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderStateBadge(s) {
+        if (s.state === 'suspended') {
+          return '<span class="status s-err">Đình chỉ</span>';
+        }
+        if (s.state === 'submitted') {
+          return '<span class="status s-ok">Đã nộp</span>';
+        }
+        if (s.state === 'lost' || s.heartbeat > 30) {
+          return '<span class="status s-err">Mất kết nối</span>';
+        }
+        if (s.state === 'warned') {
+          return '<span class="status s-warn">Cảnh cáo (' + s.warnings + ')</span>';
+        }
+        return '<span class="status s-ok">Đang làm</span>';
+      }
+
+      function renderHeartbeat(s) {
+        if (s.state === 'submitted') {
+          return '<span class="faint mono">—</span>';
+        }
+        var sec = s.heartbeat;
+        var isLost = sec > 30;
+
+        /* Quy đổi 10 vạch từ số giây ping */
+        var on = 0;
+        if (sec <= 3) on = 10;
+        else if (sec <= 6) on = 8;
+        else if (sec <= 10) on = 6;
+        else if (sec <= 15) on = 4;
+        else if (sec <= 25) on = 2;
+        else on = 0;
+
+        var kind = isLost ? 'is-error' : (sec <= 8 ? 'is-ok' : '');
+        var ticksHtml = U.ticks(10, on, kind);
+        var label = isLost
+          ? '<span style="color:var(--err);font-weight:500">' + sec + 's</span>'
+          : '<span class="faint">' + sec + 's trước</span>';
+
+        return '<div style="display:flex;flex-direction:column;gap:2px">' +
+          ticksHtml +
+          '<span class="mono tnum" style="font-size:11px">' + label + '</span>' +
+        '</div>';
+      }
+
+      function renderTable() {
+        var filtered = getFilteredStudents();
+        var total = filtered.length;
+
+        document.getElementById('table-meta').textContent = total + ' thí sinh' + (total !== students.length ? ' (lọc từ ' + students.length + ')' : '');
+
+        var tbody = document.getElementById('students-tbody');
+        if (!total) {
+          tbody.innerHTML = '<div class="empty">Không tìm thấy thí sinh nào phù hợp với bộ lọc hiện tại.</div>';
+          pg.set({ total: 0, page: 1 });
+        } else {
+          var startIdx = (state.page - 1) * state.pageSize;
+          var pageRows = U.paginate(filtered, state.page, state.pageSize);
+
+          tbody.innerHTML = pageRows.map(function (s, idx) {
+            var stt = startIdx + idx + 1;
+            var canAct = s.state !== 'submitted' && s.state !== 'suspended';
+
+            /* Nút hành động: icon-btn 28px; thí sinh đã nộp hiển thị — */
+            var actHtml = '';
+            if (canAct) {
+              actHtml += '<button type="button" class="act-btn" data-action="warn" data-acc="' + esc(s.account) + '" title="Cảnh cáo vi phạm" aria-label="Cảnh cáo thí sinh ' + esc(s.name) + '">' +
+                '<i data-lucide="triangle-alert"></i></button>';
+              if (!isTA) {
+                actHtml += '<button type="button" class="act-btn" data-action="suspend" data-acc="' + esc(s.account) + '" title="Đình chỉ thi" aria-label="Đình chỉ thí sinh ' + esc(s.name) + '" style="color:var(--err)">' +
+                  '<i data-lucide="ban"></i></button>';
+              }
+            } else {
+              actHtml = '<span class="faint mono" style="font-size:13px">—</span>';
+            }
+
+            return '<div class="tbl-row" role="row">' +
+              '<span class="no">' + stt + '</span>' +
+              '<div class="cell-name" style="min-width:0">' +
+                '<div class="trunc" style="font-weight:500" title="' + esc(s.name) + '">' + esc(s.name) + '</div>' +
+                '<div class="mono faint tnum trunc" style="font-size:11.5px;margin-top:1px">' + esc(s.account) + ' · ' + esc(s.ip) + '</div>' +
+              '</div>' +
+              '<div class="cell-status">' + renderStateBadge(s) + '</div>' +
+              '<div class="cell-extra cell-heartbeat">' + renderHeartbeat(s) + '</div>' +
+              '<div class="cell-extra cell-solved num mono tnum">' + s.solved + '/' + s.totalLabs + '</div>' +
+              '<div class="cell-extra cell-warn num tnum' + (s.warnings > 0 ? ' warn' : ' faint') + '">' + s.warnings + '</div>' +
+              '<div class="cell-act" style="text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:2px">' + actHtml + '</div>' +
+            '</div>';
+          }).join('');
+
+          pg.set({ total: total, page: state.page, size: state.pageSize });
+        }
+
+        updateStats();
+        window.clxIcons();
+      }
+
+      /* 5. Giả lập nhịp tim (tự dừng timer khi tab ẩn) */
+      function simulateHeartbeat() {
+        if (document.hidden) return;
+
+        students.forEach(function (s) {
+          if (s.state === 'submitted' || s.state === 'suspended') return;
+          if (s.state === 'lost') {
+            /* Thỉnh thoảng thí sinh mất kết nối ping trở lại */
+            if (Math.random() < 0.15) {
+              s.heartbeat = 2;
+              s.state = s.warnings > 0 ? 'warned' : 'working';
+              addLog('ok', 'Thí sinh ' + s.account + ' đã kết nối lại thành công');
+            } else {
+              s.heartbeat += 3;
+            }
+          } else {
+            /* Đang làm bình thường: đa số ping 1-4s, đôi khi trễ 1-2 chu kỳ */
+            if (Math.random() < 0.8) {
+              s.heartbeat = Math.floor(Math.random() * 4) + 1;
+            } else {
+              s.heartbeat += 3;
+              if (s.heartbeat > 30 && s.state !== 'lost') {
+                s.state = 'lost';
+                addLog('err', 'Thí sinh ' + s.account + ' mất kết nối (ping cuối: ' + s.heartbeat + 's trước)');
+              }
+            }
+          }
+        });
+
+        renderTable();
+      }
+
+      function startTimers() {
+        if (document.hidden) return;
+        updateCountdown();
+        if (!countdownTimerId) {
+          countdownTimerId = setInterval(updateCountdown, 1000);
+        }
+        if (!heartbeatTimerId) {
+          heartbeatTimerId = setInterval(simulateHeartbeat, 3000);
+        }
+      }
+
+      function stopTimers() {
+        if (countdownTimerId) {
+          clearInterval(countdownTimerId);
+          countdownTimerId = null;
+        }
+        if (heartbeatTimerId) {
+          clearInterval(heartbeatTimerId);
+          heartbeatTimerId = null;
+        }
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          stopTimers();
+        } else {
+          startTimers();
+        }
+      });
+
+      /* Sự kiện tìm kiếm & lọc */
+      var searchStudentEl = document.getElementById('search-student');
+      searchStudentEl.addEventListener('input', function () {
+        state.search = searchStudentEl.value.trim();
+        state.page = 1;
+        renderTable();
+      });
+
+      var statusFilterEl = document.getElementById('status-filter');
+      statusFilterEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-state]');
+        if (!btn) return;
+        statusFilterEl.querySelectorAll('button').forEach(function (b) {
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.setAttribute('aria-pressed', 'true');
+        state.statusFilter = btn.dataset.state;
+        state.page = 1;
+        renderTable();
+      });
+
+      /* 6. Hộp thoại xác nhận Cảnh cáo / Đình chỉ dùng CLXUI.modal chuẩn */
+      var actionModalEl = document.getElementById('action-modal');
+      var formAction = document.getElementById('form-action');
+      var actionReason = document.getElementById('action-reason');
+      var reasonError = document.getElementById('reason-error');
+
+      var currentActionTarget = null;
+      var currentActionType = null;
+
+      var actionModal = U.modal(actionModalEl, {
+        initialFocus: '#action-reason',
+        onClose: function () {
+          currentActionTarget = null;
+          currentActionType = null;
+          actionReason.value = '';
+          reasonError.style.display = 'none';
+        }
+      });
+
+      actionModalEl.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', actionModal.close);
+      });
+
+      function openActionModal(type, student) {
+        currentActionType = type; // 'warn' | 'suspend'
+        currentActionTarget = student;
+
+        document.getElementById('modal-action-title').textContent = type === 'warn' ? 'Xác nhận cảnh cáo thí sinh' : 'Xác nhận đình chỉ thi';
+        document.getElementById('action-type-name').textContent = type === 'warn' ? 'CẢNH CÁO' : 'ĐÌNH CHỈ THI';
+        document.getElementById('target-student-name').textContent = student.name;
+        document.getElementById('target-student-acc').textContent = student.account;
+        document.getElementById('target-student-ip').textContent = student.ip;
+
+        var confirmBtn = document.getElementById('btn-confirm-action');
+        confirmBtn.className = 'btn btn-primary' + (type === 'suspend' ? ' btn-err' : '');
+        confirmBtn.innerHTML = '<i data-lucide="check"></i>' + (type === 'warn' ? 'Gửi cảnh cáo' : 'Đình chỉ ngay');
+
+        actionReason.value = '';
+        reasonError.style.display = 'none';
+        actionModal.open();
+        window.clxIcons();
+      }
+
+      document.getElementById('students-tbody').addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var act = btn.dataset.action;
+        var acc = btn.dataset.acc;
+        var st = students.filter(function (x) { return x.account === acc; })[0];
+        if (!st) return;
+        openActionModal(act, st);
+      });
+
+      formAction.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var reason = actionReason.value.trim();
+        if (!reason) {
+          reasonError.style.display = 'block';
+          actionReason.focus();
+          return;
+        }
+
+        if (currentActionType === 'warn') {
+          currentActionTarget.warnings++;
+          currentActionTarget.state = 'warned';
+          addLog('warn', 'Cảnh cáo ' + currentActionTarget.account + ' (' + currentActionTarget.name + '): ' + reason);
+        } else if (currentActionType === 'suspend') {
+          currentActionTarget.state = 'suspended';
+          addLog('err', 'Đình chỉ thi ' + currentActionTarget.account + ' (' + currentActionTarget.name + '): ' + reason);
+        }
+
+        actionModal.close();
+        renderTable();
+      });
+
+      /* Khởi tạo */
+      renderLogs();
+      renderTable();
+      startTimers();
+    })();
+  </script>
+</body>
+</html>

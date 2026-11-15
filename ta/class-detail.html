@@ -1,0 +1,670 @@
+<!doctype html>
+<!-- Tệp được sinh bởi tools/build-ta.js từ teacher/class-detail.html. Không sửa tay: sửa bản teacher/ rồi chạy lại. -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chi tiết lớp học phần · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bổ trợ riêng cho trang Chi tiết lớp học phần */
+    .class-info-card {
+      margin-bottom: 24px;
+    }
+    .class-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .class-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .class-meta-item .m-label {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .class-meta-item .m-val {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .tab-nav {
+      margin-bottom: 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .toolbar-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .roster-tbl {
+      --cols: 44px minmax(0, 1.4fr) 110px 180px 96px 120px 110px;
+    }
+    .roster-tbl.ledger .tbl-row::before {
+      left: 64px;
+    }
+    .roster-tbl .col-prog {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .roster-tbl .col-prog .ticks {
+      max-width: 140px;
+    }
+    .assign-tbl {
+      --cols: 120px minmax(0, 1fr) 150px 160px 90px;
+    }
+    .assign-tbl .col-ac {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .assign-tbl .progress {
+      flex: 1;
+      height: 6px;
+    }
+
+    /* Khung thông báo nhỏ (Toast) */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: var(--surface-3);
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-control);
+      padding: 8px 16px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-pop);
+      pointer-events: none;
+    }
+    .toast-box[hidden] {
+      display: none;
+    }
+
+    /* Thích ứng độ phân giải trung bình <= 1360px */
+    .col-sub-1360,
+    .col-assign-sub-1360 {
+      display: none;
+    }
+    @media (max-width: 1360px) {
+      .roster-tbl {
+        --cols: 44px minmax(0, 1fr) 110px 170px 110px;
+      }
+      .col-hide-1360 {
+        display: none !important;
+      }
+      .col-sub-1360 {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 2px;
+      }
+      .assign-tbl {
+        --cols: 110px minmax(0, 1fr) 150px 90px;
+      }
+      .col-assign-hide-1360 {
+        display: none !important;
+      }
+      .col-assign-sub-1360 {
+        display: inline;
+      }
+    }
+
+    /* Thích ứng màn hình di động 390px */
+    .col-m-sub {
+      display: none;
+    }
+    @media (max-width: 860px) {
+      .class-meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .roster-tbl {
+        --cols: 44px minmax(0, 1fr) 100px 160px 100px;
+      }
+      .col-hide-md {
+        display: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .class-meta-grid {
+        grid-template-columns: 1fr;
+        padding: 14px 16px;
+      }
+      .stat-strip {
+        grid-template-columns: 1fr;
+      }
+      .stat-strip > div + div {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .toolbar-wrap {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .toolbar-wrap .search {
+        width: 100%;
+      }
+      .toolbar-wrap .segmented {
+        width: 100%;
+        display: flex;
+      }
+      .toolbar-wrap .segmented button {
+        flex: 1;
+      }
+      .roster-tbl {
+        --cols: 40px minmax(0, 1fr) 96px;
+      }
+      .roster-tbl.ledger .tbl-row::before {
+        left: 52px;
+      }
+      .roster-tbl .tbl-head {
+        display: none;
+      }
+      .roster-tbl .tbl-row {
+        padding: 10px 14px;
+        min-height: 52px;
+      }
+      .col-hide-sm,
+      .roster-tbl .col-prog.col-hide-sm {
+        display: none !important;
+      }
+      .col-sub-1360 {
+        display: none !important;
+      }
+      .col-m-sub {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 3px;
+      }
+      .col-m-sub .ticks {
+        max-width: 100px;
+      }
+      .assign-tbl {
+        --cols: minmax(0, 1fr) 88px;
+      }
+      .assign-tbl .tbl-head {
+        display: none;
+      }
+      .assign-tbl .col-code, .assign-tbl .col-dl {
+        display: none;
+      }
+      .assign-tbl .tbl-row {
+        padding: 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body data-role="ta" data-page="classes" data-crumb="Lớp học phần" data-title="INT1449.01">
+  <main class="content" id="content">
+    <!-- Thẻ thông tin lớp học phần và dải số liệu tổng quan -->
+    <section class="card class-info-card" aria-label="Thông tin lớp học phần">
+      <div class="class-meta-grid">
+        <div class="class-meta-item">
+          <span class="m-label">Giảng viên phụ trách</span>
+          <span class="m-val" id="meta-teacher">ThS. Nguyễn Văn An</span>
+        </div>
+        <div class="class-meta-item">
+          <span class="m-label">Sĩ số lớp</span>
+          <span class="m-val tnum" id="meta-students">58 sinh viên</span>
+        </div>
+        <div class="class-meta-item">
+          <span class="m-label">Học kỳ</span>
+          <span class="m-val" id="meta-term">Học kỳ 1 (2026-2027)</span>
+        </div>
+        <div class="class-meta-item">
+          <span class="m-label">Ngưỡng cảnh báo tiến độ</span>
+          <span class="m-val tnum" id="meta-threshold">&lt; 25% hoàn thành</span>
+        </div>
+      </div>
+      <div class="stat-strip">
+        <div class="stat">
+          <div class="label">Tiến độ trung bình</div>
+          <div class="value tnum" id="stat-progress">41%</div>
+          <div class="hint">Tỉ lệ hoàn thành của cả lớp</div>
+        </div>
+        <div class="stat">
+          <div class="label">Lượt nộp 7 ngày qua</div>
+          <div class="value tnum" id="stat-subs">312</div>
+          <div class="hint">5.4 lượt nộp / sinh viên</div>
+        </div>
+        <div class="stat">
+          <div class="label">Dưới ngưỡng cảnh báo</div>
+          <div class="value tnum" id="stat-risk" style="color:var(--warn)">9</div>
+          <div class="hint" id="stat-risk-hint">Cần theo dõi và hỗ trợ</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Điều hướng ba tab -->
+    <nav class="tabs tab-nav" role="tablist" aria-label="Chế độ xem lớp">
+      <button role="tab" id="tab-btn-students" aria-selected="true" aria-controls="panel-students">
+        <i data-lucide="users"></i>Sinh viên
+        <span class="chip chip-mono" id="chip-count-roster" style="margin-left:4px">30</span>
+      </button>
+      <button role="tab" id="tab-btn-assignments" aria-selected="false" aria-controls="panel-assignments">
+        <i data-lucide="flask-conical"></i>Bài tập đã gán
+        <span class="chip chip-mono" id="chip-count-assignments" style="margin-left:4px">6</span>
+      </button>
+      <button role="tab" id="tab-btn-alerts" aria-selected="false" aria-controls="panel-alerts">
+        <i data-lucide="sliders-horizontal"></i>Cảnh báo tiến độ
+      </button>
+    </nav>
+
+    <!-- Tab 1: Sinh viên -->
+    <section id="panel-students" role="tabpanel" aria-labelledby="tab-btn-students">
+      <div class="toolbar-wrap">
+        <div class="search" style="min-width:280px">
+          <i data-lucide="search"></i>
+          <input class="input" id="search-student" placeholder="Tìm theo họ tên hoặc tài khoản..." aria-label="Tìm sinh viên">
+        </div>
+        <div class="row-gap" style="gap:12px">
+          <div class="segmented" role="group" aria-label="Bộ lọc ngưỡng tiến độ">
+            <button type="button" id="filter-all" aria-pressed="true">Tất cả (<span class="tnum" id="count-all">30</span>)</button>
+            <button type="button" id="filter-risk" aria-pressed="false">Chỉ dưới ngưỡng (<span class="tnum" id="count-risk">9</span>)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tbl ledger roster-tbl" role="table" aria-label="Danh sách sinh viên">
+          <div class="tbl-row tbl-head" role="row">
+            <span role="columnheader" class="no">STT</span>
+            <span role="columnheader">Họ và tên</span>
+            <span role="columnheader" class="col-hide-sm">Tài khoản</span>
+            <span role="columnheader" class="col-hide-sm">Tiến độ</span>
+            <span role="columnheader" class="num col-hide-1360">Đúng / Thử</span>
+            <span role="columnheader" class="col-hide-1360">Hoạt động cuối</span>
+            <span role="columnheader">Trạng thái</span>
+          </div>
+          <div id="roster-rows"></div>
+        </div>
+        <div class="pager-host" id="roster-pager"></div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Bài tập đã gán -->
+    <section id="panel-assignments" role="tabpanel" aria-labelledby="tab-btn-assignments" hidden>
+      <div class="card">
+        <div class="tbl assign-tbl" role="table" aria-label="Danh sách bài tập đã gán">
+          <div class="tbl-row tbl-head" role="row">
+            <span role="columnheader" class="col-code">Mã bài</span>
+            <span role="columnheader">Bài tập</span>
+            <span role="columnheader" class="col-dl col-assign-hide-1360">Hạn nộp</span>
+            <span role="columnheader">Tỉ lệ AC</span>
+            <span role="columnheader" class="num">Thao tác</span>
+          </div>
+          <div id="assign-rows"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Cảnh báo tiến độ -->
+    <section id="panel-alerts" role="tabpanel" aria-labelledby="tab-btn-alerts" hidden>
+      <div class="card card-pad" style="max-width:600px">
+        <div class="section-head" style="margin-bottom:16px">
+          <div>
+            <h2 style="font-size:15px">Thiết lập ngưỡng cảnh báo tiến độ</h2>
+            <span class="meta">Hệ thống tự động đánh dấu sinh viên có tiến độ bài tập dưới ngưỡng quy định</span>
+          </div>
+        </div>
+
+        <form id="form-threshold" style="display:flex;flex-direction:column;gap:16px">
+          <div class="field" style="max-width:320px">
+            <label for="threshold-val">Ngưỡng hoàn thành tối thiểu (%)</label>
+            <div class="row-gap">
+              <input id="threshold-val" type="number" min="5" max="95" step="5" class="input tnum" value="25" style="width:140px">
+              <span class="dim tnum">% tiến độ</span>
+            </div>
+            <span class="faint" style="font-size:12px;margin-top:2px" id="threshold-hint">Mặc định của môn: 25%. Sinh viên có tỉ lệ AC &lt; 25% sẽ bị gắn cờ.</span>
+          </div>
+
+          <div id="teacher-alert-actions" style="margin-top:8px">
+            <button type="submit" class="btn btn-primary" id="btn-save-threshold">
+              <i data-lucide="check"></i>Lưu thay đổi
+            </button>
+          </div>
+
+          <div id="ta-alert-notice" hidden style="margin-top:4px;padding:10px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-control);font-size:13px;color:var(--text-3)">
+            <span class="row-gap" style="gap:6px"><i data-lucide="lock" style="width:14px;height:14px"></i>Chỉ Giảng viên phụ trách mới có quyền sửa ngưỡng cảnh báo. Trợ giảng chỉ có quyền xem.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Toast thông báo kết quả -->
+    <div class="toast-box" id="toast" hidden role="status" aria-live="polite">
+      <i data-lucide="check" style="color:var(--ok);width:16px;height:16px"></i>
+      <span id="toast-msg"></span>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var S = window.CLX_STAFF;
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      /* Đọc tham số URL và xác định vai trò */
+      var urlParams = new URLSearchParams(window.location.search);
+      var classCode = urlParams.get('class') || 'INT1449.01';
+      var roleParam = urlParams.get('role');
+      var role = roleParam || document.body.dataset.role || 'teacher';
+      if (roleParam) document.body.dataset.role = roleParam;
+
+      /* Lấy dữ liệu lớp học phần */
+      var currentClass = S.classes.find(function (c) { return c.code === classCode; }) || S.classes[0];
+      var teacherObj = S.teachers.find(function (t) { return t.id === currentClass.teacher; }) || S.teachers[0];
+
+      /* Cập nhật tiêu đề trang và thanh điều hướng topbar */
+      document.title = currentClass.code + ' · Chi tiết lớp · CyberLabX';
+      var pageTitleEl = document.querySelector('.page-title');
+      if (pageTitleEl) {
+        pageTitleEl.innerHTML = '<span class="crumb"><a href="classes.html" style="color:inherit;text-decoration:none">Lớp học phần</a> / </span>' + esc(currentClass.code) + ' · ' + esc(currentClass.name);
+      }
+
+      /* Điền thông tin vào thẻ tóm tắt */
+      document.getElementById('meta-teacher').textContent = teacherObj.name;
+      document.getElementById('meta-students').textContent = currentClass.students + ' sinh viên';
+      document.getElementById('meta-threshold').textContent = '< ' + currentClass.threshold + '% hoàn thành';
+      document.getElementById('stat-progress').textContent = currentClass.progress + '%';
+      document.getElementById('stat-subs').textContent = currentClass.submissions7d;
+      document.getElementById('stat-risk').textContent = currentClass.atRisk;
+      document.getElementById('threshold-val').value = currentClass.threshold;
+
+      /* Phân quyền Trợ giảng: không sửa ngưỡng cảnh báo */
+      var isTa = role === 'ta';
+      if (isTa) {
+        document.getElementById('threshold-val').disabled = true;
+        document.getElementById('teacher-alert-actions').style.display = 'none';
+        document.getElementById('ta-alert-notice').hidden = false;
+      }
+
+      /* Quản lý danh sách sinh viên */
+      var threshold = currentClass.threshold;
+      var classRoster = (S.roster || []).filter(function (item) {
+        return item.classCode === currentClass.code;
+      });
+      var rosterData = classRoster.map(function (item) {
+        return {
+          name: item.name,
+          account: item.account,
+          progress: item.progress,
+          solved: item.solved,
+          tried: item.tried,
+          lastSeen: item.lastSeen,
+          risk: item.progress < threshold
+        };
+      });
+
+      var studentSearch = '';
+      var filterOnlyRisk = false;
+      var initSize = parseInt(urlParams.get('size'), 10) || 20;
+      var initPage = parseInt(urlParams.get('page'), 10) || 1;
+      var rosterState = { rows: [], page: initPage, size: initSize };
+
+      function norm(str) {
+        return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+      }
+
+      function updateCounts() {
+        var hasRoster = classRoster.length > 0;
+        var riskCount = hasRoster ? rosterData.filter(function (s) { return s.risk; }).length : currentClass.atRisk;
+        document.getElementById('count-all').textContent = rosterData.length;
+        document.getElementById('count-risk').textContent = hasRoster ? riskCount : 0;
+        document.getElementById('chip-count-roster').textContent = rosterData.length;
+        document.getElementById('stat-risk').textContent = riskCount;
+        document.getElementById('meta-threshold').textContent = '< ' + threshold + '% hoàn thành';
+        document.getElementById('stat-risk-hint').textContent = riskCount + ' sinh viên < ' + threshold + '%';
+      }
+
+      function filterRoster() {
+        if (!classRoster.length) return [];
+        var q = norm(studentSearch.trim());
+        return rosterData.filter(function (s) {
+          if (filterOnlyRisk && !s.risk) return false;
+          if (!q) return true;
+          return norm(s.name).indexOf(q) !== -1 || norm(s.account).indexOf(q) !== -1;
+        });
+      }
+
+      var rosterPager = U.pager(document.getElementById('roster-pager'), {
+        total: rosterData.length,
+        page: rosterState.page,
+        size: rosterState.size,
+        sizes: [10, 20, 40],
+        onChange: function (p, s) {
+          rosterState.page = p;
+          rosterState.size = s;
+          renderRoster();
+        }
+      });
+
+      function onRosterFilterChange(resetPage) {
+        rosterState.rows = filterRoster();
+        if (resetPage !== false) rosterState.page = 1;
+        var pInfo = rosterPager.set({ total: rosterState.rows.length, page: rosterState.page, size: rosterState.size });
+        if (pInfo) {
+          rosterState.page = pInfo.page;
+          rosterState.size = pInfo.size;
+        }
+        renderRoster();
+      }
+
+      function renderRoster() {
+        var rowsContainer = document.getElementById('roster-rows');
+
+        if (classRoster.length === 0) {
+          rowsContainer.innerHTML = '<div class="empty">Chưa có dữ liệu danh sách sinh viên cho lớp học phần ' + esc(currentClass.code) + '.</div>';
+          return;
+        }
+
+        var total = rosterState.rows.length;
+        if (total === 0) {
+          rowsContainer.innerHTML = '<div class="empty">Không tìm thấy sinh viên nào phù hợp với điều kiện tìm kiếm.</div>';
+          return;
+        }
+
+        var slice = U.paginate(rosterState.rows, rosterState.page, rosterState.size);
+        var startIdx = (rosterState.page - 1) * rosterState.size;
+        var html = '';
+
+        slice.forEach(function (s, idx) {
+          var globalIdx = startIdx + idx + 1;
+          var statusHtml = s.risk
+            ? '<span class="status s-warn">Dưới ngưỡng</span>'
+            : '<span class="status s-ok">Đạt yêu cầu</span>';
+
+          html += '<div class="tbl-row" role="row">' +
+            '<span class="no tnum" role="cell">' + globalIdx + '</span>' +
+            '<div role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500">' + esc(s.name) + '</div>' +
+              '<div class="col-sub-1360">' +
+                '<span class="mono tnum">' + s.solved + '/' + s.tried + ' đúng</span> · ' +
+                '<span>' + esc(s.lastSeen) + '</span>' +
+              '</div>' +
+              '<div class="col-m-sub">' +
+                '<span class="mono">' + esc(s.account) + '</span> · ' +
+                '<span class="mono tnum">' + s.progress + '%</span> · ' +
+                '<span class="dim tnum">' + s.solved + '/' + s.tried + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="mono tnum col-hide-sm" role="cell">' + esc(s.account) + '</span>' +
+            '<div class="col-prog col-hide-sm" role="cell">' +
+              U.ticks(20, Math.round(s.progress / 5), s.risk ? 'is-error' : '') +
+              '<span class="mono tnum faint" style="font-size:12px;min-width:32px;text-align:right">' + s.progress + '%</span>' +
+            '</div>' +
+            '<span class="mono tnum num col-hide-1360" role="cell">' + s.solved + ' / ' + s.tried + '</span>' +
+            '<span class="dim tnum col-hide-1360" role="cell" style="font-size:12.5px">' + esc(s.lastSeen) + '</span>' +
+            '<span role="cell">' + statusHtml + '</span>' +
+          '</div>';
+        });
+
+        rowsContainer.innerHTML = html;
+        window.clxIcons();
+      }
+
+      /* Quản lý danh sách bài tập đã gán */
+      var matchingDClass = (D.classes || []).find(function (c) { return c.code === currentClass.code; });
+      var assignmentsList = matchingDClass && matchingDClass.assignments ? matchingDClass.assignments : [];
+      document.getElementById('chip-count-assignments').textContent = assignmentsList.length;
+
+      function renderAssignments() {
+        var container = document.getElementById('assign-rows');
+        if (!assignmentsList.length) {
+          container.innerHTML = '<div class="empty">Chưa có bài tập nào được gán cho lớp học phần ' + esc(currentClass.code) + '.</div>';
+          return;
+        }
+
+        var studentCount = currentClass.students || 58;
+        var html = '';
+        assignmentsList.forEach(function (a) {
+          var pct = Math.round((a.solved / studentCount) * 100);
+          var dlStr = a.deadline ? a.deadline.slice(8, 10) + '/' + a.deadline.slice(5, 7) + ' ' + a.deadline.slice(11) : '—';
+          html += '<div class="tbl-row" role="row">' +
+            '<span class="col-code" role="cell"><span class="chip chip-mono">' + esc(a.code) + '</span></span>' +
+            '<div role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500">' + esc(a.title) + '</div>' +
+              '<div class="faint trunc" style="font-size:12px">' + esc(a.topic) + ' · Mức ' + a.diff + ' · ' + a.xp + ' XP' +
+                '<span class="col-assign-sub-1360"> · Hạn: ' + esc(dlStr) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="mono tnum dim col-dl col-assign-hide-1360" role="cell" style="font-size:12.5px">' + esc(dlStr) + '</span>' +
+            '<div class="col-ac" role="cell">' +
+              '<div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>' +
+              '<span class="mono tnum" style="font-size:12px;min-width:44px;text-align:right">' + pct + '%</span>' +
+            '</div>' +
+            '<span class="num" role="cell">' +
+              '<a href="assignments.html?code=' + encodeURIComponent(a.code) + '" class="btn btn-sm">Xem bài</a>' +
+            '</span>' +
+          '</div>';
+        });
+        container.innerHTML = html;
+      }
+
+      /* Hiển thị Toast */
+      var toastTimer = null;
+      function showToast(msg) {
+        var toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.hidden = false;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 3200);
+      }
+
+      /* Sự kiện tab */
+      var tabBtns = {
+        students: document.getElementById('tab-btn-students'),
+        assignments: document.getElementById('tab-btn-assignments'),
+        alerts: document.getElementById('tab-btn-alerts')
+      };
+      var panels = {
+        students: document.getElementById('panel-students'),
+        assignments: document.getElementById('panel-assignments'),
+        alerts: document.getElementById('panel-alerts')
+      };
+
+      function switchTab(name) {
+        Object.keys(tabBtns).forEach(function (k) {
+          var isCur = k === name;
+          tabBtns[k].setAttribute('aria-selected', String(isCur));
+          panels[k].hidden = !isCur;
+        });
+      }
+
+      tabBtns.students.addEventListener('click', function () { switchTab('students'); });
+      tabBtns.assignments.addEventListener('click', function () { switchTab('assignments'); });
+      tabBtns.alerts.addEventListener('click', function () { switchTab('alerts'); });
+
+      /* Tìm kiếm và lọc sinh viên */
+      document.getElementById('search-student').addEventListener('input', function (e) {
+        studentSearch = e.target.value;
+        onRosterFilterChange();
+      });
+
+      var btnFilterAll = document.getElementById('filter-all');
+      var btnFilterRisk = document.getElementById('filter-risk');
+
+      btnFilterAll.addEventListener('click', function () {
+        filterOnlyRisk = false;
+        btnFilterAll.setAttribute('aria-pressed', 'true');
+        btnFilterRisk.setAttribute('aria-pressed', 'false');
+        onRosterFilterChange();
+      });
+
+      btnFilterRisk.addEventListener('click', function () {
+        filterOnlyRisk = true;
+        btnFilterRisk.setAttribute('aria-pressed', 'true');
+        btnFilterAll.setAttribute('aria-pressed', 'false');
+        onRosterFilterChange();
+      });
+
+      /* Cập nhật ngưỡng cảnh báo (chỉ Giảng viên) */
+      document.getElementById('form-threshold').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (isTa) return;
+        var val = parseInt(document.getElementById('threshold-val').value, 10);
+        if (isNaN(val) || val < 1 || val > 99) return;
+
+        threshold = val;
+        currentClass.threshold = val;
+        if (classRoster.length > 0) {
+          rosterData.forEach(function (s) {
+            s.risk = s.progress < threshold;
+          });
+        }
+
+        updateCounts();
+        onRosterFilterChange();
+        showToast('Đã lưu ngưỡng cảnh báo: < ' + threshold + '% tiến độ');
+      });
+
+      /* Khởi tạo hiển thị ban đầu */
+      updateCounts();
+      onRosterFilterChange(false);
+      renderAssignments();
+
+      var initTab = urlParams.get('tab');
+      if (initTab && tabBtns[initTab]) {
+        switchTab(initTab);
+      }
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

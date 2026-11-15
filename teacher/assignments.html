@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bài tập · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Bổ trợ riêng cho trang Bài tập của Giảng viên */
+    .tab-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .tab-header-row .tabs {
+      border-bottom: 0;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .tab-header-row .tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .toolbar-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .filters-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .tbl-assignments {
+      --cols: 120px minmax(0, 1.4fr) 96px 120px 76px 64px 104px 100px;
+    }
+    .tbl-assignments .col-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+    .tbl-assignments .row-hidden {
+      opacity: 0.55;
+    }
+    .tbl-review {
+      --cols: 44px 84px minmax(0, 1.4fr) 90px 110px 74px 60px 130px 110px;
+    }
+
+    /* Modal / Hộp thoại */
+    .modal-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: var(--scrim);
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .modal-scrim[hidden] {
+      display: none;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-panel);
+      box-shadow: var(--shadow-pop);
+      width: min(520px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+    }
+
+    /* Khung thông báo nhỏ (Toast) */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: var(--surface-3);
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-control);
+      padding: 8px 16px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-pop);
+      pointer-events: none;
+    }
+    .toast-box[hidden] {
+      display: none;
+    }
+
+    /* Thích ứng độ phân giải trung bình <= 1360px */
+    .col-sub-1360,
+    .col-rev-sub-1360 {
+      display: none;
+    }
+    @media (max-width: 1360px) {
+      .tbl-assignments {
+        --cols: 110px minmax(0, 1fr) 90px 76px 104px 100px;
+      }
+      .col-hide-1360 {
+        display: none !important;
+      }
+      .col-sub-1360 {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 2px;
+      }
+      .tbl-review {
+        --cols: 40px 84px minmax(0, 1fr) 76px 120px 110px;
+      }
+      .col-rev-hide-1360 {
+        display: none !important;
+      }
+      .col-rev-sub-1360 {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 2px;
+      }
+    }
+
+    /* Thích ứng di động 390px */
+    .col-m-sub {
+      display: none;
+    }
+    @media (max-width: 960px) {
+      .tbl-assignments {
+        --cols: 100px minmax(0, 1fr) 84px 72px 100px 96px;
+      }
+      .col-hide-md {
+        display: none;
+      }
+      .tbl-review {
+        --cols: 40px 80px minmax(0, 1fr) 72px 100px;
+      }
+      .col-rev-hide-md {
+        display: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .toolbar-wrap {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .toolbar-wrap .search {
+        width: 100%;
+      }
+      .filters-group {
+        width: 100%;
+      }
+      .filters-group .select {
+        flex: 1;
+        min-width: 120px;
+      }
+      .tbl-assignments {
+        --cols: minmax(0, 1fr) 92px;
+      }
+      .tbl-assignments .tbl-head {
+        display: none;
+      }
+      .tbl-assignments .tbl-row {
+        padding: 10px 14px;
+      }
+      .col-hide-sm {
+        display: none;
+      }
+      .col-sub-1360,
+      .col-rev-sub-1360 {
+        display: none !important;
+      }
+      .col-m-sub {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        margin-top: 3px;
+      }
+      .tbl-review {
+        --cols: minmax(0, 1fr) 96px;
+      }
+      .tbl-review .tbl-head {
+        display: none;
+      }
+      .tbl-review .tbl-row {
+        padding: 10px 14px;
+      }
+      .col-rev-hide-sm {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body data-role="teacher" data-page="assignments" data-title="Bài tập">
+  <main class="content" id="content">
+    <!-- Hàng tiêu đề với hai tab và một nút chính duy nhất -->
+    <div class="tab-header-row">
+      <nav class="tabs" role="tablist" aria-label="Nhóm bài tập">
+        <button role="tab" id="tab-btn-managed" aria-selected="true" aria-controls="panel-managed">
+          <i data-lucide="flask-conical"></i>Bài tập do tôi quản lý
+          <span class="chip chip-mono" id="chip-count-managed" style="margin-left:4px">26</span>
+        </button>
+        <button role="tab" id="tab-btn-review" aria-selected="false" aria-controls="panel-review">
+          <i data-lucide="clock"></i>Chờ duyệt
+          <span class="chip chip-mono" id="chip-count-review" style="margin-left:4px">3</span>
+        </button>
+      </nav>
+
+      <!-- Nút chính duy nhất của màn hình -->
+      <button type="button" class="btn btn-primary" id="btn-open-add">
+        <i data-lucide="plus"></i>Thêm bài tập
+      </button>
+    </div>
+
+    <!-- Tab 1: Bài tập do tôi quản lý -->
+    <section id="panel-managed" role="tabpanel" aria-labelledby="tab-btn-managed">
+      <div class="toolbar-wrap">
+        <div class="search" style="min-width:260px">
+          <i data-lucide="search"></i>
+          <input class="input" id="search-managed" placeholder="Tìm theo tên bài hoặc mã bài..." aria-label="Tìm bài tập">
+        </div>
+        <div class="filters-group">
+          <select class="select" id="filter-course" style="width:auto" aria-label="Lọc theo môn học">
+            <option value="">Mọi môn học</option>
+            <option value="INT1449">INT1449 · An toàn &amp; Bảo mật HTTT</option>
+            <option value="WEB3021">WEB3021 · Kiểm thử xâm nhập</option>
+            <option value="CRY2010">CRY2010 · Mật mã học ứng dụng</option>
+          </select>
+          <select class="select" id="filter-diff" style="width:auto" aria-label="Lọc theo độ khó">
+            <option value="">Mọi mức độ</option>
+            <option value="1">Mức 1</option>
+            <option value="2">Mức 2</option>
+            <option value="3">Mức 3</option>
+          </select>
+          <select class="select" id="filter-status" style="width:auto" aria-label="Lọc theo trạng thái duyệt">
+            <option value="">Mọi trạng thái duyệt</option>
+            <option value="approved">Đã duyệt</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="rejected">Từ chối</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tbl tbl-assignments" role="table" aria-label="Danh sách bài tập do tôi quản lý">
+          <div class="tbl-row tbl-head" role="row">
+            <span role="columnheader" class="col-hide-sm">Mã bài</span>
+            <span role="columnheader">Tên bài tập</span>
+            <span role="columnheader" class="col-hide-sm">Môn học</span>
+            <span role="columnheader" class="col-hide-1360">Chủ đề</span>
+            <span role="columnheader" class="col-hide-sm">Mức</span>
+            <span role="columnheader" class="col-hide-1360">Bản</span>
+            <span role="columnheader" class="col-hide-sm">Trạng thái</span>
+            <span role="columnheader" class="num">Thao tác</span>
+          </div>
+          <div id="managed-rows"></div>
+        </div>
+        <div class="pager-host" id="managed-pager"></div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Chờ duyệt (Chỉ xem, không có nút duyệt) -->
+    <section id="panel-review" role="tabpanel" aria-labelledby="tab-btn-review" hidden>
+      <div class="toolbar-wrap">
+        <div class="search" style="min-width:260px">
+          <i data-lucide="search"></i>
+          <input class="input" id="search-review" placeholder="Tìm theo tên bài tập chờ duyệt..." aria-label="Tìm bài chờ duyệt">
+        </div>
+        <div class="filters-group">
+          <select class="select" id="filter-review-status" style="width:auto" aria-label="Trạng thái phê duyệt">
+            <option value="">Mọi trạng thái</option>
+            <option value="0">Đang chờ Admin duyệt</option>
+            <option value="1">Đã được phê duyệt</option>
+            <option value="2">Bị từ chối</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tbl tbl-review ledger" role="table" aria-label="Danh sách bài tập chờ duyệt">
+          <div class="tbl-row tbl-head" role="row">
+            <span role="columnheader" class="no col-rev-hide-sm">STT</span>
+            <span role="columnheader" class="col-rev-hide-sm">Mã yêu cầu</span>
+            <span role="columnheader">Tên bài tập</span>
+            <span role="columnheader" class="col-rev-hide-1360">Dạng bài</span>
+            <span role="columnheader" class="col-rev-hide-1360">Chủ đề</span>
+            <span role="columnheader" class="col-rev-hide-sm">Mức</span>
+            <span role="columnheader" class="col-rev-hide-1360">Bản</span>
+            <span role="columnheader" class="col-rev-hide-md">Thời gian gửi</span>
+            <span role="columnheader">Trạng thái</span>
+          </div>
+          <div id="review-rows"></div>
+        </div>
+        <div class="card-pad" style="padding:12px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-3)">
+          <span class="row-gap" style="gap:6px">
+            <i data-lucide="info" style="width:14px;height:14px"></i>
+            Chỉ Quản trị viên (Admin) mới có quyền phê duyệt bài tập. Giảng viên và Trợ giảng theo dõi tiến độ duyệt bài tại đây.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hộp thoại Thêm bài tập (Tối giản) -->
+    <div class="modal-scrim" id="modal-add" hidden role="dialog" aria-modal="true" aria-labelledby="modal-add-title">
+      <div class="modal-box card-pad">
+        <div class="row-between" style="margin-bottom:16px">
+          <h2 id="modal-add-title" style="font-size:16px">Thêm bài tập mới</h2>
+          <button type="button" class="icon-btn" id="btn-close-add" aria-label="Đóng hộp thoại" data-close>
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="form-add" style="display:flex;flex-direction:column;gap:16px">
+          <div class="field">
+            <label for="add-title">Tên bài tập <span style="color:var(--err)">*</span></label>
+            <input id="add-title" class="input" placeholder="Ví dụ: Phân tích mã độc cơ bản" required autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="add-course">Môn học <span style="color:var(--err)">*</span></label>
+            <select id="add-course" class="select" required>
+              <option value="INT1449">INT1449 · An toàn &amp; Bảo mật HTTT</option>
+              <option value="WEB3021">WEB3021 · Kiểm thử xâm nhập</option>
+              <option value="CRY2010">CRY2010 · Mật mã học ứng dụng</option>
+            </select>
+          </div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:16px">
+            <div class="field">
+              <label for="add-topic">Chủ đề <span style="color:var(--err)">*</span></label>
+              <input id="add-topic" class="input" placeholder="Ví dụ: Quét mạng" required autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="add-diff">Mức độ <span style="color:var(--err)">*</span></label>
+              <select id="add-diff" class="select" required>
+                <option value="1">Mức 1</option>
+                <option value="2">Mức 2</option>
+                <option value="3">Mức 3</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="add-type">Dạng bài tập <span style="color:var(--err)">*</span></label>
+            <select id="add-type" class="select" required>
+              <option value="Lab">Lab (Môi trường thực hành máy ảo)</option>
+              <option value="Lập trình">Lập trình (Mã nguồn &amp; Testcase)</option>
+              <option value="CTF">CTF (Tìm Flag)</option>
+              <option value="Trắc nghiệm">Trắc nghiệm lý thuyết</option>
+              <option value="Tự luận">Tự luận</option>
+              <option value="Mô phỏng tấn công">Mô phỏng tấn công</option>
+            </select>
+          </div>
+          <div class="row-gap" style="justify-content:flex-end;gap:10px;margin-top:8px">
+            <button type="button" class="btn" id="btn-cancel-add" data-close>Hủy</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-add">Tạo bài tập</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Hộp thoại Xác nhận xóa bài tập -->
+    <div class="modal-scrim" id="modal-delete" hidden role="dialog" aria-modal="true" aria-labelledby="modal-del-title">
+      <div class="modal-box card-pad" style="max-width:440px">
+        <h2 id="modal-del-title" style="font-size:16px;margin-bottom:8px">Xác nhận xóa bài tập</h2>
+        <p class="dim" style="font-size:13px;line-height:20px;margin-bottom:16px" id="del-desc">
+          Bạn có chắc chắn muốn xóa bài tập này? Hành động này không thể hoàn tác.
+        </p>
+        <div class="field" style="margin-bottom:20px">
+          <label for="del-reason">Lý do xóa <span style="color:var(--err)">*</span></label>
+          <input id="del-reason" class="input" placeholder="Nhập lý do xóa bài tập..." autocomplete="off">
+          <span class="faint" id="del-err-msg" style="color:var(--err);font-size:12px;margin-top:2px" hidden>Vui lòng nhập lý do xóa trước khi tiếp tục.</span>
+        </div>
+        <div class="row-gap" style="justify-content:flex-end;gap:10px">
+          <button type="button" class="btn" id="btn-cancel-del" data-close>Hủy</button>
+          <button type="button" class="btn" id="btn-confirm-del" style="border-color:var(--err);color:var(--err)">Xóa bài tập</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast thông báo kết quả -->
+    <div class="toast-box" id="toast" hidden role="status" aria-live="polite">
+      <i data-lucide="check" style="color:var(--ok);width:16px;height:16px"></i>
+      <span id="toast-msg"></span>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var S = window.CLX_STAFF;
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      /* Đọc vai trò người dùng (Giảng viên / Trợ giảng) */
+      var urlParams = new URLSearchParams(window.location.search);
+      var roleParam = urlParams.get('role');
+      var role = roleParam || document.body.dataset.role || 'teacher';
+      if (roleParam) document.body.dataset.role = roleParam;
+      var isTa = role === 'ta';
+
+      /* Xây dựng danh sách bài tập do tôi quản lý */
+      var baseClasses = D.classes || [];
+      var assignments = [
+        /* Các bài từ Lớp INT1449 */
+        { id: 1, code: 'nmap-discovery', title: 'Quét mạng và dịch vụ cơ bản', course: 'INT1449', topic: 'Công cụ quét mạng', diff: 1, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 2, code: 'backup2', title: 'Sao lưu và phục hồi dữ liệu', course: 'INT1449', topic: 'Backup', diff: 1, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 3, code: 'firewall-config', title: 'Cấu hình tường lửa iptables', course: 'INT1449', topic: 'Firewall', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 4, code: 'nmap-advanced', title: 'Quét mạng và dịch vụ nâng cao', course: 'INT1449', topic: 'Công cụ quét mạng', diff: 2, type: 'Lab', version: 'v1.1', reviewStatus: 'approved', visible: true },
+        { id: 5, code: 'linux-privesc', title: 'Leo thang đặc quyền Linux', course: 'INT1449', topic: 'PrivEsc', diff: 3, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 6, code: 'ids-snort', title: 'Phát hiện xâm nhập với Snort', course: 'INT1449', topic: 'IDS', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 7, code: 'nmap-os-detect', title: 'Nhận diện hệ điều hành với Nmap Script', course: 'INT1449', topic: 'Công cụ quét mạng', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 8, code: 'iptables-nat', title: 'Cấu hình chuyển tiếp cổng và NAT với iptables', course: 'INT1449', topic: 'Firewall', diff: 2, type: 'Lab', version: 'v1.1', reviewStatus: 'approved', visible: true },
+        { id: 9, code: 'snort-rules-custom', title: 'Viết luật Snort phát hiện brute-force SSH', course: 'INT1449', topic: 'IDS', diff: 3, type: 'Lab', version: 'v1.0', reviewStatus: 'rejected', visible: true },
+        { id: 10, code: 'wireshark-tcp', title: 'Phân tích bắt tay ba bước TCP và rò rỉ dữ liệu', course: 'INT1449', topic: 'Giám sát mạng', diff: 1, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 11, code: 'buffer-overflow', title: 'Khai thác tràn bộ đệm ghi đè địa chỉ trả về', course: 'INT1449', topic: 'Khai thác', diff: 3, type: 'Lab', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 12, code: 'privesc-cron', title: 'Leo thang đặc quyền qua wildcard cron job Linux', course: 'INT1449', topic: 'PrivEsc', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+
+        /* Các bài từ Lớp WEB3021 */
+        { id: 13, code: 'gdb-debug', title: 'Gỡ rối chương trình với GDB', course: 'WEB3021', topic: 'Debugging', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 14, code: 'metasploit-intro', title: 'Khai thác lỗ hổng với Metasploit', course: 'WEB3021', topic: 'Metasploit', diff: 2, type: 'Lab', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 15, code: 'sqli-basic', title: 'Khai thác SQL Injection cơ bản', course: 'WEB3021', topic: 'SQL Injection', diff: 1, type: 'Web', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 16, code: 'xss-stored', title: 'Stored XSS trên diễn đàn mẫu', course: 'WEB3021', topic: 'XSS', diff: 2, type: 'Web', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 17, code: 'sqli-blind', title: 'Khai thác Boolean-based Blind SQL Injection', course: 'WEB3021', topic: 'SQL Injection', diff: 3, type: 'Web', version: 'v1.2', reviewStatus: 'approved', visible: true },
+        { id: 18, code: 'csrf-token', title: 'Vượt cơ chế chống CSRF thiếu kiểm tra Referer', course: 'WEB3021', topic: 'Web', diff: 2, type: 'Web', version: 'v1.0', reviewStatus: 'rejected', visible: true },
+        { id: 19, code: 'jwt-weak-secret', title: 'Tấn công JWT ký khóa đối xứng yếu HMAC', course: 'WEB3021', topic: 'Web', diff: 2, type: 'Web', version: 'v1.0', reviewStatus: 'approved', visible: true },
+
+        /* Các bài từ Lớp CRY2010 */
+        { id: 20, code: 'classic-cipher', title: 'Giải mã cổ điển', course: 'CRY2010', topic: 'Cổ điển', diff: 1, type: 'Lập trình', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 21, code: 'rsa-weak', title: 'Bẻ khóa RSA modulus yếu', course: 'CRY2010', topic: 'RSA', diff: 3, type: 'Lập trình', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 22, code: 'hash-collide', title: 'Va chạm băm MD5', course: 'CRY2010', topic: 'Hàm băm', diff: 2, type: 'Lập trình', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 23, code: 'diffie-hellman', title: 'Tấn công Man-in-the-Middle trên Diffie-Hellman', course: 'CRY2010', topic: 'Mật mã', diff: 3, type: 'Lập trình', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 24, code: 'aes-ecb-mode', title: 'Khôi phục ảnh mã hóa bằng chế độ AES-ECB', course: 'CRY2010', topic: 'Mật mã', diff: 1, type: 'Lập trình', version: 'v1.0', reviewStatus: 'approved', visible: true },
+        { id: 25, code: 'rsa-wiener', title: 'Tấn công Wiener khôi phục số mũ giải mã nhỏ RSA', course: 'CRY2010', topic: 'RSA', diff: 3, type: 'Lập trình', version: 'v1.0', reviewStatus: 'pending', visible: true },
+        { id: 26, code: 'stego-lsb', title: 'Giấu tin trong ảnh BMP bằng kỹ thuật LSB', course: 'CRY2010', topic: 'Mật mã', diff: 2, type: 'Lập trình', version: 'v1.0', reviewStatus: 'approved', visible: true }
+      ];
+
+      /* Xác định tác giả hiện tại theo vai trò người dùng (Giảng viên: Nguyễn Văn An / Trợ giảng: Đinh Quang Huy) */
+      var currentAuthor = isTa
+        ? (S.assistants && S.assistants[0] ? S.assistants[0].name : 'Đinh Quang Huy')
+        : (S.teachers && S.teachers[0] ? S.teachers[0].name : 'ThS. Nguyễn Văn An');
+
+      /* Dữ liệu bài tập chờ duyệt từ tác giả hiện tại (CLX_STAFF.review) */
+      var reviewData = S.review.filter(function (r) {
+        return r.author === currentAuthor;
+      });
+
+      /* Trạng thái bộ lọc và phân trang */
+      var managedSearch = '';
+      var managedCourse = '';
+      var managedDiff = '';
+      var managedStatus = '';
+      var initSize = parseInt(urlParams.get('size'), 10) || 20;
+      var initPage = parseInt(urlParams.get('page'), 10) || 1;
+      var managedState = { rows: [], page: initPage, size: initSize };
+
+      var reviewSearch = '';
+      var reviewStatusFilter = '';
+
+      function norm(str) {
+        return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+      }
+
+      function updateCounts() {
+        document.getElementById('chip-count-managed').textContent = assignments.length;
+        document.getElementById('chip-count-review').textContent = reviewData.length;
+      }
+
+      function filterManaged() {
+        var q = norm(managedSearch.trim());
+        return assignments.filter(function (item) {
+          if (managedCourse && item.course !== managedCourse) return false;
+          if (managedDiff && String(item.diff) !== managedDiff) return false;
+          if (managedStatus && item.reviewStatus !== managedStatus) return false;
+          if (!q) return true;
+          return norm(item.title).indexOf(q) !== -1 || norm(item.code).indexOf(q) !== -1;
+        });
+      }
+
+      var managedPager = U.pager(document.getElementById('managed-pager'), {
+        total: assignments.length,
+        page: managedState.page,
+        size: managedState.size,
+        sizes: [10, 20, 40],
+        onChange: function (p, s) {
+          managedState.page = p;
+          managedState.size = s;
+          renderManaged();
+        }
+      });
+
+      function onManagedFilterChange(resetPage) {
+        managedState.rows = filterManaged();
+        if (resetPage !== false) managedState.page = 1;
+        var pInfo = managedPager.set({ total: managedState.rows.length, page: managedState.page, size: managedState.size });
+        if (pInfo) {
+          managedState.page = pInfo.page;
+          managedState.size = pInfo.size;
+        }
+        renderManaged();
+      }
+
+      /* Kết xuất danh sách bài tập do tôi quản lý */
+      function renderManaged() {
+        var rowsContainer = document.getElementById('managed-rows');
+        var total = managedState.rows.length;
+
+        if (total === 0) {
+          rowsContainer.innerHTML = '<div class="empty">Không tìm thấy bài tập nào phù hợp với bộ lọc hiện tại.</div>';
+          return;
+        }
+
+        var slice = U.paginate(managedState.rows, managedState.page, managedState.size);
+        var startIdx = (managedState.page - 1) * managedState.size;
+        var html = '';
+
+        slice.forEach(function (item) {
+          var statusHtml = '';
+          if (item.reviewStatus === 'approved') {
+            statusHtml = '<span class="status s-ok">Đã duyệt</span>';
+          } else if (item.reviewStatus === 'pending') {
+            statusHtml = '<span class="status s-warn">Chờ duyệt</span>';
+          } else {
+            statusHtml = '<span class="status s-err">Từ chối</span>';
+          }
+
+          var deleteBtnHtml = isTa ? '' :
+            '<button type="button" class="icon-btn btn-del" data-id="' + item.id + '" title="Xóa bài tập" aria-label="Xóa">' +
+              '<i data-lucide="trash-2"></i>' +
+            '</button>';
+
+          html += '<div class="tbl-row' + (item.visible ? '' : ' row-hidden') + '" role="row">' +
+            '<span class="col-hide-sm" role="cell"><span class="chip chip-mono">' + esc(item.code) + '</span></span>' +
+            '<div role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500">' + esc(item.title) + (item.visible ? '' : ' <span class="chip" style="font-size:11px;height:18px;padding:0 5px">Đã ẩn</span>') + '</div>' +
+              '<div class="col-sub-1360">' +
+                '<span>' + esc(item.topic) + '</span> · ' +
+                '<span class="mono">' + esc(item.version) + '</span>' +
+              '</div>' +
+              '<div class="col-m-sub">' +
+                '<span class="mono">' + esc(item.code) + '</span> · ' +
+                '<span>' + esc(item.course) + '</span> · ' +
+                '<span class="chip">Mức ' + item.diff + '</span> · ' +
+                statusHtml +
+              '</div>' +
+            '</div>' +
+            '<span class="mono tnum dim col-hide-sm" role="cell">' + esc(item.course) + '</span>' +
+            '<span class="dim trunc col-hide-1360" role="cell">' + esc(item.topic) + '</span>' +
+            '<span class="col-hide-sm" role="cell"><span class="chip">Mức ' + item.diff + '</span></span>' +
+            '<span class="mono tnum dim col-hide-1360" role="cell" style="font-size:12.5px">' + esc(item.version) + '</span>' +
+            '<span class="col-hide-sm" role="cell">' + statusHtml + '</span>' +
+            '<div class="col-actions" role="cell">' +
+              '<button type="button" class="icon-btn btn-toggle-vis" data-id="' + item.id + '" title="' + (item.visible ? 'Ẩn bài tập' : 'Hiện bài tập') + '" aria-label="' + (item.visible ? 'Ẩn bài' : 'Hiện bài') + '">' +
+                '<i data-lucide="' + (item.visible ? 'eye' : 'eye-off') + '"></i>' +
+              '</button>' +
+              '<button type="button" class="icon-btn btn-duplicate" data-id="' + item.id + '" title="Nhân bản bài tập" aria-label="Nhân bản">' +
+                '<i data-lucide="copy"></i>' +
+              '</button>' +
+              deleteBtnHtml +
+            '</div>' +
+          '</div>';
+        });
+
+        rowsContainer.innerHTML = html;
+        window.clxIcons();
+      }
+
+      /* Kết xuất danh sách bài tập chờ duyệt (Chỉ xem) */
+      function renderReview() {
+        var q = norm(reviewSearch.trim());
+        var filtered = reviewData.filter(function (r) {
+          if (reviewStatusFilter !== '' && String(r.status) !== reviewStatusFilter) return false;
+          if (!q) return true;
+          return norm(r.title).indexOf(q) !== -1 || norm(r.code).indexOf(q) !== -1;
+        });
+
+        var container = document.getElementById('review-rows');
+        if (filtered.length === 0) {
+          container.innerHTML = '<div class="empty">Không có bài tập nào đang chờ duyệt phù hợp với từ khóa tìm kiếm.</div>';
+          return;
+        }
+
+        var html = '';
+        filtered.forEach(function (r, idx) {
+          var statusHtml = '';
+          if (r.status === 0) {
+            statusHtml = '<span class="status s-warn">Chờ Admin duyệt</span>';
+          } else if (r.status === 1) {
+            statusHtml = '<span class="status s-ok">Đã duyệt</span>';
+          } else {
+            statusHtml = '<span class="status s-err">Từ chối</span>';
+          }
+
+          html += '<div class="tbl-row" role="row">' +
+            '<span class="no tnum col-rev-hide-sm" role="cell">' + (idx + 1) + '</span>' +
+            '<span class="col-rev-hide-sm" role="cell"><span class="chip chip-mono">' + esc(r.code) + '</span></span>' +
+            '<div role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500">' + esc(r.title) + '</div>' +
+              '<div class="col-rev-sub-1360">' +
+                '<span>' + esc(r.type) + '</span> · ' +
+                '<span>' + esc(r.topic) + '</span> · ' +
+                '<span class="mono">v' + r.version + '</span>' +
+              '</div>' +
+              '<div class="col-m-sub">' +
+                '<span class="mono">' + esc(r.code) + '</span> · ' +
+                '<span>' + esc(r.type) + '</span> · ' +
+                '<span class="chip">Mức ' + r.diff + '</span> · ' +
+                statusHtml +
+              '</div>' +
+            '</div>' +
+            '<span class="dim col-rev-hide-1360" role="cell">' + esc(r.type) + '</span>' +
+            '<span class="dim trunc col-rev-hide-1360" role="cell">' + esc(r.topic) + '</span>' +
+            '<span class="col-rev-hide-sm" role="cell"><span class="chip">Mức ' + r.diff + '</span></span>' +
+            '<span class="mono tnum dim col-rev-hide-1360" role="cell">v' + r.version + '</span>' +
+            '<span class="mono tnum dim col-rev-hide-md" role="cell" style="font-size:12px">' + esc(r.requestedAt) + '</span>' +
+            '<span role="cell">' + statusHtml + '</span>' +
+          '</div>';
+        });
+
+        container.innerHTML = html;
+        window.clxIcons();
+      }
+
+      /* Thông báo Toast */
+      var toastTimer = null;
+      function showToast(msg) {
+        var toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.hidden = false;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 3200);
+      }
+
+      /* Quản lý Tab */
+      var tabBtns = {
+        managed: document.getElementById('tab-btn-managed'),
+        review: document.getElementById('tab-btn-review')
+      };
+      var panels = {
+        managed: document.getElementById('panel-managed'),
+        review: document.getElementById('panel-review')
+      };
+
+      function switchTab(name) {
+        Object.keys(tabBtns).forEach(function (k) {
+          var isCur = k === name;
+          tabBtns[k].setAttribute('aria-selected', String(isCur));
+          panels[k].hidden = !isCur;
+        });
+      }
+
+      tabBtns.managed.addEventListener('click', function () { switchTab('managed'); });
+      tabBtns.review.addEventListener('click', function () { switchTab('review'); });
+
+      /* Tìm kiếm & Bộ lọc Tab 1 */
+      document.getElementById('search-managed').addEventListener('input', function (e) {
+        managedSearch = e.target.value;
+        onManagedFilterChange();
+      });
+
+      document.getElementById('filter-course').addEventListener('change', function (e) {
+        managedCourse = e.target.value;
+        onManagedFilterChange();
+      });
+
+      document.getElementById('filter-diff').addEventListener('change', function (e) {
+        managedDiff = e.target.value;
+        onManagedFilterChange();
+      });
+
+      document.getElementById('filter-status').addEventListener('change', function (e) {
+        managedStatus = e.target.value;
+        onManagedFilterChange();
+      });
+
+      /* Tìm kiếm & Bộ lọc Tab 2 */
+      document.getElementById('search-review').addEventListener('input', function (e) {
+        reviewSearch = e.target.value;
+        renderReview();
+      });
+
+      document.getElementById('filter-review-status').addEventListener('change', function (e) {
+        reviewStatusFilter = e.target.value;
+        renderReview();
+      });
+
+      /* Hộp thoại Thêm bài tập (CLXUI.modal) */
+      var modalAddEl = document.getElementById('modal-add');
+      var formAdd = document.getElementById('form-add');
+      var addModal = U.modal(modalAddEl, {
+        initialFocus: '[id="add-title"]'
+      });
+
+      document.getElementById('btn-open-add').addEventListener('click', function () {
+        formAdd.reset();
+        addModal.open();
+      });
+      document.getElementById('btn-close-add').addEventListener('click', addModal.close);
+      document.getElementById('btn-cancel-add').addEventListener('click', addModal.close);
+
+      formAdd.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var title = document.getElementById('add-title').value.trim();
+        var course = document.getElementById('add-course').value;
+        var topic = document.getElementById('add-topic').value.trim();
+        var diff = parseInt(document.getElementById('add-diff').value, 10);
+        var type = document.getElementById('add-type').value;
+
+        if (!title || !topic) return;
+
+        var codeSlug = norm(title).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 20);
+        var newAssignment = {
+          id: Date.now(),
+          code: codeSlug || 'custom-lab',
+          title: title,
+          course: course,
+          topic: topic,
+          diff: diff,
+          type: type,
+          version: 'v1.0',
+          reviewStatus: 'pending',
+          visible: true
+        };
+
+        assignments.unshift(newAssignment);
+
+        // Tạo bản ghi yêu cầu duyệt tương ứng trong cùng nguồn reviewData
+        var newReviewReq = {
+          code: 'rv-' + String(S.review.length + reviewData.length + 1).padStart(2, '0'),
+          title: title,
+          type: type,
+          topic: topic,
+          diff: diff,
+          author: currentAuthor,
+          authorRole: isTa ? 'Trợ giảng' : 'Giảng viên',
+          requestedAt: '2026-09-19 10:30',
+          version: 1,
+          status: 0
+        };
+        reviewData.unshift(newReviewReq);
+
+        addModal.close();
+        updateCounts();
+        onManagedFilterChange();
+        renderReview();
+        showToast('Đã tạo bài tập mới thành công (Đang chờ duyệt)');
+      });
+
+      /* Hộp thoại Xác nhận xóa bài tập (CLXUI.modal) */
+      var itemToDelete = null;
+      var modalDeleteEl = document.getElementById('modal-delete');
+      var delReasonInput = document.getElementById('del-reason');
+      var delErrMsg = document.getElementById('del-err-msg');
+
+      var deleteModal = U.modal(modalDeleteEl, {
+        initialFocus: '#del-reason',
+        onClose: function () {
+          itemToDelete = null;
+          delErrMsg.hidden = true;
+        }
+      });
+
+      function openDeleteModal(item) {
+        itemToDelete = item;
+        delReasonInput.value = '';
+        delErrMsg.hidden = true;
+        document.getElementById('del-desc').textContent = 'Bạn có chắc chắn muốn xóa bài tập "' + item.title + '" (' + item.code + ') không? Hành động này không thể hoàn tác.';
+        deleteModal.open();
+      }
+
+      document.getElementById('btn-cancel-del').addEventListener('click', deleteModal.close);
+
+      document.getElementById('btn-confirm-del').addEventListener('click', function () {
+        var reason = delReasonInput.value.trim();
+        if (!reason) {
+          delErrMsg.hidden = false;
+          delReasonInput.focus();
+          return;
+        }
+
+        if (itemToDelete) {
+          assignments = assignments.filter(function (it) { return it.id !== itemToDelete.id; });
+          deleteModal.close();
+          updateCounts();
+          managedState.rows = filterManaged();
+          var pInfo = managedPager.set({ total: managedState.rows.length, size: managedState.size });
+          if (pInfo) managedState.page = pInfo.page;
+          renderManaged();
+          showToast('Đã xóa bài tập thành công');
+        }
+      });
+
+      document.getElementById('managed-rows').addEventListener('click', function (e) {
+        /* Nút Ẩn/Hiện */
+        var visBtn = e.target.closest('.btn-toggle-vis');
+        if (visBtn) {
+          var id = parseInt(visBtn.dataset.id, 10);
+          var targetItem = assignments.find(function (it) { return it.id === id; });
+          if (targetItem) {
+            targetItem.visible = !targetItem.visible;
+            renderManaged();
+            showToast(targetItem.visible ? 'Đã kích hoạt hiển thị bài tập' : 'Đã ẩn bài tập khỏi danh sách');
+          }
+          return;
+        }
+
+        /* Nút Nhân bản */
+        var dupBtn = e.target.closest('.btn-duplicate');
+        if (dupBtn) {
+          var dupId = parseInt(dupBtn.dataset.id, 10);
+          var srcItem = assignments.find(function (it) { return it.id === dupId; });
+          if (srcItem) {
+            var clone = {
+              id: Date.now(),
+              code: srcItem.code + '-copy',
+              title: srcItem.title + ' (Bản sao)',
+              course: srcItem.course,
+              topic: srcItem.topic,
+              diff: srcItem.diff,
+              type: srcItem.type,
+              version: 'v1.0',
+              reviewStatus: 'pending',
+              visible: true
+            };
+            assignments.unshift(clone);
+
+            // Thêm bản ghi yêu cầu duyệt tương ứng cho bản sao trong reviewData
+            var cloneReviewReq = {
+              code: 'rv-' + String(S.review.length + reviewData.length + 1).padStart(2, '0'),
+              title: clone.title,
+              type: clone.type || 'Lab',
+              topic: clone.topic,
+              diff: clone.diff,
+              author: currentAuthor,
+              authorRole: isTa ? 'Trợ giảng' : 'Giảng viên',
+              requestedAt: '2026-09-19 10:30',
+              version: 1,
+              status: 0
+            };
+            reviewData.unshift(cloneReviewReq);
+
+            updateCounts();
+            onManagedFilterChange();
+            renderReview();
+            showToast('Đã nhân bản bài tập thành công (Đang chờ duyệt)');
+          }
+          return;
+        }
+
+        /* Nút Xóa */
+        var delBtn = e.target.closest('.btn-del');
+        if (delBtn) {
+          if (isTa) return;
+          var targetId = parseInt(delBtn.dataset.id, 10);
+          var delItem = assignments.find(function (it) { return it.id === targetId; });
+          if (delItem) {
+            openDeleteModal(delItem);
+          }
+          return;
+        }
+      });
+
+      /* Phím tắt Esc đóng các modal */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (!modalAdd.hidden) closeAddModal();
+          if (!modalDelete.hidden) closeDeleteModal();
+        }
+      });
+
+      /* Khởi tạo dữ liệu */
+      updateCounts();
+      onManagedFilterChange(false);
+      renderReview();
+
+      var initTab = urlParams.get('tab');
+      if (initTab && tabBtns[initTab]) {
+        switchTab(initTab);
+      }
+
+      var modalParam = urlParams.get('modal');
+      if (modalParam === 'add') {
+        openAddModal();
+      } else if (modalParam === 'delete' && assignments[0]) {
+        openDeleteModal(assignments[0]);
+      }
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>

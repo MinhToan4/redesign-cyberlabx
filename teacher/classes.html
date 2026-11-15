@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lớp học phần · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Kiểu riêng trang Lớp học phần */
+    .stat-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-4 > div { padding: 18px 20px; }
+    .stat-4 > div + div { border-left: 1px solid var(--line); }
+
+    /* Hàng bảng sổ cái cho màn hình rộng */
+    .class-row {
+      display: grid;
+      grid-template-columns: 36px 96px minmax(0, 1.4fr) 130px 52px 116px 128px 84px;
+      gap: 12px;
+      align-items: center;
+      padding: 0 18px;
+      min-height: 52px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13.5px;
+      text-decoration: none;
+      color: inherit;
+      transition: background-color var(--dur) var(--ease);
+    }
+    .class-row:last-child { border-bottom: 0; }
+    .class-head {
+      min-height: 38px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+    a.class-row:hover { background: var(--mute-soft); }
+    a.class-row:hover::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      border-radius: 0 2px 2px 0;
+      background: var(--accent);
+    }
+
+    .sem-inline { display: none; }
+
+    /* Dưới 1360px (bao gồm viewport 1280px): ẩn cột Học kỳ độc lập, đưa học kỳ vào dòng phụ dưới tên lớp */
+    @media (max-width: 1360px) {
+      .class-row {
+        grid-template-columns: 38px 96px minmax(0, 1fr) 52px 116px 124px 84px;
+        gap: 10px;
+        padding: 0 14px;
+      }
+      .col-sem { display: none !important; }
+      .sem-inline { display: inline; }
+    }
+
+    /* Modal xác nhận lưu trữ (dùng .dlg-scrim với CLXUI.modal) */
+    .modal-card {
+      width: min(480px, calc(100vw - 32px));
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-panel);
+      box-shadow: var(--shadow-pop);
+      padding: 24px;
+    }
+    .modal-card h2 { font-size: 16px; margin: 0 0 8px; }
+    .modal-card p { font-size: 13px; color: var(--text-2); margin: 0 0 16px; line-height: 1.5; }
+
+    /* Toast thông báo */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 120;
+      padding: 10px 18px;
+      border-radius: var(--r-control);
+      background: var(--surface-2);
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-pop);
+      transition: opacity var(--dur) var(--ease);
+    }
+    .toast-box[hidden] { display: none; }
+
+    .mob-view { display: none; }
+
+    @media (max-width: 900px) {
+      .stat-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-4 > div:nth-child(2n + 1) { border-left: 0; }
+      .stat-4 > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+      .stat .value { font-size: 22px; }
+
+      .desk-col { display: none !important; }
+      .class-head { display: none !important; }
+      .ledger .tbl-row::before { display: none !important; }
+
+      .class-row {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        padding: 14px 16px;
+        height: auto;
+        gap: 12px;
+      }
+      .mob-view {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 6px;
+      }
+    }
+  </style>
+</head>
+<body data-role="teacher" data-page="classes" data-title="Lớp học phần">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- 1. Chỉ số tổng quan -->
+      <section class="card stat-4" aria-label="Số liệu tổng quan lớp học phần" id="overview-strip">
+        <div class="stat">
+          <div class="label">Lớp học phần</div>
+          <div class="value" id="kpi-classes">—</div>
+          <div class="hint" id="kpi-classes-hint">Học kỳ hiện tại</div>
+        </div>
+        <div class="stat">
+          <div class="label">Tổng sinh viên</div>
+          <div class="value" id="kpi-students">—</div>
+          <div class="hint">Đang theo học</div>
+        </div>
+        <div class="stat">
+          <div class="label">Hoàn thành trung bình</div>
+          <div class="value" id="kpi-completion">—</div>
+          <div class="hint" id="kpi-completion-hint">Theo tỷ lệ hoàn thành bài lab</div>
+        </div>
+        <div class="stat">
+          <div class="label">Cần đôn đốc</div>
+          <div class="value" id="kpi-atrisk">—</div>
+          <div class="hint">Sinh viên dưới ngưỡng</div>
+        </div>
+      </section>
+
+      <!-- 2. Danh sách lớp & Bộ lọc -->
+      <section>
+        <div class="section-head">
+          <h2>Danh sách lớp học phần</h2>
+          <span class="meta tnum" id="table-meta">Đang tải…</span>
+        </div>
+
+        <!-- Thanh công cụ lọc -->
+        <div class="toolbar" style="margin-bottom:14px">
+          <div class="search" style="flex:1;min-width:240px">
+            <i data-lucide="search"></i>
+            <input class="input" id="search-input" placeholder="Tìm theo mã lớp, tên môn học, nhóm..." aria-label="Tìm lớp học phần">
+          </div>
+
+          <select class="select" id="filter-semester" style="width:auto;min-width:180px" aria-label="Lọc theo học kỳ">
+            <option value="">Tất cả học kỳ</option>
+            <option value="2026-1" selected>Học kỳ 1 (2026-2027)</option>
+            <option value="2025-2">Học kỳ 2 (2025-2026)</option>
+            <option value="2025-1">Học kỳ 1 (2025-2026)</option>
+            <option value="2024-2">Học kỳ 2 (2024-2025)</option>
+            <option value="2024-1">Học kỳ 1 (2024-2025)</option>
+            <option value="2023-2">Học kỳ 2 (2023-2024)</option>
+            <option value="2025-summer">Học kỳ hè (2025-2026)</option>
+          </select>
+
+          <select class="select" id="filter-subject" style="width:auto;min-width:180px" aria-label="Lọc theo môn học">
+            <option value="">Tất cả môn học</option>
+          </select>
+
+          <div class="segmented" id="filter-status" role="group" aria-label="Lọc theo trạng thái">
+            <button data-val="" aria-pressed="true">Tất cả</button>
+            <button data-val="active" aria-pressed="false">Đang dạy</button>
+            <button data-val="closed" aria-pressed="false">Đã kết thúc</button>
+          </div>
+
+          <!-- Nút hành động (chỉ hiện với Giảng viên, Trợ giảng không có quyền lưu trữ/sửa đổi lớp) -->
+          <div id="teacher-actions">
+            <button class="btn btn-sm" id="btn-open-archive"><i data-lucide="archive"></i>Lưu trữ lớp</button>
+          </div>
+        </div>
+
+        <!-- Bảng sổ cái các lớp học phần -->
+        <div class="card">
+          <div class="tbl ledger" role="table" aria-label="Bảng sổ cái lớp học phần">
+            <div class="class-row class-head" role="row">
+              <span role="columnheader" class="no">STT</span>
+              <span role="columnheader">Mã lớp</span>
+              <span role="columnheader">Tên môn học / Nhóm</span>
+              <span role="columnheader" class="desk-col col-sem">Học kỳ</span>
+              <span role="columnheader" class="desk-col num">Sĩ số</span>
+              <span role="columnheader" class="desk-col">Hoàn thành TB</span>
+              <span role="columnheader" class="desk-col">Trạng thái</span>
+              <span role="columnheader" class="num">Thao tác</span>
+            </div>
+            <div id="table-body"></div>
+          </div>
+
+          <!-- Trạng thái rỗng thật khi lọc ra 0 kết quả -->
+          <div class="empty" id="empty-state" hidden>
+            <div style="font-size:14px;color:var(--text-2);margin-bottom:6px">Không tìm thấy lớp học phần phù hợp</div>
+            <div class="faint" style="font-size:13px;margin-bottom:14px">Thử đổi từ khóa tìm kiếm hoặc chọn học kỳ khác.</div>
+            <button class="btn btn-sm" id="btn-reset-filters"><i data-lucide="rotate-ccw"></i>Đặt lại bộ lọc</button>
+          </div>
+
+          <!-- Phân trang chuẩn CLXUI.pager -->
+          <div class="pager-host" id="pager-host"></div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Hộp thoại xác nhận lưu trữ lớp học phần (dùng CLXUI.modal chuẩn) -->
+  <div class="dlg-scrim" id="archive-modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 id="modal-title">Xác nhận lưu trữ lớp học phần</h2>
+      <p>Lớp học phần sau khi lưu trữ sẽ chuyển sang trạng thái <b>Đã kết thúc</b>. Sinh viên trong lớp sẽ không thể nộp thêm bài lab mới.</p>
+      <div class="field" style="margin-bottom:14px">
+        <label for="modal-select-class">Chọn lớp học phần cần lưu trữ</label>
+        <select class="select" id="modal-select-class"></select>
+      </div>
+      <div class="field" style="margin-bottom:20px">
+        <label for="modal-reason">Lý do lưu trữ (bắt buộc nhập)</label>
+        <textarea id="modal-reason" class="textarea" placeholder="Nhập lý do lưu trữ lớp (ví dụ: đã kết thúc thời gian thi học kỳ)..."></textarea>
+      </div>
+      <div class="row-between">
+        <button type="button" class="btn" id="modal-cancel" data-close>Hủy</button>
+        <button type="button" class="btn btn-primary" id="modal-confirm" disabled>Xác nhận lưu trữ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast thông báo kết quả -->
+  <div class="toast-box" id="toast-msg" hidden role="status" aria-live="polite">
+    <i data-lucide="check" style="color:var(--ok)"></i>
+    <span id="toast-text"></span>
+  </div>
+
+  <script>
+    /* Cho phép kiểm thử vai trò qua query parameter: ?role=ta hoặc ?role=teacher */
+    (function () {
+      var r = new URLSearchParams(window.location.search).get('role');
+      if (r === 'ta' || r === 'teacher') document.body.dataset.role = r;
+    })();
+  </script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/data-classes.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var S = window.CLX_STAFF, C_DATA = window.CLX_CLASSES_DATA, U = window.CLXUI, esc = U.esc;
+      var role = document.body.dataset.role || 'teacher';
+      var isTa = role === 'ta';
+      var nf = function (n) { return (n || 0).toLocaleString('en-US'); };
+
+      // Ẩn các thao tác quản trị đối với Trợ giảng (Trợ giảng không có quyền lưu trữ/sửa lớp)
+      if (isTa) {
+        var actionsDiv = document.getElementById('teacher-actions');
+        if (actionsDiv) actionsDiv.style.display = 'none';
+      }
+
+      // Nguồn dữ liệu lớp: lấy lớp học kỳ hiện tại trực tiếp từ CLX_STAFF.classes qua getCurrentSemesterClasses(),
+      // kết hợp với lịch sử các học kỳ trước từ data-classes.js để đồng bộ 100%
+      var currentClasses = (C_DATA && C_DATA.getCurrentSemesterClasses)
+        ? C_DATA.getCurrentSemesterClasses()
+        : (S && S.classes ? S.classes.slice() : []);
+      var historyClasses = (C_DATA && C_DATA.history) ? C_DATA.history.slice() : [];
+      var rawClasses = currentClasses.concat(historyClasses);
+
+      // Phạm vi theo vai trò:
+      // Giảng viên: teacher == 'gv01' (ThS. Nguyễn Văn An)
+      // Trợ giảng: các lớp được phân công (ta == 'ta01' hoặc mã lớp INT1449.01, INT1449.02)
+      var baseClasses = rawClasses.filter(function (c) {
+        if (isTa) return c.ta === 'ta01' || c.code === 'INT1449.01' || c.code === 'INT1449.02';
+        return c.teacher === 'gv01';
+      });
+
+      // Điền danh sách môn học vào bộ lọc
+      var subjectSelect = document.getElementById('filter-subject');
+      var uniqueSubjects = [];
+      baseClasses.forEach(function (c) {
+        if (uniqueSubjects.indexOf(c.name) === -1) uniqueSubjects.push(c.name);
+      });
+      uniqueSubjects.forEach(function (subj) {
+        var opt = document.createElement('option');
+        opt.value = subj;
+        opt.textContent = subj;
+        subjectSelect.appendChild(opt);
+      });
+
+      // Cập nhật thẻ chỉ số tổng quan (theo học kỳ hiện tại)
+      function updateOverviewKPIs() {
+        var currentSemClasses = baseClasses.filter(function (c) { return c.semester === '2026-1'; });
+        var totalStudents = currentSemClasses.reduce(function (a, b) { return a + b.students; }, 0);
+        var totalProgress = currentSemClasses.reduce(function (a, b) { return a + b.progress; }, 0);
+        var avgProgress = currentSemClasses.length ? Math.round(totalProgress / currentSemClasses.length) : 0;
+        var totalAtRisk = currentSemClasses.reduce(function (a, b) { return a + (b.atRisk || 0); }, 0);
+
+        document.getElementById('kpi-classes').textContent = currentSemClasses.length;
+        document.getElementById('kpi-classes-hint').textContent = baseClasses.length + ' lớp qua các học kỳ';
+        document.getElementById('kpi-students').textContent = nf(totalStudents);
+        document.getElementById('kpi-completion').textContent = avgProgress + '%';
+        document.getElementById('kpi-atrisk').textContent = nf(totalAtRisk);
+      }
+      updateOverviewKPIs();
+
+      /* ==================== BỘ LỌC VÀ PHÂN TRANG CHUẨN (CLXUI.pager) ==================== */
+      var searchInput = document.getElementById('search-input');
+      var semesterSelect = document.getElementById('filter-semester');
+      var statusButtons = document.querySelectorAll('#filter-status button');
+
+      // Đọc bộ lọc từ URL nếu có (tiện kiểm thử và liên kết sâu)
+      var urlParams = new URLSearchParams(window.location.search);
+      var initSem = urlParams.get('semester');
+      var initQ = urlParams.get('q');
+      var initStatus = urlParams.get('status');
+      var initSize = parseInt(urlParams.get('size') || '20', 10);
+      var initPage = parseInt(urlParams.get('page') || '1', 10);
+
+      var state = {
+        q: initQ || '',
+        semester: initSem !== null ? initSem : '2026-1',
+        subject: '',
+        status: initStatus || '',
+        page: initPage,
+        size: [5, 10, 20, 40].indexOf(initSize) !== -1 ? initSize : 20
+      };
+
+      if (initSem !== null) semesterSelect.value = initSem;
+      if (initQ) searchInput.value = initQ;
+      if (initStatus) {
+        statusButtons.forEach(function (b) {
+          b.setAttribute('aria-pressed', b.dataset.val === initStatus ? 'true' : 'false');
+        });
+      }
+
+      function norm(s) {
+        return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+      }
+
+      function getFilteredList() {
+        var qNorm = norm(state.q.trim());
+        return baseClasses.filter(function (c) {
+          if (state.semester && c.semester !== state.semester) return false;
+          if (state.subject && c.name !== state.subject) return false;
+          if (state.status && c.status !== state.status) return false;
+          if (qNorm) {
+            var matchCode = norm(c.code).indexOf(qNorm) !== -1;
+            var matchName = norm(c.name).indexOf(qNorm) !== -1;
+            var matchGroup = norm(c.group).indexOf(qNorm) !== -1;
+            if (!matchCode && !matchName && !matchGroup) return false;
+          }
+          return true;
+        });
+      }
+
+      // Khởi tạo thành phần phân trang chuẩn CLXUI.pager
+      var pagerHost = document.getElementById('pager-host');
+      var pg = U.pager(pagerHost, {
+        total: 0,
+        page: state.page,
+        size: state.size,
+        sizes: [5, 10, 20, 40],
+        onChange: function (page, size) {
+          state.page = page;
+          state.size = size;
+          draw();
+        }
+      });
+
+      function draw() {
+        var filtered = getFilteredList();
+        var total = filtered.length;
+        document.getElementById('table-meta').textContent = total + ' lớp học phần';
+
+        var body = document.getElementById('table-body');
+        var emptyEl = document.getElementById('empty-state');
+
+        if (total === 0) {
+          body.innerHTML = '';
+          emptyEl.hidden = false;
+          pg.set({ total: 0, page: 1 });
+          return;
+        }
+
+        emptyEl.hidden = true;
+
+        // Cắt dữ liệu đúng trang bằng CLXUI.paginate
+        var slice = U.paginate(filtered, state.page, state.size);
+        var startIdx = (state.page - 1) * state.size;
+
+        var html = '';
+        slice.forEach(function (c, idx) {
+          var stt = String(startIdx + idx + 1).padStart(2, '0');
+          var isActive = c.status === 'active';
+
+          var statusHtml = '';
+          if (isActive) {
+            statusHtml = (c.atRisk > 0)
+              ? '<span class="status s-warn"><span class="tnum">' + c.atRisk + '</span> SV cần đôn đốc</span>'
+              : '<span class="status s-ok">Đạt chỉ tiêu</span>';
+          } else {
+            statusHtml = '<span class="status s-info">Đã kết thúc</span>';
+          }
+
+          var ticksHtml = '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span class="mono tnum" style="font-size:12px;font-weight:500;min-width:32px">' + c.progress + '%</span>' +
+            U.ticks(10, Math.round(c.progress / 10)) +
+          '</div>';
+
+          html += '<a class="class-row is-link" href="class-detail.html?class=' + encodeURIComponent(c.code) + '&semester=' + encodeURIComponent(c.semester) + '" role="row">' +
+            '<span class="no" role="cell">' + stt + '</span>' +
+            '<span role="cell"><span class="chip chip-mono">' + esc(c.code) + '</span></span>' +
+            '<div role="cell" style="min-width:0">' +
+              '<div class="trunc" style="font-weight:500" title="' + esc(c.name) + '">' + esc(c.name) + '</div>' +
+              '<div class="faint" style="font-size:12px;margin-top:2px">' +
+                esc(c.group) + '<span class="sem-inline"> · ' + esc(c.semesterName) + '</span>' +
+              '</div>' +
+              '<div class="mob-view">' +
+                '<span>' + esc(c.group) + '</span> · ' +
+                '<span>' + esc(c.semesterName) + '</span> · ' +
+                '<span>' + c.students + ' SV</span> · ' +
+                '<span>Hoàn thành ' + c.progress + '%</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="desk-col col-sem faint tnum" role="cell">' + esc(c.semesterName) + '</span>' +
+            '<span class="desk-col num tnum" role="cell">' + c.students + '</span>' +
+            '<div class="desk-col" role="cell">' + ticksHtml + '</div>' +
+            '<div class="desk-col" role="cell">' + statusHtml + '</div>' +
+            '<div class="num" role="cell">' +
+              '<span class="btn btn-sm">Vào lớp<i data-lucide="chevron-right"></i></span>' +
+            '</div>' +
+          '</a>';
+        });
+
+        body.innerHTML = html;
+
+        // Cập nhật thanh phân trang chuẩn
+        pg.set({ total: total, page: state.page, size: state.size });
+        window.clxIcons();
+      }
+
+      function onFilterChange() {
+        state.page = 1;
+        draw();
+      }
+
+      // Sự kiện thay đổi bộ lọc
+      searchInput.addEventListener('input', function () {
+        state.q = searchInput.value;
+        onFilterChange();
+      });
+
+      semesterSelect.addEventListener('change', function () {
+        state.semester = semesterSelect.value;
+        onFilterChange();
+      });
+
+      subjectSelect.addEventListener('change', function () {
+        state.subject = subjectSelect.value;
+        onFilterChange();
+      });
+
+      statusButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          statusButtons.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+          btn.setAttribute('aria-pressed', 'true');
+          state.status = btn.dataset.val;
+          onFilterChange();
+        });
+      });
+
+      document.getElementById('btn-reset-filters').addEventListener('click', function () {
+        state.q = '';
+        state.semester = '';
+        state.subject = '';
+        state.status = '';
+
+        searchInput.value = '';
+        semesterSelect.value = '';
+        subjectSelect.value = '';
+        statusButtons.forEach(function (b) {
+          b.setAttribute('aria-pressed', b.dataset.val === '' ? 'true' : 'false');
+        });
+
+        onFilterChange();
+      });
+
+      /* ==================== HỘP THOẠI XÁC NHẬN LƯU TRỮ (CLXUI.modal) ==================== */
+      var modalEl = document.getElementById('archive-modal');
+      var openBtn = document.getElementById('btn-open-archive');
+      var confirmBtn = document.getElementById('modal-confirm');
+      var classSelect = document.getElementById('modal-select-class');
+      var reasonInput = document.getElementById('modal-reason');
+      var toast = document.getElementById('toast-msg');
+      var toastText = document.getElementById('toast-text');
+
+      function showToast(msg) {
+        toastText.textContent = msg;
+        toast.hidden = false;
+        setTimeout(function () { toast.hidden = true; }, 3500);
+      }
+
+      var archiveModal = U.modal(modalEl, {
+        initialFocus: '#modal-reason',
+        onClose: function () {
+          reasonInput.value = '';
+          confirmBtn.disabled = true;
+        }
+      });
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          var activeClasses = baseClasses.filter(function (c) { return c.status === 'active'; });
+          if (!activeClasses.length) {
+            alert('Không có lớp học phần nào đang hoạt động để lưu trữ.');
+            return;
+          }
+          classSelect.innerHTML = activeClasses.map(function (c) {
+            return '<option value="' + esc(c.code) + '|' + esc(c.semester) + '">' + esc(c.code) + ' - ' + esc(c.name) + ' (' + esc(c.group) + ')</option>';
+          }).join('');
+          reasonInput.value = '';
+          confirmBtn.disabled = true;
+          archiveModal.open();
+        });
+
+        // Hỗ trợ mở trực tiếp qua query param ?modal=1 phục vụ kiểm thử và chụp ảnh audit
+        if (urlParams.get('modal') === '1') {
+          openBtn.click();
+        }
+      }
+
+      modalEl.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', archiveModal.close);
+      });
+
+      reasonInput.addEventListener('input', function () {
+        confirmBtn.disabled = !reasonInput.value.trim();
+      });
+
+      confirmBtn.addEventListener('click', function () {
+        var parts = classSelect.value.split('|');
+        var selCode = parts[0];
+        var selSem = parts[1] || '2026-1';
+        var reason = reasonInput.value.trim();
+        if (!reason) return;
+
+        baseClasses.forEach(function (c) {
+          if (c.code === selCode && c.semester === selSem) {
+            c.status = 'closed';
+            c.statusLabel = 'Đã kết thúc';
+          }
+        });
+        if (S && S.classes) {
+          S.classes.forEach(function (sc) {
+            if (sc.code === selCode) sc.status = 'closed';
+          });
+        }
+
+        archiveModal.close();
+        updateOverviewKPIs();
+        draw();
+        showToast('Đã lưu trữ lớp ' + selCode + ' thành công.');
+      });
+
+      // Khởi tạo bảng ban đầu
+      draw();
+    })();
+  </script>
+</body>
+</html>

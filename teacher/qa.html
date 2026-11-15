@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hỏi đáp 1-1 · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    .qa-layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      height: calc(100vh - 128px);
+      min-height: 580px;
+      overflow: hidden;
+    }
+
+    /* Cột trái: Danh sách hội thoại */
+    .qa-sidebar {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .qa-sidebar-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .qa-conv-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .qa-conv-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 12px 16px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-left: 3px solid transparent;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      background: transparent;
+      transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+    }
+    .qa-conv-item:hover {
+      background: var(--mute-soft);
+    }
+    .qa-conv-item.is-selected {
+      background: var(--surface-2);
+      border-left-color: var(--accent);
+    }
+    .qa-conv-item:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .qa-conv-item.is-unread .qa-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .qa-conv-item.is-unread .qa-snippet {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* Cột phải: Khung hội thoại */
+    .qa-chat {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .qa-chat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      min-height: 56px;
+    }
+    .qa-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: var(--bg);
+    }
+
+    .msg-group {
+      display: flex;
+      flex-direction: column;
+      max-width: 78%;
+      gap: 4px;
+    }
+    .msg-group.is-student {
+      align-self: flex-start;
+    }
+    .msg-group.is-teacher {
+      align-self: flex-end;
+    }
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-3);
+    }
+    .msg-group.is-teacher .msg-meta {
+      justify-content: flex-end;
+    }
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: var(--r-control);
+      font-size: 13.5px;
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .msg-group.is-student .msg-bubble {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-top-left-radius: 2px;
+    }
+    .msg-group.is-teacher .msg-bubble {
+      background: var(--surface-2);
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      border-top-right-radius: 2px;
+    }
+
+    /* Ô soạn thảo */
+    .qa-composer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .qa-composer textarea {
+      flex: 1;
+      min-height: 40px;
+      max-height: 120px;
+      resize: none;
+      padding: 8px 12px;
+      font-size: 13.5px;
+      line-height: 1.4;
+    }
+
+    .back-btn { display: none; }
+
+    /* Responsive trên màn hình hẹp */
+    @media (max-width: 800px) {
+      .qa-layout {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 100px);
+      }
+      .back-btn { display: inline-grid; }
+      .qa-layout.show-chat .qa-sidebar { display: none; }
+      .qa-layout:not(.show-chat) .qa-chat { display: none; }
+    }
+  </style>
+</head>
+<body data-role="teacher" data-page="qa" data-title="Hỏi đáp 1-1">
+  <main class="content" id="content">
+    <div id="role-guard"></div>
+
+    <div class="card qa-layout" id="qa-main-layout">
+      <!-- Cột trái: Hộp thư / Danh sách hội thoại -->
+      <section class="qa-sidebar" aria-label="Danh sách hội thoại">
+        <div class="qa-sidebar-head">
+          <div class="row-between">
+            <h2 style="font-size:14px;font-weight:600;margin:0">Hộp thư hỏi đáp</h2>
+            <span class="faint tnum" id="unread-meta" style="font-size:12px"></span>
+          </div>
+          <div class="search" style="width:100%">
+            <i data-lucide="search"></i>
+            <input class="input" id="search-conv" placeholder="Tìm theo tên, MSSV, bài tập..." aria-label="Tìm hội thoại">
+          </div>
+          <div class="segmented" id="filter-segmented" role="group" aria-label="Lọc hội thoại" style="width:100%">
+            <button type="button" aria-pressed="true" data-filter="all" style="flex:1">Tất cả</button>
+            <button type="button" aria-pressed="false" data-filter="unanswered" style="flex:1">Chưa trả lời</button>
+          </div>
+        </div>
+
+        <div class="qa-conv-list" id="conv-list" role="list"></div>
+      </section>
+
+      <!-- Cột phải: Khung hội thoại & luồng tin nhắn -->
+      <section class="qa-chat" aria-label="Nội dung hội thoại">
+        <div class="qa-chat-head" id="chat-header">
+          <div class="row-gap" style="min-width:0">
+            <button class="icon-btn back-btn" id="btn-back" aria-label="Quay lại danh sách hội thoại">
+              <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="avatar" id="active-avatar">--</div>
+            <div style="min-width:0">
+              <div class="row-gap">
+                <strong id="active-student-name" style="font-size:13.5px">Chọn hội thoại</strong>
+                <span class="mono faint tnum" id="active-student-acc" style="font-size:12px"></span>
+              </div>
+              <div class="faint trunc" id="active-topic-desc" style="font-size:12px">Vui lòng chọn một sinh viên từ danh sách bên trái để phản hồi.</div>
+            </div>
+          </div>
+          <div id="active-header-actions"></div>
+        </div>
+
+        <div class="qa-chat-messages" id="chat-messages" role="log" aria-live="polite">
+          <div class="empty" id="chat-empty">Chọn một hội thoại để xem toàn bộ trao đổi và trả lời sinh viên.</div>
+        </div>
+
+        <div class="qa-composer" id="chat-composer">
+          <textarea class="textarea" id="composer-text" placeholder="Nhập câu trả lời (Enter để gửi, Shift+Enter để xuống dòng)..." rows="2" aria-label="Soạn tin nhắn trả lời"></textarea>
+          <button class="btn btn-primary" id="btn-send" type="button" aria-label="Gửi tin nhắn">
+            <i data-lucide="send"></i>Gửi
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/data-qa.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var D = window.CLX;
+      var S = window.CLX_STAFF;
+      var Q = window.CLX_QA || { threads: {}, assignmentMap: {} };
+      var U = window.CLXUI;
+      var esc = U.esc;
+
+      var role = document.body.dataset.role || 'teacher';
+      if (role === 'ta') {
+        var guard = document.getElementById('role-guard');
+        guard.innerHTML = '<div class="card empty" style="margin-top:20px">' +
+          '<div style="font-weight:500;font-size:15px;color:var(--text);margin-bottom:6px">Không có quyền truy cập</div>' +
+          'Vai trò Trợ giảng không phụ trách kênh Hỏi đáp 1-1. Vui lòng chuyển sang tài khoản Giảng viên.' +
+        '</div>';
+        document.getElementById('qa-main-layout').style.display = 'none';
+        return;
+      }
+
+      /* Khởi tạo danh sách hội thoại từ CLX_STAFF.qa */
+      var convs = (S.qa || []).map(function (item) {
+        var assignInfo = (Q.assignmentMap && Q.assignmentMap[item.account]) || {
+          code: 'lab-general',
+          title: 'Bài tập thực hành',
+          course: item.classCode
+        };
+        /* Item 18: Tách 'đã đọc' (unread) và 'chưa trả lời' (unanswered).
+           Ban đầu các hội thoại có tin nhắn chưa đọc hoặc câu hỏi cần giải đáp được đánh dấu unanswered: true.
+           Trạng thái unanswered CHỈ bị xóa khi giảng viên gửi tin phản hồi (sendMessage). */
+        var isUnanswered = (item.unread || 0) > 0;
+        return {
+          account: item.account,
+          student: item.student,
+          classCode: item.classCode,
+          assignmentCode: assignInfo.code,
+          assignmentTitle: assignInfo.title,
+          last: item.last,
+          time: item.time,
+          unread: item.unread || 0,
+          unanswered: isUnanswered
+        };
+      });
+
+      var activeAccount = convs.length ? convs[0].account : null;
+      var filterMode = 'all'; // 'all' | 'unanswered'
+      var searchQuery = '';
+
+      var layoutEl = document.getElementById('qa-main-layout');
+      var convListEl = document.getElementById('conv-list');
+      var chatMessagesEl = document.getElementById('chat-messages');
+      var composerText = document.getElementById('composer-text');
+      var btnSend = document.getElementById('btn-send');
+      var btnBack = document.getElementById('btn-back');
+
+      /* Cập nhật thông tin số lượng chưa trả lời */
+      function updateUnreadMeta() {
+        var unansweredCount = convs.filter(function (c) { return c.unanswered; }).length;
+        document.getElementById('unread-meta').textContent = unansweredCount > 0 ? unansweredCount + ' chưa trả lời' : 'Đã phản hồi hết';
+      }
+
+      /* Lọc danh sách hội thoại */
+      function getFilteredConvs() {
+        return convs.filter(function (c) {
+          if (filterMode === 'unanswered' && !c.unanswered) return false;
+          if (searchQuery) {
+            var q = searchQuery.toLowerCase();
+            var mName = c.student.toLowerCase().indexOf(q) !== -1;
+            var mAcc = c.account.toLowerCase().indexOf(q) !== -1;
+            var mTitle = c.assignmentTitle.toLowerCase().indexOf(q) !== -1;
+            var mCode = c.assignmentCode.toLowerCase().indexOf(q) !== -1;
+            if (!mName && !mAcc && !mTitle && !mCode) return false;
+          }
+          return true;
+        });
+      }
+
+      /* Vẽ danh sách hội thoại ở cột trái */
+      function renderConvList() {
+        var list = getFilteredConvs();
+        updateUnreadMeta();
+
+        if (!list.length) {
+          convListEl.innerHTML = '<div class="empty" style="padding:32px 16px;font-size:13px">' +
+            (filterMode === 'unanswered' ? 'Không có câu hỏi nào đang chờ phản hồi.' : 'Không có hội thoại phù hợp.') +
+          '</div>';
+          return;
+        }
+
+        convListEl.innerHTML = list.map(function (c) {
+          var isSel = c.account === activeAccount;
+          var hasUnread = c.unread > 0;
+          var badgeHtml = '';
+          if (hasUnread) {
+            badgeHtml = '<span class="chip chip-accent" style="height:18px;padding:0 6px;font-size:11px" title="' + c.unread + ' tin nhắn mới">' + c.unread + ' mới</span>';
+          } else if (c.unanswered) {
+            badgeHtml = '<span class="status s-warn" style="font-size:11px;padding:1px 6px">Chưa trả lời</span>';
+          } else {
+            badgeHtml = '<span class="status s-ok" style="font-size:11px;padding:1px 6px">Đã trả lời</span>';
+          }
+
+          /* Item 20: Dùng button thật và tabindex chuẩn cho bàn phím */
+          return '<button type="button" class="qa-conv-item' + (isSel ? ' is-selected' : '') + (hasUnread ? ' is-unread' : '') + '" data-acc="' + esc(c.account) + '" aria-label="Hội thoại với ' + esc(c.student) + '">' +
+            '<div class="row-between">' +
+              '<div class="qa-name trunc" style="font-size:13.5px">' + esc(c.student) + '</div>' +
+              '<span class="faint mono tnum" style="font-size:11.5px">' + esc(c.time) + '</span>' +
+            '</div>' +
+            '<div class="row-between" style="font-size:12px;margin-top:2px">' +
+              '<span class="mono faint">' + esc(c.account) + ' · ' + esc(c.classCode) + '</span>' +
+              badgeHtml +
+            '</div>' +
+            '<div class="faint trunc" style="font-size:12px;color:var(--text-3);margin-top:2px">' + esc(c.assignmentTitle) + '</div>' +
+            '<div class="qa-snippet trunc faint" style="font-size:12.5px;margin-top:2px">' + esc(c.last) + '</div>' +
+          '</button>';
+        }).join('');
+      }
+
+      /* Vẽ luồng tin nhắn ở cột phải */
+      function renderChat() {
+        if (!activeAccount) {
+          document.getElementById('active-student-name').textContent = 'Chưa chọn hội thoại';
+          document.getElementById('active-student-acc').textContent = '';
+          document.getElementById('active-topic-desc').textContent = 'Chọn hội thoại từ danh sách bên trái.';
+          document.getElementById('active-avatar').textContent = '--';
+          chatMessagesEl.innerHTML = '<div class="empty">Chọn một hội thoại để xem trao đổi.</div>';
+          return;
+        }
+
+        var conv = convs.filter(function (c) { return c.account === activeAccount; })[0];
+        if (!conv) return;
+
+        /* Cập nhật header */
+        var initials = conv.student.split(' ').map(function (w) { return w[0]; }).slice(-2).join('').toUpperCase();
+        document.getElementById('active-avatar').textContent = initials;
+        document.getElementById('active-student-name').textContent = conv.student;
+        document.getElementById('active-student-acc').textContent = '(' + conv.account + ')';
+        document.getElementById('active-topic-desc').innerHTML = esc(conv.classCode) + ' · Bài: ' +
+          '<a class="link" href="assignments.html?code=' + encodeURIComponent(conv.assignmentCode) + '">' + esc(conv.assignmentTitle) + '</a>';
+
+        var msgs = (Q.threads && Q.threads[activeAccount]) || [];
+        if (!msgs.length) {
+          /* Nếu chưa có luồng mẫu trong data-qa.js, dựng tin nhắn mặc định */
+          msgs = [
+            { id: 1, sender: 'student', senderName: conv.student, time: conv.time, text: conv.last }
+          ];
+          if (Q.threads) Q.threads[activeAccount] = msgs;
+        }
+
+        chatMessagesEl.innerHTML = '';
+        msgs.forEach(function (m) {
+          var isTeacher = m.sender === 'teacher';
+          var group = document.createElement('div');
+          group.className = 'msg-group' + (isTeacher ? ' is-teacher' : ' is-student');
+
+          var meta = document.createElement('div');
+          meta.className = 'msg-meta';
+          meta.innerHTML = '<b>' + esc(m.senderName) + '</b><span class="mono tnum">' + esc(m.time) + '</span>';
+
+          var bubble = document.createElement('div');
+          bubble.className = 'msg-bubble';
+          bubble.textContent = m.text; // An toàn với textContent
+
+          group.appendChild(meta);
+          group.appendChild(bubble);
+          chatMessagesEl.appendChild(group);
+        });
+
+        /* Cuộn xuống tin nhắn cuối */
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        window.clxIcons();
+      }
+
+      /* Chọn một hội thoại */
+      function selectConv(acc) {
+        activeAccount = acc;
+        var c = convs.filter(function (x) { return x.account === acc; })[0];
+        if (c && c.unread > 0) {
+          c.unread = 0; // Đánh dấu đã đọc khi xem, nhưng c.unanswered vẫn giữ nguyên true cho tới khi gửi tin!
+        }
+
+        renderConvList();
+        renderChat();
+
+        layoutEl.classList.add('show-chat');
+        composerText.focus();
+      }
+
+      /* Gửi tin nhắn trả lời */
+      function sendMessage() {
+        var text = composerText.value.trim();
+        if (!text || !activeAccount) return;
+
+        var msgs = (Q.threads && Q.threads[activeAccount]) || [];
+        var now = new Date();
+        var timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        var newMsg = {
+          id: msgs.length + 1,
+          sender: 'teacher',
+          senderName: 'ThS. Nguyễn Văn An',
+          time: timeStr,
+          text: text
+        };
+        msgs.push(newMsg);
+        if (Q.threads) Q.threads[activeAccount] = msgs;
+
+        /* Cập nhật hội thoại: giảng viên đã trả lời */
+        var c = convs.filter(function (x) { return x.account === activeAccount; })[0];
+        if (c) {
+          c.last = text;
+          c.time = 'Vừa xong';
+          c.unread = 0;
+          c.unanswered = false; // Item 18: CHỈ xóa nhãn Chưa trả lời khi giảng viên đã gửi tin phản hồi!
+        }
+
+        composerText.value = '';
+        renderChat();
+        renderConvList();
+      }
+
+      /* Sự kiện click chọn hội thoại */
+      convListEl.addEventListener('click', function (e) {
+        var item = e.target.closest('.qa-conv-item');
+        if (!item) return;
+        selectConv(item.dataset.acc);
+      });
+
+      /* Item 20: Xử lý Enter / Space khi người dùng bàn phím duyệt danh sách hội thoại */
+      convListEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          var item = e.target.closest('.qa-conv-item');
+          if (item) {
+            e.preventDefault();
+            selectConv(item.dataset.acc);
+          }
+        }
+      });
+
+      /* Sự kiện tìm kiếm */
+      document.getElementById('search-conv').addEventListener('input', function (e) {
+        searchQuery = e.target.value.trim();
+        renderConvList();
+      });
+
+      /* Sự kiện lọc Chưa trả lời / Tất cả */
+      document.getElementById('filter-segmented').addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        document.querySelectorAll('#filter-segmented button').forEach(function (b) {
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.setAttribute('aria-pressed', 'true');
+        filterMode = btn.dataset.filter;
+        renderConvList();
+      });
+
+      /* Sự kiện quay lại trên mobile */
+      btnBack.addEventListener('click', function () {
+        layoutEl.classList.remove('show-chat');
+      });
+
+      /* Sự kiện gửi tin nhắn */
+      btnSend.addEventListener('click', sendMessage);
+      composerText.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      /* Khởi tạo ban đầu */
+      renderConvList();
+      renderChat();
+    })();
+  </script>
+</body>
+</html>

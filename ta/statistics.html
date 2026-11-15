@@ -1,0 +1,503 @@
+<!doctype html>
+<!-- Tệp được sinh bởi tools/build-ta.js từ teacher/statistics.html. Không sửa tay: sửa bản teacher/ rồi chạy lại. -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thống kê · CyberLabX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/base.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <script src="../assets/theme.js"></script>
+  <style>
+    /* Kiểu riêng trang Thống kê */
+    .task-row {
+      position: relative;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto auto;
+      gap: 16px;
+      align-items: center;
+      padding: 13px 20px;
+      border-top: 1px solid var(--line);
+      text-decoration: none;
+      color: inherit;
+      transition: background-color var(--dur) var(--ease);
+    }
+    .task-row:first-child { border-top: 0; }
+    .task-row:hover { background: var(--mute-soft); }
+    .task-row:hover::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      border-radius: 0 2px 2px 0;
+      background: var(--accent);
+    }
+    .task-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--r-control);
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      color: var(--text-2);
+    }
+    .task-icon svg { width: 17px; height: 17px; stroke-width: 1.5; }
+    .task-row .t { font-weight: 500; font-size: 13.5px; }
+    .task-row .d { font-size: 12.5px; color: var(--text-3); margin-top: 2px; }
+    .task-row .act { pointer-events: none; }
+
+    /* Lịch thi 7 ngày tới */
+    .exam-row {
+      position: relative;
+      display: block;
+      padding: 13px 18px;
+      border-top: 1px solid var(--line);
+      text-decoration: none;
+      color: inherit;
+      transition: background-color var(--dur) var(--ease);
+    }
+    .exam-row:first-child { border-top: 0; }
+    .exam-row:hover { background: var(--mute-soft); }
+    .exam-row:hover::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      border-radius: 0 2px 2px 0;
+      background: var(--accent);
+    }
+    .exam-row .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .exam-row .title {
+      font-weight: 500;
+      font-size: 13.5px;
+    }
+    .exam-row .sub {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    /* Biểu đồ SVG thuần */
+    .chart-box { position: relative; width: 100%; }
+    .chart-box svg { display: block; width: 100%; height: auto; }
+    .chart-bar {
+      cursor: pointer;
+      transition: opacity var(--dur) var(--ease);
+    }
+    .chart-bar:hover { opacity: 0.82; }
+
+    /* Bảng các lớp của tôi */
+    .my-classes-row {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(180px, 1.4fr) 84px 72px minmax(160px, 1.2fr) 150px 96px 96px;
+      gap: 16px;
+      align-items: center;
+      padding: 0 20px;
+      min-height: 48px;
+      border-top: 1px solid var(--line);
+      font-size: 13.5px;
+      text-decoration: none;
+      color: inherit;
+      transition: background-color var(--dur) var(--ease);
+    }
+    .my-classes-row:first-child { border-top: 0; }
+    .my-classes-row:hover { background: var(--mute-soft); }
+    .my-classes-row:hover::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      border-radius: 0 2px 2px 0;
+      background: var(--accent);
+    }
+    .my-classes-head {
+      min-height: 38px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+      border-top: 0;
+    }
+    .my-classes-head:hover { background: transparent; }
+    .my-classes-head:hover::after { display: none; }
+
+    .mobile-only { display: none; }
+
+    @media (max-width: 900px) {
+      .section-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .card-foot { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .task-row {
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 12px 14px;
+      }
+      .task-row .act { display: none; }
+      .my-classes-head { display: none; }
+      .my-classes-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 14px;
+        height: auto;
+        gap: 10px;
+      }
+      .col-desktop { display: none; }
+      .mobile-only {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 6px;
+      }
+    }
+  </style>
+</head>
+<body data-role="ta" data-page="statistics" data-title="Thống kê">
+  <main class="content" id="content">
+    <div class="stack">
+      <!-- 1. Việc cần xử lý -->
+      <section>
+        <div class="section-head">
+          <h2>Việc cần xử lý</h2>
+          <span class="meta tnum" id="tasks-meta">Đang tính toán…</span>
+        </div>
+        <div class="card" id="tasks-list" role="region" aria-label="Danh sách việc cần xử lý"></div>
+      </section>
+
+      <!-- 2. Hàng biểu đồ 14 ngày (>= 2/3) + Lịch thi 7 ngày tới (<= 1/3) -->
+      <div class="cols">
+        <section>
+          <div class="section-head">
+            <h2>Lượt nộp bài 14 ngày gần nhất</h2>
+            <span class="meta tnum" id="chart-meta">Hôm nay: 2,136 lượt</span>
+          </div>
+          <div class="card card-pad">
+            <div class="chart-box" id="submissions-chart" role="img" aria-label="Biểu đồ cột lượt nộp bài 14 ngày gần nhất"></div>
+          </div>
+        </section>
+
+        <aside class="stack">
+          <section>
+            <div class="section-head">
+              <h2>Lịch thi 7 ngày tới</h2>
+              <a class="link" style="font-size:13px" href="exams.html">Tất cả</a>
+            </div>
+            <div class="card" id="exams-list" role="region" aria-label="Lịch thi 7 ngày tới"></div>
+          </section>
+        </aside>
+      </div>
+
+      <!-- 3. Bảng các lớp của tôi -->
+      <section>
+        <div class="section-head">
+          <h2>Lớp học phần phụ trách</h2>
+          <span class="meta tnum" id="classes-meta">Học kỳ 1 (2026-2027)</span>
+        </div>
+        <div class="card" id="classes-card">
+          <div class="tbl" role="table" aria-label="Bảng các lớp học phần phụ trách">
+            <div class="my-classes-row my-classes-head" role="row">
+              <span role="columnheader">Lớp học phần</span>
+              <span role="columnheader">Nhóm</span>
+              <span role="columnheader" class="num">Sĩ số</span>
+              <span role="columnheader">Tiến độ trung bình</span>
+              <span role="columnheader">Cảnh báo tiến độ</span>
+              <span role="columnheader" class="num col-desktop">Nộp 7 ngày</span>
+              <span role="columnheader" class="num">Thao tác</span>
+            </div>
+            <div id="classes-rows"></div>
+          </div>
+          <div class="card-foot row-between" style="padding:12px 20px;border-top:1px solid var(--line);font-size:13px;color:var(--text-3)">
+            <span class="tnum" id="classes-foot-info">2 lớp đang hoạt động · Học kỳ 1 (2026-2027)</span>
+            <a class="link" href="classes.html" style="font-size:13px;display:inline-flex;align-items:center;gap:4px">
+              Xem toàn bộ lớp học phần qua các kỳ <i data-lucide="arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    /* Đồng bộ vai trò qua tham số URL ?role=ta hoặc ?role=teacher để phục vụ kiểm thử */
+    (function () {
+      var r = new URLSearchParams(window.location.search).get('role');
+      if (r === 'ta' || r === 'teacher') document.body.dataset.role = r;
+    })();
+  </script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../assets/data.js"></script>
+  <script src="../assets/data-staff.js"></script>
+  <script src="../assets/charts.js"></script>
+  <script src="../assets/shell.js"></script>
+  <script>
+    (function () {
+      var S = window.CLX_STAFF, U = window.CLXUI, esc = U.esc;
+      var role = document.body.dataset.role || 'teacher';
+      var nf = function (n) { return (n || 0).toLocaleString('en-US'); };
+
+      /* ==================== 1. VIỆC CẦN XỬ LÝ ==================== */
+      var isTa = role === 'ta';
+
+      // 1.1 Bài chờ duyệt của tôi (GV: ThS. Nguyễn Văn An / author gv01; TA: bài của Trợ giảng)
+      var myReviews = S.review.filter(function (r) {
+        if (isTa) return r.authorRole === 'Trợ giảng' && r.status === 0;
+        return (r.author === 'ThS. Nguyễn Văn An' || r.author === 'gv01') && r.status === 0;
+      });
+
+      // 1.2 Hỏi đáp chưa trả lời (Trợ giảng không có Hỏi đáp 1-1)
+      var unreadQA = S.qa.filter(function (q) { return (q.unread || 0) > 0; });
+      var totalUnreadQACount = unreadQA.reduce(function (acc, q) { return acc + q.unread; }, 0);
+
+      // 1.3 Ca thi sắp diễn ra hoặc đang diễn ra
+      var activeExams = S.exams.filter(function (e) {
+        return e.status === 'live' || e.status === 'upcoming';
+      });
+
+      // 1.4 Lớp phụ trách có sinh viên dưới ngưỡng cảnh báo
+      var myClasses = S.classes.filter(function (c) {
+        if (isTa) return c.code === 'INT1449.01' || c.code === 'INT1449.02';
+        return c.teacher === 'gv01';
+      });
+      var classesWithRisk = myClasses.filter(function (c) { return (c.atRisk || 0) > 0; });
+      var totalRiskStudents = classesWithRisk.reduce(function (acc, c) { return acc + (c.atRisk || 0); }, 0);
+
+      var tasks = [];
+
+      // Nhiệm vụ 1: Bài chờ duyệt
+      tasks.push({
+        icon: 'clipboard-check',
+        title: 'Bài tập đang chờ duyệt của bạn',
+        desc: myReviews.length + ' bài tập gửi Admin phê duyệt trước khi mở cho sinh viên',
+        count: myReviews.length + ' bài',
+        tone: 'chip-mono',
+        actionText: 'Xem bài tập',
+        href: 'assignments.html'
+      });
+
+      // Nhiệm vụ 2: Hỏi đáp (chỉ dành cho Giảng viên, Trợ giảng không có Hỏi đáp 1-1)
+      if (!isTa) {
+        tasks.push({
+          icon: 'messages-square',
+          title: 'Hỏi đáp 1-1 chưa phản hồi',
+          desc: unreadQA.length + ' sinh viên (' + totalUnreadQACount + ' câu hỏi mới) đang chờ giải đáp bài lab',
+          count: totalUnreadQACount + ' tin mới',
+          tone: 'chip-warn',
+          actionText: 'Trả lời ngay',
+          href: 'qa.html'
+        });
+      }
+
+      // Nhiệm vụ 3: Ca thi đang diễn ra hoặc sắp tới
+      var liveExam = activeExams.filter(function (e) { return e.status === 'live'; })[0];
+      if (liveExam) {
+        tasks.push({
+          icon: 'timer',
+          title: 'Ca thi phòng máy đang diễn ra',
+          desc: liveExam.name + ' · ' + liveExam.joined + '/' + liveExam.students + ' thí sinh đã vào',
+          count: 'Đang diễn ra',
+          tone: 'chip-ok',
+          actionText: 'Giám sát ca thi',
+          href: 'exams.html'
+        });
+      } else if (activeExams.length > 0) {
+        tasks.push({
+          icon: 'timer',
+          title: 'Ca thi sắp diễn ra trong tuần',
+          desc: activeExams[0].name + ' lúc ' + activeExams[0].start.slice(11) + ' ngày ' + activeExams[0].start.slice(8, 10) + '/' + activeExams[0].start.slice(5, 7),
+          count: activeExams.length + ' ca thi',
+          tone: 'chip-info',
+          actionText: 'Xem lịch thi',
+          href: 'exams.html'
+        });
+      }
+
+      // Nhiệm vụ 4: Cảnh báo sinh viên tụt lại
+      if (classesWithRisk.length > 0) {
+        tasks.push({
+          icon: 'triangle-alert',
+          title: 'Sinh viên dưới ngưỡng cảnh báo tiến độ',
+          desc: classesWithRisk.length + ' lớp có tổng cộng ' + totalRiskStudents + ' sinh viên cần đôn đốc làm bài',
+          count: totalRiskStudents + ' sinh viên',
+          tone: 'chip-err',
+          actionText: 'Xem danh sách',
+          href: 'classes.html'
+        });
+      }
+
+      document.getElementById('tasks-meta').textContent = tasks.length + ' loại việc cần ưu tiên';
+      document.getElementById('tasks-list').innerHTML = tasks.map(function (t) {
+        return '<a class="task-row" href="' + esc(t.href) + '">' +
+          '<div class="task-icon"><i data-lucide="' + esc(t.icon) + '"></i></div>' +
+          '<div style="min-width:0">' +
+            '<div class="t">' + esc(t.title) + '</div>' +
+            '<div class="d trunc">' + esc(t.desc) + '</div>' +
+          '</div>' +
+          '<span class="chip ' + esc(t.tone) + ' tnum">' + esc(t.count) + '</span>' +
+          '<span class="btn btn-sm btn-ghost act">' + esc(t.actionText) + '<i data-lucide="arrow-right"></i></span>' +
+        '</a>';
+      }).join('') || '<div class="empty">Hiện không có công việc nào cần xử lý.</div>';
+
+      /* ==================== 2. BIỂU ĐỒ 14 NGÀY (SVG THUẦN) ==================== */
+      var perDay = S.system.perDay; // 14 giá trị
+      var totalSubmissions14d = perDay.reduce(function (a, b) { return a + b; }, 0);
+      var todayVal = perDay[perDay.length - 1];
+      document.getElementById('chart-meta').textContent = 'Tổng ' + nf(totalSubmissions14d) + ' lượt · Hôm nay ' + nf(todayVal) + ' lượt';
+
+      function renderBarChart(host, data) {
+        var w = 760, h = 260;
+        var padLeft = 48, padRight = 16, padTop = 36, padBottom = 34;
+        var plotW = w - padLeft - padRight;
+        var plotH = h - padTop - padBottom;
+        var maxData = Math.max.apply(null, data);
+        var maxVal = Math.max(2500, Math.ceil(maxData / 500) * 500);
+        var n = data.length;
+        var slotW = plotW / n;
+        var barW = 28;
+
+        // Ngày gốc: Hôm nay là 18/09/2026 theo mốc dữ liệu hệ thống
+        var baseDate = new Date('2026-09-18T00:00:00');
+        var dayMs = 86400000;
+
+        var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Biểu đồ lượt nộp bài 14 ngày gần nhất">';
+
+        // Lưới ngang mờ & nhãn Y
+        var gridLevels = [0, 500, 1000, 1500, 2000, 2500];
+        gridLevels.forEach(function (val) {
+          if (val > maxVal) return;
+          var y = padTop + plotH - (val / maxVal) * plotH;
+          svg += '<line x1="' + padLeft + '" y1="' + y + '" x2="' + (w - padRight) + '" y2="' + y + '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3,3"/>';
+          svg += '<text x="' + (padLeft - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--text-3)">' + nf(val) + '</text>';
+        });
+
+        // Cột và nhãn X
+        data.forEach(function (val, i) {
+          var isToday = (i === n - 1);
+          var barH = Math.max(2, (val / maxVal) * plotH);
+          var x = padLeft + i * slotW + (slotW - barW) / 2;
+          var y = padTop + plotH - barH;
+
+          // Ngày tính lùi từ hôm nay
+          var curD = new Date(baseDate.getTime() - (n - 1 - i) * dayMs);
+          var dateLabel = String(curD.getDate()).padStart(2, '0') + '/' + String(curD.getMonth() + 1).padStart(2, '0');
+
+          var fillColor = isToday ? 'var(--accent)' : 'var(--surface-3)';
+
+          // Cột
+          svg += '<rect class="chart-bar" x="' + x + '" y="' + y + '" width="' + barW + '" height="' + barH + '" rx="3" fill="' + fillColor + '">' +
+            '<title>' + (isToday ? 'Hôm nay: ' : dateLabel + ': ') + nf(val) + ' lượt nộp</title>' +
+          '</rect>';
+
+          // Nhãn giá trị trên đầu cột hôm nay
+          if (isToday) {
+            svg += '<text x="' + (x + barW / 2) + '" y="' + (y - 7) + '" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="500" fill="var(--accent)">' + nf(val) + '</text>';
+          }
+
+          // Nhãn ngày trục X
+          var labelColor = isToday ? 'var(--accent)' : 'var(--text-3)';
+          var labelWeight = isToday ? '500' : '400';
+          svg += '<text x="' + (x + barW / 2) + '" y="' + (h - 12) + '" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="' + labelWeight + '" fill="' + labelColor + '">' + (isToday ? '18/09' : dateLabel) + '</text>';
+        });
+
+        svg += '</svg>';
+
+        // Bản tóm tắt dạng bảng hỗ trợ trợ năng
+        var sr = '<div class="sr-only"><table><caption>Lượt nộp 14 ngày gần nhất</caption>' +
+          '<tr><th>Ngày</th><th>Số lượt nộp</th></tr>' +
+          data.map(function (v, idx) { return '<tr><td>Ngày ' + (idx + 1) + '</td><td>' + v + '</td></tr>'; }).join('') +
+          '</table></div>';
+
+        host.innerHTML = svg + sr;
+      }
+      renderBarChart(document.getElementById('submissions-chart'), perDay);
+
+      /* ==================== 3. LỊCH THI 7 NGÀY TỚI ==================== */
+      // Lọc các ca thi trong vòng 7 ngày (từ 2026-09-18 tới 2026-09-25)
+      var upcomingExams = S.exams.filter(function (e) {
+        return e.status === 'live' || e.status === 'upcoming';
+      });
+
+      document.getElementById('exams-list').innerHTML = upcomingExams.map(function (e) {
+        var isLive = e.status === 'live';
+        var statusHtml = isLive
+          ? '<span class="status s-ok">Đang thi</span>'
+          : '<span class="status s-info">' + esc(e.start.slice(8, 10) + '/' + e.start.slice(5, 7) + ' ' + e.start.slice(11)) + '</span>';
+
+        var subInfo = isLive
+          ? esc(e.classCode) + ' · ' + e.joined + '/' + e.students + ' thí sinh'
+          : esc(e.classCode) + ' · ' + e.students + ' thí sinh · ' + e.minutes + ' phút';
+
+        return '<a class="exam-row" href="exams.html?code=' + encodeURIComponent(e.code) + '">' +
+          '<div class="top">' +
+            '<span class="title trunc" title="' + esc(e.name) + '">' + esc(e.name) + '</span>' +
+            statusHtml +
+          '</div>' +
+          '<div class="sub">' +
+            '<span>' + subInfo + '</span>' +
+            '<i data-lucide="chevron-right" class="faint"></i>' +
+          '</div>' +
+        '</a>';
+      }).join('') || '<div class="empty">Không có ca thi nào trong 7 ngày tới.</div>';
+
+      /* ==================== 4. BẢNG CÁC LỚP CỦA TÔI ==================== */
+      var totalClassStudents = myClasses.reduce(function (a, b) { return a + b.students; }, 0);
+      document.getElementById('classes-meta').textContent = myClasses.length + ' lớp đang giảng dạy · ' + totalClassStudents + ' sinh viên';
+
+      document.getElementById('classes-rows').innerHTML = myClasses.map(function (c) {
+        var riskHtml = c.atRisk > 0
+          ? '<span class="status s-warn"><span class="tnum">' + c.atRisk + '</span> SV (&lt;' + c.threshold + '%)</span>'
+          : '<span class="status s-ok">Đạt chỉ tiêu</span>';
+
+        // 20 vạch tiến độ: mỗi vạch 5%
+        var ticksHtml = '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span class="mono tnum" style="font-size:12.5px;font-weight:500;min-width:32px">' + c.progress + '%</span>' +
+          U.ticks(20, Math.round(c.progress / 5)) +
+        '</div>';
+
+        return '<div class="my-classes-row" role="row">' +
+          '<div style="min-width:0" role="cell">' +
+            '<div style="display:flex;align-items:center;gap:8px">' +
+              '<span class="chip chip-mono">' + esc(c.code) + '</span>' +
+              '<span class="trunc" style="font-weight:500" title="' + esc(c.name) + '">' + esc(c.name) + '</span>' +
+            '</div>' +
+            '<div class="mobile-only">' +
+              '<span>' + esc(c.group) + '</span> · ' +
+              '<span>' + c.students + ' SV</span> · ' +
+              '<span>Tiến độ ' + c.progress + '%</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="col-desktop faint" role="cell">' + esc(c.group) + '</span>' +
+          '<span class="col-desktop num tnum" role="cell">' + c.students + '</span>' +
+          '<div class="col-desktop" role="cell">' + ticksHtml + '</div>' +
+          '<div class="col-desktop" role="cell">' + riskHtml + '</div>' +
+          '<span class="col-desktop num mono tnum" role="cell">' + nf(c.submissions7d) + '</span>' +
+          '<div class="num" role="cell">' +
+            '<a class="btn btn-sm" href="class-detail.html?class=' + encodeURIComponent(c.code) + '">Chi tiết<i data-lucide="chevron-right"></i></a>' +
+          '</div>' +
+        '</div>';
+      }).join('') || '<div class="empty">Bạn chưa được phân công lớp học phần nào.</div>';
+
+      document.getElementById('classes-foot-info').textContent = myClasses.length + ' lớp đang hoạt động · ' + totalClassStudents + ' sinh viên';
+
+      window.clxIcons();
+    })();
+  </script>
+</body>
+</html>
